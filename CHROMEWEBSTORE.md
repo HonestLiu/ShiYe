@@ -2,7 +2,7 @@
 
 此目录当前产物是个人本机使用的解压扩展，不准备向 Chrome Web Store 发布。原包 `6.13.2_0` 保持不变。
 
-本地版名称：ChatGPT Exporter - Local Service。版本标记：6.13.2 Local Service 3.1 (Divider fix)。
+本地版名称：ChatGPT Exporter - Local Service。版本标记：6.13.2 Local Service 3.4 (Web admin)。
 
 修复：SVG data URL 先栅格化再上传本机，避免被直接跳过；按 viewBox 补齐百分比尺寸，保留 DOM 中的内联图示。增加 UTF-8/Base64 SVG 回归检查。
 
@@ -19,3 +19,9 @@
 3.0：默认网页原貌模式，保留选中 DOM 的计算样式及图片/字体资源，使用本机 Chromium 的屏幕媒体输出 PDF；保留 Pandoc 备用。增加引擎切换、静态资源权限、失败任务 HTML 快照恢复与依赖/实际启动状态区分。沙箱内实际 Chrome 启动失败，未声称完成视觉实机验证。
 
 3.1：补存 background-clip/background-origin，恢复分隔线的内容区绘制范围；维持原始留白。实际 Chromium 验证明暗模式由 17px 灰条恢复为 1px 线条，并生成真实 PDF。
+
+3.2：网页原貌 PDF 支持回答的 H1–H6 分级标题目录及侧栏书签；原有目录开关控制目录页，书签始终生成。同名标题单独定位，排除用户/代码/隐藏标签。
+
+3.3：目录页默认关闭，用户可手动开启；首次升级迁移旧默认值，之后记住选择。默认导出仍含标题书签，不增加目录页。
+
+3.4：本地服务根路径提供浏览器 Web 后台，共享本机资料、导出记录、PDF/快照下载、Markdown 转 PDF、偏好/备份/反馈。增加带版本的 Web 偏好同步，保留浏览器未同步修改的优先级；同源写操作使用 CSRF 令牌。

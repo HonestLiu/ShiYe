@@ -131,6 +131,7 @@ def settings(request=None):
         return result
 
     current = get("extension-settings", {})
+    web_revision = get("extension-settings-web-revision", 0)
     if request is not None:
         update = request.get("settings")
         if not isinstance(update, dict) or set(update) - allowed:
@@ -143,4 +144,8 @@ def settings(request=None):
             row = connection.execute("SELECT value FROM settings WHERE key='extension-settings'").fetchone()
             current = merge(json.loads(row[0]) if row else {}, update)
             connection.execute("INSERT INTO settings(key,value) VALUES('extension-settings',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (json.dumps(current, ensure_ascii=False),))
-    return {"errcode": 0, "settings": current}
+            if request.get("source") == "web":
+                row = connection.execute("SELECT value FROM settings WHERE key='extension-settings-web-revision'").fetchone()
+                web_revision = (json.loads(row[0]) if row else 0) + 1
+                connection.execute("INSERT INTO settings(key,value) VALUES('extension-settings-web-revision',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (json.dumps(web_revision),))
+    return {"errcode": 0, "settings": current, "webRevision": web_revision}

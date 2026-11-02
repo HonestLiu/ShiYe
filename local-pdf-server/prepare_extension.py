@@ -31,6 +31,7 @@ def main():
     if TARGET.exists() and not args.update:
         parser.error('local-extension exists; use --update to regenerate')
     content = shared((SOURCE / 'content.js').read_text())
+    content = replace_once(content, 'D=p((0,s.useState)(!0),2),j=D[0],F=D[1]', 'D=p((0,s.useState)(!1),2),j=D[0],F=D[1]')
     content = replace_once(content, 't.setAttribute("src","data:,")', 't.setAttribute("src",o.url)')
     content = replace_once(content, 'case 18:return e.next=20,Promise.all(Array.from(o.querySelectorAll("img"))',
         'case 18:return LocalExporter.inlineSvgImages(o.body),e.next=20,Promise.all(Array.from(o.querySelectorAll("img"))')
@@ -67,7 +68,7 @@ def main():
             raise RuntimeError('Unable to insert bridge into ' + name)
         path.write_text(html)
     manifest = json.loads((stage / 'manifest.json').read_text())
-    manifest.update(name='ChatGPT Exporter - Local Service', description='Export conversations with local PDF, images, profile, settings and feedback.', version_name='6.13.2 Local Service 3.1 (Divider fix)', host_permissions=['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*'])
+    manifest.update(name='ChatGPT Exporter - Local Service', description='Export conversations with local PDF, images, profile, settings and feedback.', version_name='6.13.2 Local Service 3.4 (Web admin)', host_permissions=['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*'])
     manifest['content_scripts'] = [item for item in manifest['content_scripts'] if 'content.js' in item['js']]
     manifest['content_scripts'][0]['js'] = ['bridge.js', 'web-snapshot.js', 'content.js']
     for key in ['externally_connectable', 'key', 'update_url']:

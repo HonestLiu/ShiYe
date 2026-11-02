@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
+import { addHeadingNavigation } from './web-heading-navigation.mjs';
 
 export function pdfOptions(options = {}, width = 1000) {
   const sizes = { a3: 'A3', a4: 'A4', a5: 'A5', letter: 'Letter', legal: 'Legal', tabloid: 'Tabloid' };
@@ -15,7 +16,7 @@ export function pdfOptions(options = {}, width = 1000) {
   if (scale < 0.1) throw new Error('Captured webpage is too wide for the selected paper/margins');
   return { format, landscape, scale,
     margin: { top: margin, bottom: margin, left: margin, right: margin },
-    printBackground: true, preferCSSPageSize: false, tagged: true,
+    printBackground: true, preferCSSPageSize: false, tagged: true, outline: true,
     displayHeaderFooter: !options.removePageNumber, headerTemplate: '<span></span>',
     footerTemplate: '<div style="width:100%;text-align:center;font-size:9px;color:#666"><span class="pageNumber"></span></div>' };
 }
@@ -33,6 +34,7 @@ export async function render(spec, chromium) {
     const page = await context.newPage();
     await page.emulateMedia({ media: 'screen', colorScheme: spec.theme === 'dark' ? 'dark' : 'light' });
     await page.setContent(await readFile(spec.input, 'utf8'), { waitUntil: 'load', timeout: 30000 });
+    const navigation = await page.evaluate(addHeadingNavigation, { toc: spec.options?.toc === true });
     const resources = await page.evaluate(async () => {
       await Promise.race([document.fonts.ready, new Promise((_, reject) => setTimeout(() => reject(new Error('Frozen fonts did not finish loading')), 15000))]);
       await Promise.all([...document.images].map(image => image.complete ? Promise.resolve() : new Promise((resolve, reject) => {
@@ -45,7 +47,7 @@ export async function render(spec, chromium) {
       return { images: document.images.length, fonts: document.fonts.size };
     });
     await page.pdf({ ...pdfOptions(spec.options, spec.width), path: spec.output });
-    return { engine: 'chromium', ...resources, sandboxEnabled: true, networkEnabled: false };
+    return { engine: 'chromium', ...resources, ...navigation, sandboxEnabled: true, networkEnabled: false };
   } finally { await browser.close(); }
 }
 

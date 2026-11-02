@@ -24,6 +24,8 @@ new vm.Script(read('web-snapshot.js'));
 
 const messages = [], actualFetch = [], beacons = [], xhrCalls = [];
 const svgDecodes = [], canvasDraws = [];
+let bridgePrefs = { renderer: 'pandoc', toc: true };
+const bridgePreferenceWrites = [];
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64');
 class TestDOMParser {
   parseFromString(source) {
@@ -62,7 +64,7 @@ const context = vm.createContext({
   navigator: { sendBeacon: (...args) => { beacons.push(args); return true; } },
   XMLHttpRequest: FakeXHR,
   fetch: async (url) => { actualFetch.push(String(url)); return String(url).startsWith('data:') ? fetch(url) : new Response(new Blob(['png'], { type: 'image/png' })); },
-  chrome: { storage: { local: { get: async () => ({pdfOptions:{renderer:'pandoc'}}), set: async () => {} } }, runtime: { sendMessage: async message => {
+  chrome: { storage: { local: { get: async () => ({pdfOptions:bridgePrefs}), set: async value => { bridgePrefs=value.pdfOptions;bridgePreferenceWrites.push(value); } } }, runtime: { sendMessage: async message => {
     messages.push(message);
     if (message.cmd === 'local_ready') return { errcode: 0 };
     if (message.cmd === 'pdf') return { errcode: 0, jobId: 'local-test' };
@@ -70,6 +72,16 @@ const context = vm.createContext({
   } } }
 });
 vm.runInContext(read('bridge.js'), context);
+await context.LocalExporter.ready;
+assert.equal(bridgePrefs.toc,false,'Upgrade must turn off the previously enabled TOC default once');
+assert.equal(bridgePrefs.renderer,'pandoc');
+assert.equal(bridgePrefs.localTocOptInVersion,1);
+bridgePrefs.toc=true;
+vm.runInContext(read('bridge.js'), context);
+await context.LocalExporter.ready;
+assert.equal(bridgePrefs.toc,true,'A later explicit opt-in must survive reload');
+assert.equal(bridgePreferenceWrites.length,1,'Migration must run only once');
+assert(read('content.js').includes('D=p((0,s.useState)(!1),2),j=D[0],F=D[1]'));
 await context.fetch('http://127.0.0.1:8765/api/config/v3');
 assert.equal(actualFetch.length, 0); // local traffic relayed, no mixed-content fetch
 assert.equal(messages.at(-1).payload.path, '/api/config/v3');
@@ -141,6 +153,8 @@ assert.equal(messages.at(-1).payload.payload.webDocument.html,'<p>original webpa
 const stored = { commonOptions: { removeBrand: true } };
 const requests = [];
 let offline = false;
+let webRevision = 0;
+let remotePdfOptions = { pageSize: 'a5' };
 const background = vm.createContext({
   console, URL, Response, Request, Blob, FormData, Uint8Array, atob, btoa,
   AbortSignal, setTimeout, clearTimeout,
@@ -149,7 +163,7 @@ const background = vm.createContext({
     assert(String(url).startsWith('http://127.0.0.1:8765/'));
     requests.push([url, options]);
     if (String(url).endsWith('/api/account')) return Response.json({ errcode: 0, local: true, isPro: true, name: '本地用户', email: '' });
-    if (String(url).endsWith('/api/settings')) return Response.json({ errcode: 0, settings: { pdfOptions: { pageSize: 'a5' }, commonOptions: { removeBrand: false } } });
+    if (String(url).endsWith('/api/settings')) return Response.json({ errcode: 0, webRevision, settings: { pdfOptions: remotePdfOptions, commonOptions: { removeBrand: false } } });
     if (String(url).includes('/api/pdf/v1')) return Response.json({ errcode: 0, jobId: 'new-job', status: 'queued' });
     if (String(url).endsWith('/api/usage')) return Response.json({ errcode: 0, hasExceed: false });
     return Response.json({ errcode: 0 });
@@ -186,6 +200,15 @@ await vm.runInContext('dispatch({cmd:"local_ready"})', background);
 assert.equal(stored.pdfOptions.pageSize, 'a5');
 assert.equal(stored.localSettingsDirty, false);
 assert.equal(JSON.parse(requests.filter(([url, options]) => url.endsWith('/api/settings') && options.method === 'POST').at(-1)[1].body).settings.commonOptions.removeBrand, false);
+webRevision=1;remotePdfOptions={pageSize:'a4',toc:false,renderer:'chromium',localTocOptInVersion:1};
+await vm.runInContext('dispatch({cmd:"local_ready"})', background);
+assert.equal(stored.pdfOptions.pageSize,'a4','Clean browser settings must receive newer web preferences');
+assert.equal(stored.pdfOptions.toc,false);
+assert.equal(stored.localWebSettingsRevision,1);
+stored.localSettingsDirty=true;stored.pdfOptions={...stored.pdfOptions,toc:true};webRevision=2;
+await vm.runInContext('dispatch({cmd:"local_ready"})', background);
+assert.equal(stored.pdfOptions.toc,true,'Unsynced local choices must win a web/local conflict');
+assert.equal(stored.localWebSettingsRevision,2);
 
 // Invalid imports must not touch existing browser preferences.
 const elements = new Map();

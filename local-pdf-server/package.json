@@ -8,6 +8,8 @@
   },
   "scripts": {
     "verify": "node verify-web-runner.mjs && node verify-web-snapshot.mjs",
-    "verify:browser": "node verify-divider-browser.mjs"
+    "verify:browser": "node verify-divider-browser.mjs",
+    "verify:headings": "node verify-heading-navigation.mjs",
+    "verify:admin": "node verify-web-admin.mjs"
   }
 }

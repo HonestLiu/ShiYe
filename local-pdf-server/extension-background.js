@@ -83,7 +83,8 @@ async function reconcile() {
     ]);
     const stored = await chrome.storage.local.get(null);
     await cacheAccount(account);
-    const missing = Object.fromEntries(PREFS.filter(key => stored[key] === undefined && prefs.settings?.[key] !== undefined).map(key => [key, prefs.settings[key]]));
+    const webChanged = (prefs.webRevision || 0) > (stored.localWebSettingsRevision || 0);
+    const missing = Object.fromEntries(PREFS.filter(key => (stored[key] === undefined || (webChanged && !stored.localSettingsDirty)) && prefs.settings?.[key] !== undefined).map(key => [key, prefs.settings[key]]));
     if (Object.keys(missing).length) {
       restoring = true;
       try { await chrome.storage.local.set(missing); } finally { restoring = false; }
@@ -91,6 +92,7 @@ async function reconcile() {
     const revision = preferenceRevision;
     const settings = await chrome.storage.local.get(PREFS);
     await jsonApi("/api/settings", { method: "POST", body: { settings }, timeout: 5000 });
+    if (webChanged) await chrome.storage.local.set({ localWebSettingsRevision: prefs.webRevision });
     if (revision === preferenceRevision) await chrome.storage.local.set({ localSettingsDirty: false });
     serviceOnline = true;
   })();

@@ -6,6 +6,11 @@
   let renderer = 'chromium';
   const ready = chrome.runtime.sendMessage({ cmd: "local_ready" }).then(async result => {
     const settings = await chrome.storage?.local?.get('pdfOptions');
+    // Apply the new opt-in default once, including upgrades with the old default.
+    // Subsequent loads retain the user's explicit choice.
+    if (settings && settings.pdfOptions?.localTocOptInVersion !== 1) {
+      await chrome.storage.local.set({ pdfOptions: { ...settings.pdfOptions, toc: false, localTocOptInVersion: 1 } });
+    }
     renderer = settings?.pdfOptions?.renderer === 'pandoc' ? 'pandoc' : 'chromium';
     return result;
   });
@@ -15,7 +20,7 @@
       if (!picker.isConnected) { pickers.delete(picker); continue; }
       for (const input of picker.querySelectorAll('input')) input.checked = input.value === renderer;
       picker.querySelector('p').textContent = renderer === 'chromium'
-        ? '保留当前网页的字体、公式、配色和图表。纸张、边距和方向生效；字体、主题跟随网页。'
+        ? '保留网页样式。“目录”默认关闭，开启后在正文前增加可点击目录页；阅读器侧栏始终提供标题书签。'
         : '使用 Pandoc 重新排版。适用于未在页面中加载的消息及偏好打印版式的情况。';
     }
   }

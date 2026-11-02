@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 import uuid
 import signal
+import secrets
 from email.parser import BytesParser
 from email.policy import default as email_policy
 from urllib.parse import quote
@@ -29,6 +30,7 @@ JOBS = {}
 LOCK = threading.Lock()
 POOL = ThreadPoolExecutor(max_workers=2)
 MAX_BODY = 64 * 1024 * 1024
+WEB_TOKEN = secrets.token_urlsafe(32)
 
 
 def command(args, cwd, stdin=None):
@@ -158,8 +160,11 @@ class Handler(BaseHTTPRequestHandler):
     def allowed(self):
         host = self.headers.get("Host", "")
         origin = self.headers.get("Origin", "")
-        return host == f"127.0.0.1:{self.server.server_port}" and (
-            not origin or origin.startswith("chrome-extension://"))
+        own_origin = f"http://127.0.0.1:{self.server.server_port}"
+        trusted_origin = not origin or origin.startswith("chrome-extension://")
+        if origin == own_origin:
+            trusted_origin = self.command != "POST" or secrets.compare_digest(self.headers.get("X-Local-CSRF", ""), WEB_TOKEN)
+        return host == f"127.0.0.1:{self.server.server_port}" and trusted_origin
 
     def headers_for(self, code, mime):
         self.send_response(code)
@@ -225,7 +230,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self.reply({"errcode": -1, "errmsg": "Queue full"}, 429)
                 directory = local_state.data_dir() / "jobs" / job_id
                 directory.mkdir(parents=True)
-                JOBS[job_id] = {"status": "queued", "engine": engine, "directory": directory, "created": time.time()}
+                JOBS[job_id] = {"status": "queued", "engine": engine, "filename": pdf_layout.safe_filename(payload), "directory": directory, "created": time.time()}
                 if prepared:
                     (directory / "original.html").write_text(prepared["html"], encoding="utf-8")
                 save_job(job_id)
@@ -256,6 +261,34 @@ class Handler(BaseHTTPRequestHandler):
         if not self.allowed():
             return self.reply({"errcode": -1, "errmsg": "Origin/Host rejected"}, 403)
         path = urlsplit(self.path).path
+        assets = {"/": ("local.html", "text/html; charset=utf-8"),
+                  "/local.html": ("local.html", "text/html; charset=utf-8"),
+                  "/local.js": ("local.js", "text/javascript; charset=utf-8"),
+                  "/local.css": ("local.css", "text/css; charset=utf-8")}
+        if path in assets:
+            name, mime = assets[path]
+            data = (ROOT / name).read_bytes()
+            if name == "local.html":
+                data = data.replace(b"<head>", ('<head><meta name="local-csrf" content="' + WEB_TOKEN + '">').encode(), 1)
+            return self.binary(data, mime)
+        if path == "/api/jobs":
+            with local_state.connect() as connection:
+                keys = [row[0][4:] for row in connection.execute("SELECT key FROM settings WHERE key GLOB 'job:*'")]
+            jobs = []
+            for key in keys:
+                if not re.fullmatch(r"[a-f0-9]{32}", key):
+                    continue
+                job = find_job(key)
+                if job:
+                    item = {field: value for field, value in job.items() if field != "directory"}
+                    item["jobId"] = key
+                    if job["status"] == "done" and (job["directory"] / "document.pdf").is_file():
+                        item["downloadUrl"] = f"/api/pdf/v1/{key}/download"
+                    if (job["directory"] / "original.html").is_file():
+                        item["htmlUrl"] = f"/api/pdf/v1/{key}/html"
+                    jobs.append(item)
+            jobs.sort(key=lambda job: job.get("created", 0), reverse=True)
+            return self.reply({"errcode": 0, "items": jobs[:100], "total": len(jobs)})
         if path == "/health":
             engines = engine_health()
             return self.reply({"ok": any(item["available"] for item in engines.values()), "engine": "chromium / pandoc + xelatex", "engines": engines, "dependencies": engines["pandoc"]["dependencies"], "supportsWebDocument": True, "remoteImageFetch": False, "local": True, "version": 3})
@@ -303,6 +336,8 @@ class Handler(BaseHTTPRequestHandler):
             fallback = "original.html" if mime.startswith("text/html") else "chat.pdf"
             self.send_header("Content-Disposition", f"attachment; filename=\"{fallback}\"; filename*=UTF-8''" + quote(filename))
         self.send_header("X-Content-Type-Options", "nosniff")
+        if mime.startswith("text/html") and not filename:
+            self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)

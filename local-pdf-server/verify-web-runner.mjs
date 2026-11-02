@@ -13,7 +13,13 @@ try {
   const page = {
     emulateMedia: async options => { media = options; },
     setContent: async (html, options) => { assert(html.includes('网页原样测试')); assert.equal(options.waitUntil, 'load'); },
-    evaluate: async callback => { assert(String(callback).includes('document.fonts.ready')); return { images: 1, fonts: 2 }; },
+    evaluate: async (callback, options) => {
+      if (String(callback).includes('data-pdf-toc')) {
+        assert.equal(options.toc, spec.options.toc === true);
+        return {headings:3,tocEntries:options.toc ? 3 : 0};
+      }
+      assert(String(callback).includes('document.fonts.ready')); return { images: 1, fonts: 2 };
+    },
     pdf: async options => { printed = options; await writeFile(options.path, '%PDF-1.7\nmock'); }
   };
   const chromium = { launch: async options => {
@@ -33,6 +39,10 @@ try {
   await interceptor({ abort: async reason => { aborted = reason; } });
   assert.equal(aborted, 'blockedbyclient');
   assert.equal(printed.printBackground, true);
+  assert.equal(printed.outline,true);
+  assert.equal(printed.tagged,true);
+  assert.equal(result.headings,3);
+  assert.equal(result.tocEntries,0);
   assert.equal(printed.preferCSSPageSize, false);
   assert.equal(printed.displayHeaderFooter, false);
   assert(Math.abs(printed.scale - ((210 - 40) * 96 / 25.4) / 760) < 1e-9);
@@ -40,6 +50,8 @@ try {
   assert.equal(pdfOptions({ format: 'a4', landscape: true }, 760).scale, 1);
   assert.equal(result.networkEnabled, false);
   assert(closed);
+  spec.options.toc = true;
+  assert.equal((await render(spec, chromium)).tocEntries,3);
   closed = false;
   page.evaluate = async () => { throw new Error('Frozen image failed to load'); };
   await assert.rejects(render(spec, chromium), /Frozen image failed/);
