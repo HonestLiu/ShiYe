@@ -1,0 +1,13 @@
+**
+!local-pdf-server/
+!local-pdf-server/*.py
+!local-pdf-server/*.mjs
+!local-pdf-server/*.tex
+!local-pdf-server/package.json
+!local-pdf-server/package-lock.json
+!local-pdf-server/local.html
+!local-pdf-server/local.js
+!local-pdf-server/local.css
+# Never send user data, source extension packages, secrets or generated PDFs.
+local-pdf-server/data/
+local-pdf-server/verify*

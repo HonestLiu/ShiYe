@@ -189,13 +189,13 @@
     "message": "Chinese, Simplified"
   },
   "link_contact_support": {
-    "message": "本地服务与反馈"
+    "message": "服务与反馈"
   },
   "link_feature_request": {
     "message": "功能请求"
   },
   "link_my_account": {
-    "message": "本地账户"
+    "message": "服务设置"
   },
   "link_open_chatgpt": {
     "message": "打开 ChatGPT 网站"

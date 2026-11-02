@@ -6,6 +6,7 @@ const root = new URL('../local-extension/', import.meta.url);
 const read = name => fs.readFileSync(new URL(name, root), 'utf8');
 const manifest = JSON.parse(read('manifest.json'));
 assert.deepEqual(manifest.host_permissions, ['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*']);
+assert.deepEqual(manifest.optional_host_permissions,['http://*/*','https://*/*']);
 assert.equal(manifest.externally_connectable, undefined);
 assert.deepEqual(manifest.content_scripts[0].js, ['bridge.js', 'web-snapshot.js', 'content.js']);
 assert.equal(manifest.content_scripts.length, 1);
@@ -155,21 +156,30 @@ const requests = [];
 let offline = false;
 let webRevision = 0;
 let remotePdfOptions = { pageSize: 'a5' };
+let permissionGranted=true;
+let messageListener;
+let switchConnectionDuringRead=false;
 const background = vm.createContext({
   console, URL, Response, Request, Blob, FormData, Uint8Array, atob, btoa,
   AbortSignal, setTimeout, clearTimeout,
   fetch: async (url, options) => {
     if (offline) throw new Error('test service offline');
-    assert(String(url).startsWith('http://127.0.0.1:8765/'));
+    assert(['http://127.0.0.1:8765/','https://export.example.test/','https://cdn.openai.com/'].some(origin=>String(url).startsWith(origin)));
     requests.push([url, options]);
     if (String(url).endsWith('/api/account')) return Response.json({ errcode: 0, local: true, isPro: true, name: '本地用户', email: '' });
-    if (String(url).endsWith('/api/settings')) return Response.json({ errcode: 0, webRevision, settings: { pdfOptions: remotePdfOptions, commonOptions: { removeBrand: false } } });
+    if (String(url).endsWith('/api/settings')) {
+      if(switchConnectionDuringRead && options.method==='GET'){
+        switchConnectionDuringRead=false;stored.serverConnection={url:'http://127.0.0.1:8765',token:''};
+      }
+      return Response.json({ errcode: 0, webRevision, settings: { pdfOptions: remotePdfOptions, commonOptions: { removeBrand: false } } });
+    }
     if (String(url).includes('/api/pdf/v1')) return Response.json({ errcode: 0, jobId: 'new-job', status: 'queued' });
     if (String(url).endsWith('/api/usage')) return Response.json({ errcode: 0, hasExceed: false });
     return Response.json({ errcode: 0 });
   },
   chrome: {
-    runtime: { id: 'test-extension', onMessage: { addListener() {} }, onInstalled: { addListener() {} }, setUninstallURL: async () => {}, openOptionsPage: async () => {} },
+    permissions:{contains:async()=>permissionGranted},
+    runtime: { id: 'test-extension',getURL:path=>'chrome-extension://test-extension/'+path, onMessage: { addListener(callback) {messageListener=callback;} }, onInstalled: { addListener() {} }, setUninstallURL: async () => {}, openOptionsPage: async () => {} },
     storage: {
       local: { get: async keys => keys === null ? { ...stored } : Object.fromEntries((Array.isArray(keys) ? keys : [keys]).filter(key => key in stored).map(key => [key, stored[key]])), set: async data => Object.assign(stored, data) },
       session: { setAccessLevel: async () => {} }, onChanged: { addListener() {} }
@@ -209,6 +219,25 @@ stored.localSettingsDirty=true;stored.pdfOptions={...stored.pdfOptions,toc:true}
 await vm.runInContext('dispatch({cmd:"local_ready"})', background);
 assert.equal(stored.pdfOptions.toc,true,'Unsynced local choices must win a web/local conflict');
 assert.equal(stored.localWebSettingsRevision,2);
+await assert.rejects(vm.runInContext('dispatch({cmd:"server_config_set",payload:{url:"https://export.example.test/api",token:"test"}})',background));
+permissionGranted=false;
+await assert.rejects(vm.runInContext('dispatch({cmd:"server_config_set",payload:{url:"https://export.example.test",token:"test"}})',background));
+permissionGranted=true;
+await vm.runInContext('dispatch({cmd:"server_config_set",payload:{url:"https://export.example.test/",token:"test-private-service-token"}})',background);
+assert.equal(stored.serverConnection.url,'https://export.example.test');
+await vm.runInContext('dispatch({cmd:"local_request",payload:{path:"/health",method:"GET"}})',background);
+const remoteHealth=requests.findLast(([url])=>url==='https://export.example.test/health');
+assert(remoteHealth);
+assert.equal(remoteHealth[1].headers.Authorization,'Bearer test-private-service-token');
+assert.equal(remoteHealth[1].redirect,'error');
+assert(requests.filter(([url,options])=>url.endsWith('/api/settings') && options.method==='POST').every(([,options])=>!options.body.includes('test-private-service-token')),'Connection credentials must never enter preference backups');
+await vm.runInContext('dispatch({cmd:"snapshot_resource",url:"https://cdn.openai.com/test.woff2"})',background);
+assert.equal(requests.at(-1)[1].headers?.Authorization,undefined,'Never attach the service token to OpenAI resource downloads');
+assert.equal(messageListener({cmd:'server_config_get'},{id:'test-extension',url:'https://chatgpt.com/'},()=>{throw new Error('Credentials leaked to a content script');}),false);
+const writesBeforeSwitch=requests.filter(([url,options])=>url.endsWith('/api/settings') && options.method==='POST').length;
+switchConnectionDuringRead=true;
+await assert.rejects(vm.runInContext('reconcile()',background),/服务器连接已更改/);
+assert.equal(requests.filter(([url,options])=>url.endsWith('/api/settings') && options.method==='POST').length,writesBeforeSwitch,'Changing servers during a read must not post the old server state into the new server');
 
 // Invalid imports must not touch existing browser preferences.
 const elements = new Map();
@@ -217,13 +246,35 @@ const element = key => {
   return elements.get(key);
 };
 const writes = [];
+const connectionMessages=[],permissionRequests=[];
+let allowConnectionPermission=false;
 const dashboard = vm.createContext({
   console, URL, Blob, setTimeout,
   document: { querySelector: element, createElement: () => ({}) },
-  chrome: { runtime: { openOptionsPage() {}, sendMessage: async message => ({ status: 200, text: JSON.stringify(message.payload?.path === '/health' ? { ok: true } : { errcode: 0, items: [] }) }) }, storage: { local: { set: async value => writes.push(value) } } }
+  chrome: {
+    permissions:{request:async options=>{permissionRequests.push(options);return allowConnectionPermission;}},
+    runtime: { openOptionsPage() {}, sendMessage: async message => {
+      connectionMessages.push(message);
+      if(message.cmd==='server_config_get')return {errcode:0,url:'http://127.0.0.1:8765',token:''};
+      if(message.cmd==='server_config_set')return {errcode:0};
+      return { status: 200, text: JSON.stringify(message.payload?.path === '/health' ? { ok: true } : { errcode: 0, items: [] }) };
+    } }, storage: { local: { get:async()=>({}),set: async value => writes.push(value) } }
+  }
 });
 await vm.runInContext(read('local.js'), dashboard);
 await element('#import').handlers.change({ target: { files: [{ size: 20, text: async () => '{"settings":{"pdfOptions":"bad"}}' }] } });
 assert.equal(writes.length, 0);
 assert(element('#settings-result').textContent.includes('必须是对象'));
+element('#server-url').value='https://export.example.test';element('#server-token').value='test-service-token';
+const denied=element('#connection-form').handlers.submit({preventDefault(){},currentTarget:element('#connection-form')});
+assert.equal(permissionRequests.length,1,'Host permission must be requested synchronously during the submit gesture');
+await denied;
+assert.equal(connectionMessages.filter(message=>message.cmd==='server_config_set').length,0);
+assert(element('#connection-result').textContent.includes('未授予'));
+allowConnectionPermission=true;
+element('#server-url').value='https://export.example.test';element('#server-token').value='test-service-token';
+await element('#connection-form').handlers.submit({preventDefault(){},currentTarget:element('#connection-form')});
+const connectionSave=connectionMessages.findLast(message=>message.cmd==='server_config_set');
+assert.equal(connectionSave.payload.url,'https://export.example.test');
+assert.equal(connectionSave.payload.token,'test-service-token');
 console.log('PASS: package syntax, restored PDF dialog, local relay/images, UTF-8 and base64 SVG data URLs rasterized/uploaded with viewBox dimensions, selected Markdown, telemetry fence, identity/preferences, offline recovery and dirty sync, invalid import preserves settings, API commands and path rejection.');

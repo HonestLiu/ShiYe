@@ -189,13 +189,13 @@
     "message": "Korean"
   },
   "link_contact_support": {
-    "message": "Local service & feedback"
+    "message": "Service & feedback"
   },
   "link_feature_request": {
     "message": "기능 요청"
   },
   "link_my_account": {
-    "message": "Local account"
+    "message": "Service settings"
   },
   "link_open_chatgpt": {
     "message": "ChatGPT 웹사이트 열기"

@@ -68,7 +68,7 @@ def main():
             raise RuntimeError('Unable to insert bridge into ' + name)
         path.write_text(html)
     manifest = json.loads((stage / 'manifest.json').read_text())
-    manifest.update(name='ChatGPT Exporter - Local Service', description='Export conversations with local PDF, images, profile, settings and feedback.', version_name='6.13.2 Local Service 3.4 (Web admin)', host_permissions=['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*'])
+    manifest.update(name='ChatGPT Exporter - Self-hosted', description='Export conversations using your local or self-hosted PDF service.', version_name='6.13.2 Service 4.0 (Linux / Docker)', host_permissions=['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*'], optional_host_permissions=['http://*/*','https://*/*'])
     manifest['content_scripts'] = [item for item in manifest['content_scripts'] if 'content.js' in item['js']]
     manifest['content_scripts'][0]['js'] = ['bridge.js', 'web-snapshot.js', 'content.js']
     for key in ['externally_connectable', 'key', 'update_url']:
@@ -81,7 +81,7 @@ def main():
     for path in (stage / '_locales').glob('*/messages.json'):
         data = json.loads(path.read_text())
         chinese = path.parent.name.startswith('zh')
-        for key, message in {'link_my_account': '本地账户' if chinese else 'Local account', 'link_contact_support': '本地服务与反馈' if chinese else 'Local service & feedback'}.items():
+        for key, message in {'link_my_account': '服务设置' if chinese else 'Service settings', 'link_contact_support': '服务与反馈' if chinese else 'Service & feedback'}.items():
             if key in data:
                 data[key]['message'] = message
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2))

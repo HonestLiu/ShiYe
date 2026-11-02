@@ -1,10 +1,12 @@
 /* Isolated-world transport: content scripts never fetch HTTP loopback directly. */
 (() => {
-  const BASE = "http://127.0.0.1:8765";
+  const DEFAULT_BASE = "http://127.0.0.1:8765";
+  let BASE = DEFAULT_BASE;
   const originalFetch = globalThis.fetch.bind(globalThis);
   const blocked = url => /(^|\.)(chatgptexporter\.com|posthog\.com|amplitude\.com|sentry\.io)$/i.test(url.hostname);
   let renderer = 'chromium';
   const ready = chrome.runtime.sendMessage({ cmd: "local_ready" }).then(async result => {
+    BASE = result.baseUrl || DEFAULT_BASE;
     const settings = await chrome.storage?.local?.get('pdfOptions');
     // Apply the new opt-in default once, including upgrades with the old default.
     // Subsequent loads retain the user's explicit choice.
@@ -25,6 +27,7 @@
     }
   }
   if (chrome.storage?.onChanged) chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.serverConnection) BASE = changes.serverConnection.newValue?.url || DEFAULT_BASE;
     if (area === 'local' && changes.pdfOptions) {
       renderer = changes.pdfOptions.newValue?.renderer === 'pandoc' ? 'pandoc' : 'chromium';
       updatePickers();
@@ -56,6 +59,10 @@
     const detail = document.createElement('p');
     detail.style.cssText = 'margin:6px 0 0;opacity:.75;font-size:12px';
     fieldset.append(detail);
+    const connectionLink=document.createElement('a');
+    connectionLink.href=chrome.runtime.getURL('local.html#server-config');connectionLink.target='_blank';connectionLink.rel='noopener';
+    connectionLink.addEventListener('click',event=>{event.preventDefault();chrome.runtime.sendMessage({cmd:'open_service_settings'}).catch(error=>console.info(error.message));});
+    connectionLink.textContent='配置服务器连接';fieldset.append(connectionLink);
     container.append(fieldset);
     pickers.add(fieldset);
     updatePickers();
@@ -114,7 +121,7 @@
 
   globalThis.fetch = async (input, options = {}) => {
     const url = new URL(typeof input === "string" || input instanceof URL ? input : input.url, globalThis.location?.href);
-    if (url.origin === BASE) {
+    if (url.origin === BASE || url.origin === DEFAULT_BASE) {
       await ready;
       let body = options.body;
       let uploadData;
@@ -330,8 +337,10 @@
     const engine = payload.options?.renderer || renderer;
     if (engine === 'chromium') {
       if (!globalThis.LocalWebSnapshot) throw new Error('网页原貌模块尚未加载，请重新加载扩展并刷新聊天页。');
-      const health = await (await fetch(BASE + '/health')).json();
-      if (!health.engines?.chromium) throw new Error('请停止旧版本本地服务，再运行 start.command 启动新版服务。');
+      const response = await fetch(BASE + '/health');
+      const health = await response.json();
+      if(!response.ok)throw new Error(health.errmsg || '无法连接导出服务，请检查服务器地址和访问令牌。');
+      if (!health.engines?.chromium) throw new Error('所连接的服务版本过旧，请更新服务器后重试。');
       const webDocument = await LocalWebSnapshot.capture(payload);
       const result = await chrome.runtime.sendMessage({ cmd: 'pdf', payload: { cmd: 'create', payload: { ...payload, engine, webDocument } } });
       if (result.jobId && chrome.storage?.local) await chrome.storage.local.set({ lastWebPdfJob: { jobId: result.jobId, htmlUrl: result.htmlUrl, createdAt: Date.now() } });

@@ -1,6 +1,8 @@
 """Opaque local image storage and job-local copies, never remote URL fetching."""
 import base64
 import hashlib
+import io
+import os
 from pathlib import Path
 import re
 import shutil
@@ -30,14 +32,28 @@ def store(data):
         raise ValueError("Image must be 1 byte to 16 MiB")
     extension, mime = identify(data)
     if extension in ("gif", "webp"):
-        with tempfile.TemporaryDirectory(prefix="local-image-") as directory:
-            source = Path(directory) / ("source." + extension)
-            destination = Path(directory) / "image.png"
-            source.write_bytes(data)
-            result = subprocess.run(["/usr/bin/sips", "-s", "format", "png", str(source), "--out", str(destination)], capture_output=True, timeout=30)
-            if result.returncode or not destination.exists():
-                raise ValueError("This macOS installation cannot convert the supplied image; use PNG or JPEG")
-            data = destination.read_bytes()
+        try:
+            from PIL import Image
+        except ImportError:
+            if not Path("/usr/bin/sips").is_file():
+                raise ValueError("GIF/WebP conversion requires Pillow; install python3-pil or use PNG/JPEG")
+            with tempfile.TemporaryDirectory(prefix="local-image-") as directory:
+                source = Path(directory) / ("source." + extension)
+                destination = Path(directory) / "image.png"
+                source.write_bytes(data)
+                result = subprocess.run(["/usr/bin/sips", "-s", "format", "png", str(source), "--out", str(destination)], capture_output=True, timeout=30)
+                if result.returncode or not destination.exists():
+                    raise ValueError("Could not convert the supplied image; use PNG or JPEG")
+                data = destination.read_bytes()
+        else:
+            try:
+                with Image.open(io.BytesIO(data)) as image:
+                    image.seek(0)
+                    output = io.BytesIO()
+                    image.convert("RGBA").save(output, format="PNG")
+                    data = output.getvalue()
+            except Exception as error:
+                raise ValueError("Could not decode GIF/WebP image") from error
         extension, mime = "png", "image/png"
     digest = hashlib.sha256(data).hexdigest()
     name = f"{digest}.{extension}"
@@ -70,7 +86,11 @@ def resolve_for_job(url, directory):
         source = owned_path(name)
     else:
         parsed = urlsplit(url)
-        if parsed.scheme != "http" or parsed.hostname != "127.0.0.1" or not parsed.path.startswith("/api/file/"):
+        public = urlsplit(os.environ.get("LOCAL_EXPORT_PUBLIC_URL", ""))
+        local = parsed.scheme == "http" and parsed.hostname in ("127.0.0.1", "localhost")
+        configured = bool(public.netloc) and (parsed.scheme, parsed.netloc.lower()) == (public.scheme, public.netloc.lower())
+        relative = not parsed.scheme and not parsed.netloc
+        if not (local or configured or relative) or not parsed.path.startswith("/api/file/"):
             return None
         source = owned_path(parsed.path.removeprefix("/api/file/"))
     if source is None:

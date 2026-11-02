@@ -1,0 +1,21 @@
+services:
+  exporter:
+    image: ${EXPORTER_IMAGE:-ghcr.io/honestliu/chatgpt-exporter-server:latest}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 180s
+    ports:
+      - "${EXPORTER_BIND_IP:-127.0.0.1}:${EXPORTER_PORT:-8765}:8765"
+    environment:
+      LOCAL_EXPORT_PUBLIC_URL: ${LOCAL_EXPORT_PUBLIC_URL:?Set the public server URL in .env}
+      LOCAL_EXPORT_API_TOKEN: ${LOCAL_EXPORT_API_TOKEN:?Set an access token in .env}
+    volumes:
+      - exporter-data:/data
+    shm_size: 1gb
+    security_opt:
+      - seccomp=./deploy/chromium-seccomp.json
+    cap_drop:
+      - ALL
+
+volumes:
+  exporter-data:

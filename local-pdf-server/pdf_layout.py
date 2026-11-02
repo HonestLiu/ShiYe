@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 import re
 import unicodedata
+import sys
 
 
 def text(value):
@@ -148,11 +149,11 @@ def arguments(options, directory, header):
         additional.append("\\AtBeginDocument{\\hypersetup{pdflang={" + language + "}}}")
     family = options.get("fontFamily", "default")
     if family == "serif":
-        additional.append("\\setmainfont[Path=/System/Library/Fonts/Supplemental/,FontIndex=6,BoldFont=Songti.ttc,BoldFeatures={FontIndex=1}]{Songti.ttc}")
+        additional.append("\\setmainfont[Path=/System/Library/Fonts/Supplemental/,FontIndex=6,BoldFont=Songti.ttc,BoldFeatures={FontIndex=1}]{Songti.ttc}" if sys.platform == "darwin" else "\\setmainfont{Noto Serif CJK SC}")
     elif family == "mono":
         # STHeiti supplies CJK glyphs; LetterSpace gives the local mono variant
         # a wider text rhythm without relying on unavailable CJK TeX packages.
-        additional.append("\\setmainfont[Path=/System/Library/Fonts/,LetterSpace=4]{STHeiti Light.ttc}")
+        additional.append("\\setmainfont[Path=/System/Library/Fonts/,LetterSpace=4]{STHeiti Light.ttc}" if sys.platform == "darwin" else "\\setmainfont{Noto Sans Mono CJK SC}")
     if options.get("removePageNumber"):
         additional.append("\\AtBeginDocument{\\pagestyle{empty}}")
     if options.get("darkMode"):

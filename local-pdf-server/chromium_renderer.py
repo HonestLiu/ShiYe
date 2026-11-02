@@ -26,7 +26,7 @@ def availability():
     executable = configured if configured and Path(configured).is_file() else None
     if not configured:
         executable = next((path for path in EXECUTABLES if Path(path).is_file()), None)
-        executable = executable or shutil.which("chromium") or shutil.which("google-chrome")
+        executable = executable or shutil.which("chromium") or shutil.which("chromium-browser") or shutil.which("google-chrome")
     module = Path(os.environ.get("LOCAL_EXPORT_PLAYWRIGHT_MODULE", DEFAULT_MODULE)).expanduser()
     node = os.environ.get("LOCAL_EXPORT_NODE") or shutil.which("node")
     problems = []

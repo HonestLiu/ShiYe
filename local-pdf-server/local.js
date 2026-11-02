@@ -2,14 +2,15 @@ const $ = selector => document.querySelector(selector);
 const PREFS = ["commonOptions", "pdfOptions", "userInfo", "exportType", "selectType"];
 const inExtension = typeof globalThis.chrome?.runtime?.sendMessage === 'function';
 const csrf = document.querySelector('meta[name="local-csrf"]')?.content || '';
+let serverBase = inExtension ? 'http://127.0.0.1:8765' : location.origin;
 
-async function api(path, body) {
+async function api(path, body, loginToken) {
   if (!inExtension) {
     const response = await fetch(path, { method: body === undefined ? 'GET' : 'POST',
-      headers: body === undefined ? {} : { 'Content-Type': 'application/json', 'X-Local-CSRF': csrf },
+      headers: { ...(body === undefined ? {} : { 'Content-Type': 'application/json', 'X-Local-CSRF': csrf }), ...(loginToken ? {Authorization:'Bearer '+loginToken} : {}) },
       body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(30000) });
     const data = await response.json();
-    if (!response.ok || data.errcode) throw new Error(data.errmsg || '本地服务出错');
+    if (!response.ok || data.errcode) throw Object.assign(new Error(data.errmsg || '服务出错'),{requiresAuth:data.requiresAuth});
     return data;
   }
   const response = await chrome.runtime.sendMessage({ cmd: "local_request", payload: { path, method: body === undefined ? "GET" : "POST", body } });
@@ -50,7 +51,9 @@ async function loadJobs() {
     for (const [field, label, suffix] of [['downloadUrl','下载 PDF','download'],['htmlUrl','下载快照','html']]) {
       if (!job[field] || !/^[a-f0-9]{32}$/.test(job.jobId)) continue;
       const link=document.createElement('a');
-      link.href=(inExtension ? 'http://127.0.0.1:8765' : '')+'/api/pdf/v1/'+job.jobId+'/'+suffix;
+      const target = new URL(job[field],serverBase);
+      if(target.origin !== serverBase || target.pathname !== '/api/pdf/v1/'+job.jobId+'/'+suffix)continue;
+      link.href=target.href;
       link.textContent=label;actions.append(link);
     }
     row.append(title,date,state,actions);list.append(row);
@@ -75,13 +78,22 @@ async function loadFeedback() {
 async function refresh() {
   $("#status").textContent = "正在检查连接…";
   try {
+    if(inExtension){
+      const service=await chrome.runtime.sendMessage({cmd:'server_config_get'});
+      if(service.errcode)throw new Error(service.errmsg);
+      serverBase=service.url || 'http://127.0.0.1:8765';
+      $('#server-url').value=serverBase;$('#server-token').value=service.token || '';
+    }
     const [health, account, usage, config] = await Promise.all([
       api("/health"), api("/api/account", { cmd: "getinfo" }), api("/api/usage", { cmd: "get" }), api("/api/config/v3")
     ]);
-    $("#status").textContent = health.ok ? "已连接 · PDF 与图片由本机处理" : "已连接 · PDF 引擎尚未就绪，请检查下方依赖状态。";
+    $('#login-section').hidden=true;$('#admin-content').hidden=false;
+    $('#logout').hidden=inExtension || !health.authenticationRequired;
+    $('#service-address').textContent='服务地址：'+serverBase;
+    $("#status").textContent = health.ok ? "已连接 · "+serverBase : "已连接 · PDF 引擎尚未就绪，请检查下方依赖状态。";
     $("#name").value = account.name || "本地用户";
     $("#email").value = account.email || "";
-    $("#usage").textContent = "本机导出用量：" + JSON.stringify(usage.counts || usage.usage || {});
+    $("#usage").textContent = "服务导出用量：" + JSON.stringify(usage.counts || usage.usage || {});
     $("#selectors").value = JSON.stringify(config.selectors || {}, null, 2);
     const chromium = health.engines?.chromium;
     $("#engine-status").textContent = chromium?.available
@@ -93,12 +105,15 @@ async function refresh() {
     if (choice) choice.checked = true;
     $('#default-toc').checked = stored.pdfOptions?.toc === true;
     const snapshot = stored.lastWebPdfJob;
-    if (snapshot?.htmlUrl?.startsWith('http://127.0.0.1:8765/api/pdf/v1/')) {
+    if (snapshot?.htmlUrl?.startsWith(serverBase+'/api/pdf/v1/')) {
       $('#last-snapshot').href = snapshot.htmlUrl;
       $('#last-snapshot').hidden = false;
     }
     await Promise.all([loadFeedback(),loadJobs()]);
-  } catch (error) { $("#status").textContent = error.message + " 请启动 local-pdf-server/start.command，然后重新检查连接。"; }
+  } catch (error) {
+    if(error.requiresAuth && !inExtension){$('#login-section').hidden=false;$('#admin-content').hidden=true;}
+    $("#status").textContent = error.message + (inExtension ? ' 请检查下方服务器连接配置。' : ' 请检查服务状态或登录后重试。');
+  }
 }
 
 function form(selector, resultSelector, action) {
@@ -106,7 +121,7 @@ function form(selector, resultSelector, action) {
     event.preventDefault();
     const button = event.currentTarget.querySelector('button[type="submit"]');
     button.disabled = true;
-    try { $(resultSelector).textContent = (await action()) || "已保存到本机。"; }
+    try { $(resultSelector).textContent = (await action()) || "已保存。"; }
     catch (error) { $(resultSelector).textContent = error.message; }
     finally { button.disabled = false; }
   });
@@ -136,7 +151,25 @@ form('#renderer-form', '#renderer-result', async () => {
 });
 $("#refresh").addEventListener("click", refresh);
 $('#options').hidden = !inExtension;
+$('#server-config').hidden = !inExtension;
+$('#connection-nav').hidden = !inExtension;
 $("#options").addEventListener("click", () => chrome.runtime.openOptionsPage());
+form('#connection-form','#connection-result',async()=>{
+  const url=new URL($('#server-url').value.trim());
+  if(!['http:','https:'].includes(url.protocol) || url.username || url.password || !['','/'].includes(url.pathname) || url.search || url.hash)throw new Error('请填写不含路径、凭据或查询参数的 HTTP(S) 服务地址');
+  // Request before the first await so the browser retains the user's gesture.
+  const granted=await chrome.permissions.request({origins:[url.origin+'/*']});
+  if(!granted)throw new Error('未授予该服务器的访问权限，连接配置未更改');
+  const result=await chrome.runtime.sendMessage({cmd:'server_config_set',payload:{url:url.origin,token:$('#server-token').value}});
+  if(result.errcode)throw new Error(result.errmsg);
+  refresh();return '连接配置已保存。请刷新 ChatGPT 页面。';
+});
+form('#login-form','#login-result',async()=>{
+  await api('/api/session',{},$('#login-token').value.trim());$('#login-token').value='';await refresh();return '已登录。';
+});
+$('#logout').addEventListener('click',async()=>{
+  try{await api('/api/logout',{});await refresh();}catch(error){$('#status').textContent=error.message;}
+});
 $("#backup").addEventListener("click", async () => {
   try {
     const settings = await preferences();

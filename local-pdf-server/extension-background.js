@@ -1,5 +1,5 @@
 /* Local service worker: no developer backend or telemetry; allowlisted OpenAI assets only. */
-const BASE = "http://127.0.0.1:8765";
+const DEFAULT_BASE = "http://127.0.0.1:8765";
 const PREFS = ["commonOptions", "pdfOptions", "userInfo", "exportType", "selectType"];
 let restoring = false;
 let syncTimer;
@@ -8,14 +8,30 @@ let reconciliation;
 let serviceOnline = false;
 let preferenceRevision = 0;
 
-function validPath(path) {
-  return typeof path === "string" && /^\/(?:health$|api\/)/.test(path) &&
-    new URL(path, BASE).origin === BASE && !path.includes("..");
+function normalizeServerUrl(value) {
+  const url = new URL(value);
+  if (!['http:','https:'].includes(url.protocol) || url.username || url.password || !['','/'].includes(url.pathname) || url.search || url.hash) throw new Error('服务器地址必须是 HTTP(S) 域名或 IP，不能包含路径、凭据或查询参数');
+  return url.origin;
 }
 
-async function api(path, { method = "GET", body, upload, timeout = 180000 } = {}) {
-  if (!validPath(path) || !["GET", "POST"].includes(method)) throw new Error("Unsupported local API request");
+async function connection() {
+  const stored = await chrome.storage.local.get('serverConnection');
+  return { url: normalizeServerUrl(stored.serverConnection?.url || DEFAULT_BASE), token: stored.serverConnection?.token || '' };
+}
+
+function sameConnection(left,right) { return left.url === right.url && left.token === right.token; }
+
+function validPath(path, base) {
+  return typeof path === "string" && /^\/(?:health$|api\/)/.test(path) &&
+    new URL(path, base).origin === base && !path.includes("..");
+}
+
+async function api(path, { method = "GET", body, upload, timeout = 180000, expectedConnection } = {}) {
+  const service = await connection();
+  if(expectedConnection && !sameConnection(service,expectedConnection))throw new Error('服务器连接已更改，请重试同步');
+  if (!validPath(path, service.url) || !["GET", "POST"].includes(method)) throw new Error("Unsupported service API request");
   const headers = {};
+  if (service.token) headers.Authorization = 'Bearer ' + service.token;
   let content;
   if (upload) {
     if (typeof upload.base64 !== "string" || upload.base64.length > 24 * 1024 * 1024) throw new Error("Image exceeds local upload limit");
@@ -26,7 +42,7 @@ async function api(path, { method = "GET", body, upload, timeout = 180000 } = {}
     headers["Content-Type"] = "application/json";
     content = typeof body === "string" ? body : JSON.stringify(body);
   }
-  const response = await fetch(BASE + path, { method, headers, body: content, signal: AbortSignal.timeout(timeout) });
+  const response = await fetch(service.url + path, { method, headers, body: content, credentials:'omit', redirect:'error', signal: AbortSignal.timeout(timeout) });
   const mime = response.headers.get("content-type") || "application/json";
   if (mime.startsWith("image/") || mime === "application/pdf") {
     const bytes = new Uint8Array(await response.arrayBuffer());
@@ -77,10 +93,12 @@ async function initialize() {
 async function reconcile() {
   if (reconciliation) return reconciliation;
   reconciliation = (async () => {
+    const expectedConnection=await connection();
     const [account, prefs] = await Promise.all([
-      jsonApi("/api/account", { method: "POST", body: { cmd: "getinfo" }, timeout: 5000 }),
-      jsonApi("/api/settings", { timeout: 5000 })
+      jsonApi("/api/account", { method: "POST", body: { cmd: "getinfo" }, timeout: 5000, expectedConnection }),
+      jsonApi("/api/settings", { timeout: 5000, expectedConnection })
     ]);
+    if(!sameConnection(await connection(),expectedConnection))throw new Error('服务器连接已更改，请重试同步');
     const stored = await chrome.storage.local.get(null);
     await cacheAccount(account);
     const webChanged = (prefs.webRevision || 0) > (stored.localWebSettingsRevision || 0);
@@ -91,7 +109,8 @@ async function reconcile() {
     }
     const revision = preferenceRevision;
     const settings = await chrome.storage.local.get(PREFS);
-    await jsonApi("/api/settings", { method: "POST", body: { settings }, timeout: 5000 });
+    await jsonApi("/api/settings", { method: "POST", body: { settings }, timeout: 5000, expectedConnection });
+    if(!sameConnection(await connection(),expectedConnection))throw new Error('服务器连接已更改，请重试同步');
     if (webChanged) await chrome.storage.local.set({ localWebSettingsRevision: prefs.webRevision });
     if (revision === preferenceRevision) await chrome.storage.local.set({ localSettingsDirty: false });
     serviceOnline = true;
@@ -103,9 +122,19 @@ async function reconcile() {
 
 async function route(message) {
   switch (message.cmd) {
-    case "local_ready": return { errcode: 0, local: true };
+    case "local_ready": return { errcode: 0, local: true, baseUrl: (await connection()).url };
+    case "server_config_get": return { errcode: 0, ...(await connection()) };
+    case "server_config_set": {
+      const url = normalizeServerUrl(message.payload?.url);
+      const token = String(message.payload?.token || '').trim();
+      if (token.length > 1024 || /[^\x21-\x7e]/.test(token)) throw new Error('访问令牌仅支持可打印 ASCII 字符，最长 1024 字符');
+      if (url !== DEFAULT_BASE && !await chrome.permissions.contains({origins:[url+'/*']})) throw new Error('请先允许访问该服务器地址');
+      await chrome.storage.local.set({serverConnection:{url,token},localWebSettingsRevision:0,lastWebPdfJob:null});
+      serviceOnline=false;
+      return {errcode:0,url};
+    }
     case "snapshot_resource": return snapshotResource(message.url);
-    case "local_request": return api(message.payload.path, message.payload);
+    case "local_request": return api(message.payload.path, {...message.payload,...(message.payload.path === '/health' ? {timeout:10000} : {})});
     case "account": {
       const result = await jsonApi("/api/account", { method: "POST", body: message.payload });
       await cacheAccount(result);
@@ -120,6 +149,7 @@ async function route(message) {
         : jsonApi("/api/pdf/v1", { method: "POST", body: { cmd: "create", payload: payload.payload } });
     }
     case "open_options_page": await chrome.runtime.openOptionsPage(); return { errcode: 0 };
+    case "open_service_settings": await chrome.tabs.create({url:chrome.runtime.getURL('local.html#server-config')});return {errcode:0};
     default: throw new Error("Unknown local extension command");
   }
 }
@@ -131,7 +161,7 @@ async function dispatch(message) {
   try { result = await route(message); }
   catch (error) { serviceOnline = false; throw error; }
   const stored = await chrome.storage.local.get("localSettingsDirty");
-  if (message.cmd !== "open_options_page" && (message.cmd === "local_ready" || !serviceOnline || stored.localSettingsDirty)) {
+  if (!['open_options_page','open_service_settings','server_config_get','server_config_set'].includes(message.cmd) && (message.cmd === "local_ready" || !serviceOnline || stored.localSettingsDirty)) {
     try { await reconcile(); }
     catch (error) { console.info("Existing browser settings retained; retry on next connection:", error.message); }
   }
@@ -140,7 +170,8 @@ async function dispatch(message) {
 
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (sender.id && sender.id !== chrome.runtime.id) return false;
-  dispatch(message).then(respond, error => respond({ errcode: -2, errmsg: `本地服务连接失败：${error.message}。请启动 local-pdf-server/start.command。` }));
+  if (['server_config_get','server_config_set'].includes(message.cmd) && !sender.url?.startsWith(chrome.runtime.getURL(''))) return false;
+  dispatch(message).then(respond, error => respond({ errcode: -2, errmsg: `服务连接失败：${error.message}。请检查服务器地址、访问令牌和服务状态。` }));
   return true;
 });
 

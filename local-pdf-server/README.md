@@ -1,5 +1,7 @@
 # ChatGPT Exporter 本地服务版
 
+> 当前版本已支持 Linux、Docker 和独立服务器。安装入口见[根目录 README](../README.md)，远程部署及访问令牌配置见 [Linux / Docker 指南](../deploy/README.md)。本文件同时保留较早版本的实现与修复记录。
+
 在原版 `6.13.2_0` 的基础上构建独立副本 `local-extension`，原版文件保持不变。PDF、图片、账号状态、用量、配置、设置备份与反馈均使用本机服务；Markdown、TXT、CSV、JSON 和剪贴板继续由浏览器生成。无需原开发商的服务器、登录或订阅。
 
 网页原貌模式使用本机 Python 3、Node.js、现有 Chrome/Chromium 和 playwright-core。当前机器已找到 Node、Google Chrome 和已有的 playwright-core 1.58.2，无需重新下载浏览器。Pandoc 模式使用 Pandoc 3.13、XeLaTeX 和 macOS 系统字体。
@@ -45,7 +47,7 @@ node local-pdf-server/verify-heading-navigation.mjs
 
 ### 升级步骤
 
-1. 停止旧服务，再双击 start.command 启动新版；健康接口应返回 version:3 和 supportsWebDocument:true。
+1. 停止旧服务，再双击 start.command 启动新版；健康接口应返回 version:4 和 supportsWebDocument:true。
 2. 在扩展管理页重新加载同一个 local-extension 目录；浏览器如提示静态资源访问权限，按提示启用更新后的扩展。
 3. 刷新 ChatGPT 页面，选中消息，打开 PDF 对话框，选择“网页原貌（推荐）”。
 
@@ -99,7 +101,7 @@ cd /Users/lc/Develop/ChromeExt/ilmdofdhpnhffldihboadndccenlnfll
 curl http://127.0.0.1:8765/health
 ```
 
-新版健康检查应包含 `version: 2`。若仍在运行第一版服务，先停止旧进程再启动新版。
+新版健康检查包含 `version: 4`。启用访问令牌时需携带 Bearer 令牌或 Web 登录会话。
 
 ## 功能对应
 
@@ -133,11 +135,11 @@ SVG 修复版（Local Service 2.1）：UTF-8 百分号编码和 Base64 的 SVG d
 
 服务端不下载远程资源，不读取聊天引用的任意本地文件。聊天和图片来自浏览器当前可访问的内容，所以读取未加载消息、附件和图片仍需连接 ChatGPT；可选的外部文档/评价等链接仍可能由用户主动打开。扩展额外主机权限用于本机 API 和 OpenAI 的静态字体/图片资源；移除了开发商网站的脚本和外部消息连接。
 
-服务只接受扩展 Origin 或没有 Origin 的本机工具请求，拒绝普通网页 Origin，并校验 Host。内容脚本通过扩展后台转发到本机，避免从 HTTPS 聊天页面直接请求 HTTP 本机服务。它用于个人本机使用，不应直接暴露到公网。
+服务校验 Host，接受扩展 Origin、无 Origin 的工具请求，以及配置的服务自身 Origin。Web 写操作需要 CSRF 令牌。远程监听需要公开 URL 和访问令牌；扩展通过后台转发至用户配置的服务器。远程实例的全部记录属于同一个信任域，部署配置见 Linux / Docker 指南。
 
 ## 兼容性范围
 
-这是以 Pandoc 重新实现的本地版，不能承诺与原服务器逐像素一致。复杂交互组件、任意字体、emoji、超宽表格和极长代码行仍可能需要调整。Mono 是中文字体的近似排版；GIF 只取静态帧。无法读取的图片会显示说明，不阻止文字导出。语言选项设置 PDF 语言元数据，不翻译聊天内容或安装缺失字体。
+默认使用 Chromium 网页原貌模式，同时保留 Pandoc 排版，不能承诺与原服务器逐像素一致。复杂交互组件、任意字体、emoji、超宽表格和极长代码行仍可能需要调整。Pandoc 的 Mono 是中文字体的近似排版；GIF 只取静态帧。语言选项设置 PDF 语言元数据，不翻译聊天内容或安装缺失字体。
 
 服务接收结构化 `messages`、`markdown` 或 `localMarkdown`；不是原服务器复杂 `contents`/HTML 渲染引擎的直接复刻。配套副本复用原转换器，转换后再交给本机服务。
 
@@ -188,4 +190,4 @@ node local-pdf-server/verify-extension.mjs
 
 样例位于 `output/pdf/local-export-demo.pdf` 与 `output/pdf/local-layout-demo.pdf`，排版示例已逐页检查。
 
-当前执行环境不能监听本机端口，浏览器控制连接也不可用，因此新版尚未完成真实浏览器从点击到下载的整条验证。完成代码测试不等于已经验证全部站点页面、每种聊天组件和每项浏览器交互；请按升级步骤重新启动服务和加载副本。
+Web 后台已经使用真实 HTTP 服务和 Chromium 验证表单、PDF/快照下载及重启恢复。验证脚本输出区分 mock 边界检查与真实渲染；通过这些检查不代表覆盖所有 ChatGPT 页面、交互组件和浏览器环境。

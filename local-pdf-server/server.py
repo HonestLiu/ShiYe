@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Loopback-only Pandoc/XeLaTeX PDF jobs. Python standard library only."""
+"""Local or authenticated self-hosted PDF service. Python standard library HTTP."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -19,11 +19,13 @@ import secrets
 from email.parser import BytesParser
 from email.policy import default as email_policy
 from urllib.parse import quote
+from http.cookies import SimpleCookie, CookieError
 
 import local_images
 import local_state
 import pdf_layout
 import chromium_renderer
+import server_security
 
 ROOT = Path(__file__).resolve().parent
 JOBS = {}
@@ -157,14 +159,50 @@ def generate(job_id, payload, prepared=None):
 
 
 class Handler(BaseHTTPRequestHandler):
+    def public_origin(self):
+        configured = getattr(self.server, "public_url", "")
+        if configured:
+            return configured
+        host = self.headers.get('Host', '').lower()
+        if host in {f'localhost:{self.server.server_port}', f'127.0.0.1:{self.server.server_port}'}:
+            return 'http://' + host
+        return f"http://127.0.0.1:{self.server.server_port}"
+
+    def resource_url(self, path):
+        return self.public_origin() + server_security.signed_path(path, getattr(self.server, "api_token", ""))
+
     def allowed(self):
         host = self.headers.get("Host", "")
         origin = self.headers.get("Origin", "")
-        own_origin = f"http://127.0.0.1:{self.server.server_port}"
+        own_origin = self.public_origin()
+        local_origins = {f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"}
+        hosts = {urlsplit(value).netloc for value in local_origins | {own_origin}}
         trusted_origin = not origin or origin.startswith("chrome-extension://")
-        if origin == own_origin:
-            trusted_origin = self.command != "POST" or secrets.compare_digest(self.headers.get("X-Local-CSRF", ""), WEB_TOKEN)
-        return host == f"127.0.0.1:{self.server.server_port}" and trusted_origin
+        if origin in local_origins | {own_origin}:
+            trusted_origin = self.command != "POST" or secrets.compare_digest(self.headers.get("X-Local-CSRF", "").encode(), WEB_TOKEN.encode())
+        return host.lower() in hosts and trusted_origin
+
+    def authenticated(self):
+        token = getattr(self.server, "api_token", "")
+        if not token:
+            return True
+        if secrets.compare_digest(self.headers.get("Authorization", "").encode(), ("Bearer " + token).encode()):
+            return True
+        cookie = SimpleCookie()
+        try:
+            cookie.load(self.headers.get("Cookie", ""))
+            value = cookie.get("export_session")
+            if value and server_security.valid_session(token, value.value):
+                return True
+        except (ValueError, TypeError, CookieError):
+            pass
+        return self.command == "GET" and server_security.valid_download(self.path, token)
+
+    def require_auth(self):
+        if self.authenticated():
+            return True
+        self.reply({"errcode": -3, "errmsg": "请登录服务或检查访问令牌", "requiresAuth": True}, 401)
+        return False
 
     def headers_for(self, code, mime):
         self.send_response(code)
@@ -175,12 +213,14 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Local-CSRF")
         self.send_header("Access-Control-Allow-Private-Network", "true")
 
-    def reply(self, data, code=200):
+    def reply(self, data, code=200, extra_headers=None):
         body = json.dumps(data, ensure_ascii=False).encode()
         self.headers_for(code, "application/json; charset=utf-8")
+        for key, value in (extra_headers or {}).items():
+            self.send_header(key, value)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -193,6 +233,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.allowed():
             return self.reply({"errcode": -1, "errmsg": "Origin/Host rejected"}, 403)
+        if not self.require_auth():
+            return
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if not 0 < length <= MAX_BODY:
@@ -205,6 +247,13 @@ class Handler(BaseHTTPRequestHandler):
             request = json.loads(data)
             if not isinstance(request, dict):
                 raise ValueError("JSON body must be an object")
+            if self.path in ("/api/session", "/api/logout"):
+                token = getattr(self.server, "api_token", "")
+                value = server_security.session_cookie(token) if token and self.path == "/api/session" else ""
+                cookie = "export_session=" + value + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=" + ("43200" if value else "0")
+                if self.public_origin().startswith("https:"):
+                    cookie += "; Secure"
+                return self.reply({"errcode": 0}, extra_headers={"Set-Cookie": cookie})
             routes = {"/api/account": local_state.account, "/api/usage": local_state.usage,
                       "/api/config/v3": local_state.config, "/api/feedback/v1": local_state.feedback,
                       "/api/settings": local_state.settings}
@@ -237,7 +286,7 @@ class Handler(BaseHTTPRequestHandler):
             POOL.submit(generate, job_id, payload, prepared)
             result = {"errcode": 0, "jobId": job_id, "status": "queued", "engine": engine}
             if prepared:
-                result["htmlUrl"] = f"http://127.0.0.1:{self.server.server_port}/api/pdf/v1/{job_id}/html"
+                result["htmlUrl"] = self.resource_url(f"/api/pdf/v1/{job_id}/html")
             self.reply(result)
         except (ValueError, TypeError, AttributeError) as error:
             self.reply({"errcode": -1, "errmsg": str(error)}, 400)
@@ -254,7 +303,7 @@ class Handler(BaseHTTPRequestHandler):
         for part in message.iter_parts():
             if part.get_param("name", header="content-disposition") == "file":
                 name, mime = local_images.store(part.get_payload(decode=True))
-                return self.reply({"errcode": 0, "url": f"http://127.0.0.1:{self.server.server_port}/api/file/{name}", "mime": mime})
+                return self.reply({"errcode": 0, "url": self.resource_url(f"/api/file/{name}"), "mime": mime})
         raise ValueError("No file part supplied")
 
     def do_GET(self):
@@ -271,6 +320,8 @@ class Handler(BaseHTTPRequestHandler):
             if name == "local.html":
                 data = data.replace(b"<head>", ('<head><meta name="local-csrf" content="' + WEB_TOKEN + '">').encode(), 1)
             return self.binary(data, mime)
+        if not self.require_auth():
+            return
         if path == "/api/jobs":
             with local_state.connect() as connection:
                 keys = [row[0][4:] for row in connection.execute("SELECT key FROM settings WHERE key GLOB 'job:*'")]
@@ -283,15 +334,15 @@ class Handler(BaseHTTPRequestHandler):
                     item = {field: value for field, value in job.items() if field != "directory"}
                     item["jobId"] = key
                     if job["status"] == "done" and (job["directory"] / "document.pdf").is_file():
-                        item["downloadUrl"] = f"/api/pdf/v1/{key}/download"
+                        item["downloadUrl"] = self.resource_url(f"/api/pdf/v1/{key}/download")
                     if (job["directory"] / "original.html").is_file():
-                        item["htmlUrl"] = f"/api/pdf/v1/{key}/html"
+                        item["htmlUrl"] = self.resource_url(f"/api/pdf/v1/{key}/html")
                     jobs.append(item)
             jobs.sort(key=lambda job: job.get("created", 0), reverse=True)
             return self.reply({"errcode": 0, "items": jobs[:100], "total": len(jobs)})
         if path == "/health":
             engines = engine_health()
-            return self.reply({"ok": any(item["available"] for item in engines.values()), "engine": "chromium / pandoc + xelatex", "engines": engines, "dependencies": engines["pandoc"]["dependencies"], "supportsWebDocument": True, "remoteImageFetch": False, "local": True, "version": 3})
+            return self.reply({"ok": any(item["available"] for item in engines.values()), "engine": "chromium / pandoc + xelatex", "engines": engines, "dependencies": engines["pandoc"]["dependencies"], "supportsWebDocument": True, "remoteImageFetch": False, "local": not bool(getattr(self.server, 'api_token', '')), "authenticationRequired": bool(getattr(self.server, 'api_token', '')), "version": 4})
         routes = {"/api/account": local_state.account, "/api/usage": local_state.usage,
                   "/api/config/v3": local_state.config, "/api/feedback/v1": local_state.feedback_list,
                   "/api/settings": local_state.settings}
@@ -325,9 +376,9 @@ class Handler(BaseHTTPRequestHandler):
         result = {key: value for key, value in job.items() if key not in ("directory", "created")}
         result.update(errcode=0, jobId=job_id)
         if job["status"] == "done":
-            result["downloadUrl"] = f"http://127.0.0.1:{self.server.server_port}/api/pdf/v1/{job_id}/download"
+            result["downloadUrl"] = self.resource_url(f"/api/pdf/v1/{job_id}/download")
         if (job["directory"] / "original.html").is_file():
-            result["htmlUrl"] = f"http://127.0.0.1:{self.server.server_port}/api/pdf/v1/{job_id}/html"
+            result["htmlUrl"] = self.resource_url(f"/api/pdf/v1/{job_id}/html")
         self.reply(result)
 
     def binary(self, data, mime, filename=None):
@@ -344,15 +395,34 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # No chat bodies or account data in access logs.
-        print(format % args, flush=True)
+        print((format % args).replace(self.path, urlsplit(self.path).path), flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--port", type=int, default=int(os.environ.get("LOCAL_EXPORT_PORT", "8765")))
+    parser.add_argument("--host", default=os.environ.get("LOCAL_EXPORT_HOST", "127.0.0.1"))
     args = parser.parse_args()
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
-    print(f"Local PDF server: http://127.0.0.1:{args.port}", flush=True)
+    public_url = os.environ.get("LOCAL_EXPORT_PUBLIC_URL", "")
+    try:
+        public_url = server_security.normalize_origin(public_url) if public_url else ""
+    except ValueError as error:
+        parser.error(str(error))
+    if public_url:
+        os.environ['LOCAL_EXPORT_PUBLIC_URL'] = public_url
+    token = os.environ.get("LOCAL_EXPORT_API_TOKEN", "")
+    if token and not re.fullmatch(r"[\x21-\x7e]{1,1024}", token):
+        parser.error("LOCAL_EXPORT_API_TOKEN must be a printable ASCII token without whitespace, at most 1024 characters")
+    remote_bind = args.host not in ("127.0.0.1", "localhost")
+    remote_public = bool(public_url) and urlsplit(public_url).hostname not in ("127.0.0.1", "localhost", "::1")
+    if (remote_bind and not public_url) or ((remote_bind or remote_public) and len(token) < 24):
+        parser.error("Remote listening requires LOCAL_EXPORT_PUBLIC_URL and LOCAL_EXPORT_API_TOKEN (at least 24 characters)")
+    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server.public_url, server.api_token = public_url, token
+    print(f"PDF service: {public_url or f'http://127.0.0.1:{args.port}'}", flush=True)
+    def stop_service(signum, frame):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, stop_service)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

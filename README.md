@@ -1,8 +1,8 @@
-# ChatGPT Exporter 本地服务版
+# ChatGPT Exporter 本地 / 自部署服务版
 
-将 ChatGPT 对话导出为 PDF、Markdown、TXT、CSV、JSON，或复制到剪贴板。PDF 渲染、图片处理、设置备份与导出记录由本机服务完成，无需原开发商的服务器、账号或订阅。
+将 ChatGPT 对话导出为 PDF、Markdown、TXT、CSV、JSON，或复制到剪贴板。PDF 渲染、图片处理、设置备份与导出记录由本机或自行部署的服务器完成，无需原开发商的服务器、账号或订阅。
 
-项目基于原扩展 `6.13.2` 构建独立的本地副本，当前版本标记为 **Local Service 3.4（Web admin）**。主要针对 macOS 环境实现和验证。
+项目基于原扩展 `6.13.2` 构建独立副本，当前版本标记为 **Service 4.0（Linux / Docker）**。支持 macOS 本机运行，以及 Linux 独立服务器部署。
 
 ## 功能
 
@@ -11,7 +11,24 @@
 - **Pandoc 排版**：使用 Pandoc + XeLaTeX 重新排版，适合 Markdown 和打印文档。
 - **Web 管理后台**：查看任务与用量，下载历史 PDF/HTML 快照，上传或粘贴 Markdown 生成 PDF，管理偏好、资料、备份、选择器和反馈。
 - **其他导出格式**：复用扩展原有的消息选择、Markdown、TXT、CSV、JSON 和剪贴板功能。
-- **本机持久化**：任务、文件及设置保存在本机，服务重启后仍可查看和下载。
+- **持久化记录**：任务、文件及设置保存在配置的服务器，服务重启后仍可查看和下载。
+
+## Linux 独立服务器部署
+
+推荐使用 Docker Compose，镜像包含 Chromium、Pandoc、XeLaTeX 和中文字体。部署配置和完整操作步骤见 **[Linux / Docker 部署指南](deploy/README.md)**。
+
+```sh
+cp .env.example .env
+# 编辑 .env：填写服务器 URL 与随机访问令牌后启动
+docker compose pull
+docker compose up -d
+```
+
+镜像地址：`ghcr.io/honestliu/chatgpt-exporter-server:latest`。首次需将仓库工作流推送到 GitHub、通过测试并发布镜像；尚未发布时可以先 `docker build -t chatgpt-exporter-server:local .`，将 `.env` 的 `EXPORTER_IMAGE` 改为该名称，再执行 `docker compose up -d --pull never`。
+
+GitHub Actions 在 PR 上构建和测试；默认分支、版本标签和手动触发通过后向 GHCR 发布 amd64/arm64 镜像，同时提供扩展 ZIP 构建产物。未配置匿名访问的私有镜像包需要先登录 GHCR。
+
+在插件弹窗打开“**服务设置 → 服务器连接**”，填写服务器 URL 和访问令牌，点击“保存并连接”并允许访问所填域名。PDF 导出窗口也提供“配置服务器连接”入口。默认地址仍为 `http://127.0.0.1:8765`。
 
 ## 快速开始
 
@@ -28,12 +45,12 @@
 安装项目锁定版本的 `playwright-core`：
 
 ```sh
-npm --prefix local-pdf-server install --ignore-scripts
+npm --prefix local-pdf-server ci --ignore-scripts
 ```
 
 当前声明的版本为 `1.58.2`。渲染器使用已有的 Chrome/Chromium，无需下载 Playwright 的附加浏览器。若未在项目目录安装依赖，代码也会尝试复用本机 `rea-agents` 目录中已有的 `playwright-core`。
 
-仅使用网页原貌模式不需要 Pandoc 或 XeLaTeX。仅有 Pandoc 则不足以生成 PDF：本项目的 Pandoc 模式还依赖 XeLaTeX。当前字体配置使用 macOS 系统字体；迁移到其他系统时需要调整 [字体配置](local-pdf-server/header.tex) 和 `pdf_layout.py` 中的字体设置。
+仅使用网页原貌模式不需要 Pandoc 或 XeLaTeX。仅有 Pandoc 则不足以生成 PDF：本项目的 Pandoc 模式还依赖 XeLaTeX。[字体配置](local-pdf-server/header.tex) 在 macOS 使用系统字体，在 Linux 使用 Noto CJK；官方镜像已安装这些字体和 GIF/WebP 转换所需的 Pillow。
 
 ### 2. 启动本地服务
 
@@ -58,7 +75,7 @@ python3 local-pdf-server/server.py
 curl http://127.0.0.1:8765/health
 ```
 
-健康接口的 `version: 3` 是服务接口版本，与扩展的 `Local Service 3.4` 标记不同。`available` 表示依赖已找到；Chromium 的 `startupVerified` 表示最近一次渲染结果成功。实际任务是否完成，以导出结果和任务状态为准。
+健康接口的 `version: 4` 是服务接口版本。`available` 表示依赖已找到；Chromium 的 `startupVerified` 表示最近一次渲染结果成功。实际任务是否完成，以导出结果和任务状态为准。启用访问令牌时，健康接口也需要登录会话或 `Authorization: Bearer <令牌>` 请求头。
 
 ### 3. 加载浏览器扩展
 
@@ -115,7 +132,7 @@ Web 后台的 Markdown 转 PDF 使用 Pandoc，不能替代 ChatGPT 页面中的
 
 ## 数据保存与网络访问
 
-默认数据目录是 `local-pdf-server/data/`：
+原生运行默认数据目录是 `local-pdf-server/data/`，Docker 使用 `/data` 数据卷：
 
 ```text
 data/
@@ -129,9 +146,9 @@ data/
 
 文件不会在服务退出时自动删除。备份完整数据时，先停止服务，再复制整个数据目录。浏览器设置与服务端备份分别存储；Web 后台的“下载设置备份”只导出设置，不包含历史 PDF、图片或聊天快照。
 
-选中的聊天内容和导出所需图片会发送到本机服务；PDF 在本机生成。扩展不使用原开发商的后台或遥测服务。读取未加载的对话、附件和图片仍需要访问 ChatGPT；为嵌入导出资源，扩展还会读取 OpenAI 的静态字体和图片域名。冻结网页交给 Chromium 渲染时，页面脚本和网络访问均被禁用。
+选中的聊天内容和导出所需图片会发送到你配置的服务器，PDF 和记录保存在该服务器；默认配置使用本机。扩展不使用原开发商的后台或遥测服务。读取未加载的对话、附件和图片仍需要访问 ChatGPT；为嵌入导出资源，扩展还会读取 OpenAI 的静态字体和图片域名。冻结网页交给 Chromium 渲染时，页面脚本和网络访问均被禁用。服务访问令牌不附带到 OpenAI 资源请求中，也不写入设置备份。
 
-服务仅监听 `127.0.0.1`，校验 Host 和请求 Origin。Web 后台写操作验证页面 CSRF 令牌；扩展通过后台转发本机请求。Web 静态路由只开放指定 HTML、JS、CSS，不提供数据库或源码目录浏览。本项目按个人本机使用设计。
+默认仅监听 `127.0.0.1`；远程监听必须配置公开 URL 和访问令牌，部署方式见指南。服务校验 Host 和请求 Origin，Web 写操作验证 CSRF 令牌；API 支持 Bearer 鉴权，Web 后台支持登录会话，文件下载使用短时签名链接。静态路由只开放指定资源。每个实例共用资料与导出记录，不提供多用户隔离。
 
 ## 配置
 
@@ -141,6 +158,9 @@ data/
 | `LOCAL_EXPORT_CHROMIUM_EXECUTABLE` | Chrome/Chromium 可执行文件路径 |
 | `LOCAL_EXPORT_PLAYWRIGHT_MODULE` | `playwright-core` 模块目录 |
 | `LOCAL_EXPORT_NODE` | Node.js 可执行文件路径 |
+| `LOCAL_EXPORT_HOST` / `LOCAL_EXPORT_PORT` | 监听地址与端口，原生运行默认 `127.0.0.1:8765` |
+| `LOCAL_EXPORT_PUBLIC_URL` | 浏览器和扩展访问的完整 origin，反代部署时用于校验请求和生成下载地址 |
+| `LOCAL_EXPORT_API_TOKEN` | 服务访问令牌，非本机监听时至少 24 字符 |
 
 例如，将数据存放到其他目录：
 
@@ -148,7 +168,7 @@ data/
 LOCAL_EXPORT_DATA_DIR="$HOME/ChatGPTExporterData" ./local-pdf-server/start.command
 ```
 
-服务支持 `--port`，但配套扩展的本机地址固定为 `127.0.0.1:8765`。配合扩展使用时，请保留默认端口；只修改服务端端口不会同步更新扩展。
+服务支持 `--host`、`--port`。端口或域名变化后，在扩展的“服务器连接”中更新 URL；服务端还应同步修改 `LOCAL_EXPORT_PUBLIC_URL`。服务地址只支持根 origin，不支持 `/exporter/` 等子路径部署。
 
 ## 更新与开发
 
@@ -175,6 +195,8 @@ python3 local-pdf-server/prepare_extension.py --update
 | `local-pdf-server/chromium_renderer.py` / `render-webpage.mjs` | Chromium PDF 渲染 |
 | `local-pdf-server/web-heading-navigation.mjs` | 标题识别和可点击目录生成 |
 | `local-pdf-server/pdf_layout.py` / `header.tex` | Pandoc/XeLaTeX 排版 |
+| `Dockerfile` / `compose.yaml` / `deploy/` | Linux 镜像、Compose、反代示例和部署指南 |
+| `.github/workflows/docker.yml` | 测试、打包扩展及多架构镜像发布 |
 | `output/pdf/` | 回归检查与预览 PDF，不是日常任务存储目录 |
 
 ### 验证命令
@@ -215,4 +237,4 @@ python3 local-pdf-server/verify.py
 
 **想让 PDF 与网页完全一致**：选择网页原貌模式最接近当前页面。纸张分页、超宽内容、特殊交互组件和字体资源仍可能造成差异。
 
-服务实现和历次修复记录见 [服务目录说明](local-pdf-server/README.md)。原包、本地副本及发布状态见 [本地开发版说明](CHROMEWEBSTORE.md)；当前项目用于个人本机使用，未申请 Chrome Web Store 上架。
+服务实现和历次修复记录见 [服务目录说明](local-pdf-server/README.md)。原包、本地副本及发布状态见 [扩展说明](CHROMEWEBSTORE.md)；未申请 Chrome Web Store 上架。
