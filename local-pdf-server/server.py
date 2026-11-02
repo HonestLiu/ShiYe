@@ -22,12 +22,13 @@ from urllib.parse import quote
 import local_images
 import local_state
 import pdf_layout
+import chromium_renderer
 
 ROOT = Path(__file__).resolve().parent
 JOBS = {}
 LOCK = threading.Lock()
 POOL = ThreadPoolExecutor(max_workers=2)
-MAX_BODY = 24 * 1024 * 1024
+MAX_BODY = 64 * 1024 * 1024
 
 
 def command(args, cwd, stdin=None):
@@ -72,6 +73,26 @@ def markdown_from_payload(payload):
     return pdf_layout.compose(payload)
 
 
+def selected_engine(payload):
+    if not isinstance(payload, dict):
+        raise ValueError("PDF payload must be an object")
+    engine = payload.get("engine") or ("chromium" if "webDocument" in payload else "pandoc")
+    if engine not in ("chromium", "pandoc"):
+        raise ValueError("PDF engine must be chromium or pandoc")
+    return engine
+
+
+def engine_health():
+    dependencies = {name: shutil.which(name) for name in ("pandoc", "xelatex")}
+    chromium = chromium_renderer.availability()
+    previous = local_state.get("chromium:last-render")
+    if previous:
+        chromium["lastRender"] = previous
+        chromium["startupVerified"] = previous.get("ok", False)
+    return {"pandoc": {"available": all(dependencies.values()), "dependencies": dependencies},
+            "chromium": chromium}
+
+
 def save_job(job_id):
     job = JOBS[job_id]
     local_state.put("job:" + job_id, {key: value for key, value in job.items() if key != "directory"})
@@ -91,35 +112,45 @@ def find_job(job_id):
         return dict(stored)
 
 
-def generate(job_id, payload):
+def generate(job_id, payload, prepared=None):
     with LOCK:
         job = JOBS[job_id]
         job["status"] = "processing"
         save_job(job_id)
     try:
         directory = job["directory"]
-        markdown = markdown_from_payload(payload)
-        if not markdown.strip():
-            raise ValueError("No chat content selected")
-        ast = json.loads(command(["pandoc", "--from=markdown+tex_math_dollars+tex_math_single_backslash-raw_tex-raw_html", "--to=json"], directory, markdown))
-        ast = pdf_layout.apply_pagebreaks(clean_ast(ast, directory), payload)
-        (directory / "document.json").write_text(json.dumps(ast), encoding="utf-8")
-        options = dict(payload.get("options") or {})
-        options["_customToc"] = bool(payload.get("messages") and isinstance(options.get("tocStyle"), dict))
-        args = pdf_layout.arguments(options, directory, ROOT / "header.tex")
-        command(args, directory)
+        engine = selected_engine(payload)
+        if engine == "chromium":
+            prepared = prepared or chromium_renderer.prepare_document(payload)
+            # Retain a safe static snapshot even if the browser cannot launch.
+            (directory / "original.html").write_text(prepared["html"], encoding="utf-8")
+            result = chromium_renderer.render(payload, directory, prepared)
+            local_state.put("chromium:last-render", {"ok": True, "at": time.time(), "result": result})
+        else:
+            markdown = markdown_from_payload(payload)
+            if not markdown.strip():
+                raise ValueError("No chat content selected")
+            ast = json.loads(command(["pandoc", "--from=markdown+tex_math_dollars+tex_math_single_backslash-raw_tex-raw_html", "--to=json"], directory, markdown))
+            ast = pdf_layout.apply_pagebreaks(clean_ast(ast, directory), payload)
+            (directory / "document.json").write_text(json.dumps(ast), encoding="utf-8")
+            options = dict(payload.get("options") or {})
+            options["_customToc"] = bool(payload.get("messages") and isinstance(options.get("tocStyle"), dict))
+            args = pdf_layout.arguments(options, directory, ROOT / "header.tex")
+            command(args, directory)
         with LOCK:
-            job.update(status="done", filename=pdf_layout.safe_filename(payload), fileSizeMB=round((directory / "document.pdf").stat().st_size / 1048576, 3))
+            job.update(status="done", engine=engine, filename=pdf_layout.safe_filename(payload), fileSizeMB=round((directory / "document.pdf").stat().st_size / 1048576, 3))
             save_job(job_id)
         local_state.usage({"cmd": "report", "payload": {"format": "pdf"}})
     except Exception as error:
+        if job.get("engine") == "chromium":
+            local_state.put("chromium:last-render", {"ok": False, "at": time.time(), "error": str(error)})
         with LOCK:
             job.update(status="failed", errmsg=str(error))
             save_job(job_id)
     finally:
-        # Chat source is not needed after generation; retain only the PDF for download.
+        # Keep a self-contained, script-free HTML alternative for webpage jobs.
         for item in job["directory"].iterdir():
-            if item.name != "document.pdf":
+            if item.name not in ("document.pdf", "original.html"):
                 item.unlink(missing_ok=True)
 
 
@@ -160,7 +191,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if not 0 < length <= MAX_BODY:
-                return self.reply({"errcode": -1, "errmsg": "Body must be 1 byte to 24 MiB"}, 413)
+                return self.reply({"errcode": -1, "errmsg": "Body must be 1 byte to 64 MiB"}, 413)
             data = self.rfile.read(length)
             if len(data) != length:
                 raise ValueError("Incomplete request body")
@@ -179,7 +210,10 @@ class Handler(BaseHTTPRequestHandler):
             if request.get("cmd", "create") != "create":
                 raise ValueError("Unsupported command")
             payload = request.get("payload", request)
-            markdown_from_payload(payload)
+            engine = selected_engine(payload)
+            prepared = chromium_renderer.prepare_document(payload) if engine == "chromium" else None
+            if engine == "pandoc":
+                markdown_from_payload(payload)
             job_id = uuid.uuid4().hex
             with LOCK:
                 # Retain at most 50 jobs in the active queue. Completed PDF data
@@ -191,10 +225,15 @@ class Handler(BaseHTTPRequestHandler):
                     return self.reply({"errcode": -1, "errmsg": "Queue full"}, 429)
                 directory = local_state.data_dir() / "jobs" / job_id
                 directory.mkdir(parents=True)
-                JOBS[job_id] = {"status": "queued", "directory": directory, "created": time.time()}
+                JOBS[job_id] = {"status": "queued", "engine": engine, "directory": directory, "created": time.time()}
+                if prepared:
+                    (directory / "original.html").write_text(prepared["html"], encoding="utf-8")
                 save_job(job_id)
-            POOL.submit(generate, job_id, payload)
-            self.reply({"errcode": 0, "jobId": job_id, "status": "queued"})
+            POOL.submit(generate, job_id, payload, prepared)
+            result = {"errcode": 0, "jobId": job_id, "status": "queued", "engine": engine}
+            if prepared:
+                result["htmlUrl"] = f"http://127.0.0.1:{self.server.server_port}/api/pdf/v1/{job_id}/html"
+            self.reply(result)
         except (ValueError, TypeError, AttributeError) as error:
             self.reply({"errcode": -1, "errmsg": str(error)}, 400)
         except (OSError, subprocess.SubprocessError) as error:
@@ -218,8 +257,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply({"errcode": -1, "errmsg": "Origin/Host rejected"}, 403)
         path = urlsplit(self.path).path
         if path == "/health":
-            dependencies = {name: shutil.which(name) for name in ("pandoc", "xelatex")}
-            return self.reply({"ok": all(dependencies.values()), "engine": "pandoc + xelatex", "dependencies": dependencies, "remoteImageFetch": False, "local": True, "version": 2})
+            engines = engine_health()
+            return self.reply({"ok": any(item["available"] for item in engines.values()), "engine": "chromium / pandoc + xelatex", "engines": engines, "dependencies": engines["pandoc"]["dependencies"], "supportsWebDocument": True, "remoteImageFetch": False, "local": True, "version": 3})
         routes = {"/api/account": local_state.account, "/api/usage": local_state.usage,
                   "/api/config/v3": local_state.config, "/api/feedback/v1": local_state.feedback_list,
                   "/api/settings": local_state.settings}
@@ -230,14 +269,19 @@ class Handler(BaseHTTPRequestHandler):
             if image is None:
                 return self.reply({"errcode": -1, "errmsg": "Unknown image"}, 404)
             return self.binary(image.read_bytes(), "image/png" if image.suffix == ".png" else "image/jpeg")
-        match = re.fullmatch(r"/api/pdf/v1/([a-f0-9]{32})(/download)?", path)
+        match = re.fullmatch(r"/api/pdf/v1/([a-f0-9]{32})(/(?:download|html))?", path)
         if not match:
             return self.reply({"errcode": -1, "errmsg": "Not found"}, 404)
-        job_id, download = match.groups()
+        job_id, action = match.groups()
         job = find_job(job_id)
         if not job:
             return self.reply({"errcode": -1, "errmsg": "Unknown job"}, 404)
-        if download:
+        if action == "/html":
+            snapshot = job["directory"] / "original.html"
+            if not snapshot.is_file():
+                return self.reply({"errcode": -1, "errmsg": "No webpage snapshot exists for this job"}, 404)
+            return self.binary(snapshot.read_bytes(), "text/html; charset=utf-8", "original.html")
+        if action == "/download":
             if job["status"] != "done":
                 return self.reply({"errcode": -1, "errmsg": "PDF not ready"}, 409)
             try:
@@ -249,12 +293,15 @@ class Handler(BaseHTTPRequestHandler):
         result.update(errcode=0, jobId=job_id)
         if job["status"] == "done":
             result["downloadUrl"] = f"http://127.0.0.1:{self.server.server_port}/api/pdf/v1/{job_id}/download"
+        if (job["directory"] / "original.html").is_file():
+            result["htmlUrl"] = f"http://127.0.0.1:{self.server.server_port}/api/pdf/v1/{job_id}/html"
         self.reply(result)
 
     def binary(self, data, mime, filename=None):
         self.headers_for(200, mime)
         if filename:
-            self.send_header("Content-Disposition", "attachment; filename=\"chat.pdf\"; filename*=UTF-8''" + quote(filename))
+            fallback = "original.html" if mime.startswith("text/html") else "chat.pdf"
+            self.send_header("Content-Disposition", f"attachment; filename=\"{fallback}\"; filename*=UTF-8''" + quote(filename))
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
@@ -269,9 +316,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
-    for executable in ("pandoc", "xelatex"):
-        if not shutil.which(executable):
-            parser.error(f"Missing executable: {executable}")
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"Local PDF server: http://127.0.0.1:{args.port}", flush=True)
     try:

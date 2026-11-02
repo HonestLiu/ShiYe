@@ -1,0 +1,13 @@
+{
+  "name": "chatgpt-exporter-local-renderer",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Local Chromium renderer; uses the existing Chrome installation",
+  "dependencies": {
+    "playwright-core": "1.58.2"
+  },
+  "scripts": {
+    "verify": "node verify-web-runner.mjs && node verify-web-snapshot.mjs",
+    "verify:browser": "node verify-divider-browser.mjs"
+  }
+}

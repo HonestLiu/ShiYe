@@ -7,6 +7,7 @@ h1 { font-size: 2rem; margin: .2rem 0; } h2 { font-size: 1.2rem; margin-top: 0; 
 label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
 input, textarea { font: inherit; padding: .65rem; width: 100%; border: 1px solid #8999a7; border-radius: 6px; }
 textarea { resize: vertical; } button { font: inherit; margin-top: .8rem; padding: .65rem 1rem; border: 1px solid #1d5a77; border-radius: 6px; background: #1d5a77; color: #fff; cursor: pointer; min-height: 48px; }
+input[type="radio"] { width: auto; margin-right: .5rem; accent-color: #1d5a77; } fieldset { border: 1px solid #8999a7; border-radius: 6px; }
 button:disabled { opacity: .55; cursor: wait; }
 :focus-visible { outline: 3px solid #3281b1; outline-offset: 3px; }
 [role="status"] { overflow-wrap: anywhere; } footer { font-size: .85rem; color: #506575; padding: 1rem; }

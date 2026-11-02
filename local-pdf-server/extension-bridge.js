@@ -3,7 +3,58 @@
   const BASE = "http://127.0.0.1:8765";
   const originalFetch = globalThis.fetch.bind(globalThis);
   const blocked = url => /(^|\.)(chatgptexporter\.com|posthog\.com|amplitude\.com|sentry\.io)$/i.test(url.hostname);
-  const ready = chrome.runtime.sendMessage({ cmd: "local_ready" });
+  let renderer = 'chromium';
+  const ready = chrome.runtime.sendMessage({ cmd: "local_ready" }).then(async result => {
+    const settings = await chrome.storage?.local?.get('pdfOptions');
+    renderer = settings?.pdfOptions?.renderer === 'pandoc' ? 'pandoc' : 'chromium';
+    return result;
+  });
+  const pickers = new Set();
+  function updatePickers() {
+    for (const picker of pickers) {
+      if (!picker.isConnected) { pickers.delete(picker); continue; }
+      for (const input of picker.querySelectorAll('input')) input.checked = input.value === renderer;
+      picker.querySelector('p').textContent = renderer === 'chromium'
+        ? '保留当前网页的字体、公式、配色和图表。纸张、边距和方向生效；字体、主题跟随网页。'
+        : '使用 Pandoc 重新排版。适用于未在页面中加载的消息及偏好打印版式的情况。';
+    }
+  }
+  if (chrome.storage?.onChanged) chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.pdfOptions) {
+      renderer = changes.pdfOptions.newValue?.renderer === 'pandoc' ? 'pandoc' : 'chromium';
+      updatePickers();
+    }
+  });
+  function mountEnginePicker(container) {
+    if (!container || container.dataset.localEnginePicker) return;
+    container.dataset.localEnginePicker = 'true';
+    const fieldset = document.createElement('fieldset');
+    fieldset.style.cssText = 'border:1px solid #cbd5e1;border-radius:8px;padding:10px;margin:8px 0;font-size:13px;line-height:1.6';
+    const legend = document.createElement('legend');
+    legend.textContent = 'PDF 导出方式';
+    fieldset.append(legend);
+    for (const [value, text] of [['chromium', '网页原貌（推荐）'], ['pandoc', 'Pandoc 排版']]) {
+      const label = document.createElement('label');
+      label.style.cssText = 'display:inline-flex;align-items:center;gap:5px;margin-right:18px;cursor:pointer';
+      const input = document.createElement('input');
+      input.type = 'radio'; input.name = 'local-pdf-renderer'; input.value = value;
+      input.addEventListener('change', async () => {
+        if (!input.checked) return;
+        renderer = value;
+        updatePickers();
+        const stored = await chrome.storage.local.get('pdfOptions');
+        await chrome.storage.local.set({ pdfOptions: { ...stored.pdfOptions, renderer } });
+      });
+      label.append(input, document.createTextNode(text));
+      fieldset.append(label);
+    }
+    const detail = document.createElement('p');
+    detail.style.cssText = 'margin:6px 0 0;opacity:.75;font-size:12px';
+    fieldset.append(detail);
+    container.append(fieldset);
+    pickers.add(fieldset);
+    updatePickers();
+  }
 
   async function bytesBase64(blob) {
     const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -271,6 +322,16 @@
 
   async function createPdf(payload) {
     await ready;
+    const engine = payload.options?.renderer || renderer;
+    if (engine === 'chromium') {
+      if (!globalThis.LocalWebSnapshot) throw new Error('网页原貌模块尚未加载，请重新加载扩展并刷新聊天页。');
+      const health = await (await fetch(BASE + '/health')).json();
+      if (!health.engines?.chromium) throw new Error('请停止旧版本本地服务，再运行 start.command 启动新版服务。');
+      const webDocument = await LocalWebSnapshot.capture(payload);
+      const result = await chrome.runtime.sendMessage({ cmd: 'pdf', payload: { cmd: 'create', payload: { ...payload, engine, webDocument } } });
+      if (result.jobId && chrome.storage?.local) await chrome.storage.local.set({ lastWebPdfJob: { jobId: result.jobId, htmlUrl: result.htmlUrl, createdAt: Date.now() } });
+      return result;
+    }
     const messages = [];
     for (const message of payload.messages) {
       let markdown = message.markdown;
@@ -285,6 +346,7 @@
     return chrome.runtime.sendMessage({ cmd: "pdf", payload: { cmd: "create", payload: { ...payload, messages, localMarkdown } } });
   }
 
-  globalThis.LocalExporter = { ready, createPdf, upload, inlineSvgImages, messageRoots, domTurnIdentity, messageIds, renderedDiagrams, insertDiagram,
+  globalThis.LocalExporter = { ready, createPdf, upload, inlineSvgImages, messageRoots, domTurnIdentity, messageIds, renderedDiagrams, insertDiagram, mountEnginePicker,
+    usesWebRenderer: () => renderer === 'chromium',
     lastRenderedTurnId: () => { const roots = messageRoots(); return roots.length ? domTurnIdentity(roots.at(-1), roots.length - 1).turnId : null; } };
 })();

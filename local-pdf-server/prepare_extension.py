@@ -34,6 +34,10 @@ def main():
     content = replace_once(content, 't.setAttribute("src","data:,")', 't.setAttribute("src",o.url)')
     content = replace_once(content, 'case 18:return e.next=20,Promise.all(Array.from(o.querySelectorAll("img"))',
         'case 18:return LocalExporter.inlineSvgImages(o.body),e.next=20,Promise.all(Array.from(o.querySelectorAll("img"))')
+    content = replace_once(content, 'e.next=16,Kd(o)', 'e.next=16,LocalExporter.usesWebRenderer()?Promise.resolve():Kd(o)')
+    content = replace_once(content, '"pdf"!==n.exportType){e.next=22', '"pdf"!==n.exportType||LocalExporter.usesWebRenderer()){e.next=22')
+    content = replace_once(content, '"Export to PDF"),s.createElement("div",{className:"grid grid-cols-1 gap-y-0',
+        '"Export to PDF"),s.createElement("div",{ref:LocalExporter.mountEnginePicker}),s.createElement("div",{className:"grid grid-cols-1 gap-y-0')
     content = replace_once(content, 't=pl(document.querySelectorAll(e)),n=[],r=function()', 't=LocalExporter.messageRoots(e),n=[],r=function()')
     content = replace_once(content, 'a=pl(document.querySelectorAll(o)),(s={name:"",lst:[]', 'a=LocalExporter.messageRoots(o),(s={name:"",lst:[]')
     content = replace_once(content, 'i=a.closest("section"),s=(null==i||null===(e=i.dataset)||void 0===e?void 0:e.turnId)||"dom-turn-".concat(o),l="user"===((null==i||null===(r=i.dataset)||void 0===r?void 0:r.turn)||(o%2==0?"user":"assistant"))?"user":"assistant"',
@@ -52,7 +56,7 @@ def main():
     if stage.exists():
         shutil.rmtree(stage)
     shutil.copytree(SOURCE, stage, ignore=shutil.ignore_patterns('_metadata'))
-    for target, source in [('background.js', 'extension-background.js'), ('bridge.js', 'extension-bridge.js'), ('local.html', 'local.html'), ('local.js', 'local.js'), ('local.css', 'local.css')]:
+    for target, source in [('background.js', 'extension-background.js'), ('bridge.js', 'extension-bridge.js'), ('web-snapshot.js', 'web-snapshot.js'), ('local.html', 'local.html'), ('local.js', 'local.js'), ('local.css', 'local.css')]:
         shutil.copy2(ASSETS / source, stage / target)
     (stage / 'content.js').write_text(content)
     for name, script in [('popup', popup), ('options', options)]:
@@ -63,9 +67,9 @@ def main():
             raise RuntimeError('Unable to insert bridge into ' + name)
         path.write_text(html)
     manifest = json.loads((stage / 'manifest.json').read_text())
-    manifest.update(name='ChatGPT Exporter - Local Service', description='Export conversations with local PDF, images, profile, settings and feedback.', version_name='6.13.2 Local Service 2.3 (Inline diagrams)', host_permissions=['http://127.0.0.1:8765/*'])
+    manifest.update(name='ChatGPT Exporter - Local Service', description='Export conversations with local PDF, images, profile, settings and feedback.', version_name='6.13.2 Local Service 3.1 (Divider fix)', host_permissions=['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*'])
     manifest['content_scripts'] = [item for item in manifest['content_scripts'] if 'content.js' in item['js']]
-    manifest['content_scripts'][0]['js'] = ['bridge.js', 'content.js']
+    manifest['content_scripts'][0]['js'] = ['bridge.js', 'web-snapshot.js', 'content.js']
     for key in ['externally_connectable', 'key', 'update_url']:
         manifest.pop(key, None)
     if TARGET.exists():

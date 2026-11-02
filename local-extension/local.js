@@ -32,6 +32,19 @@ async function refresh() {
     $("#email").value = account.email || "";
     $("#usage").textContent = "本机导出用量：" + JSON.stringify(usage.counts || usage.usage || {});
     $("#selectors").value = JSON.stringify(config.selectors || {}, null, 2);
+    const chromium = health.engines?.chromium;
+    $("#engine-status").textContent = chromium?.available
+      ? chromium.startupVerified ? 'Chromium 已成功生成过 PDF。' : 'Chromium 依赖已找到，实际渲染状态以导出结果为准。'
+      : 'Chromium 尚未就绪：' + (chromium?.problems || ['请重启新版服务']).join('；');
+    const stored = await chrome.storage.local.get(['pdfOptions', 'lastWebPdfJob']);
+    const renderer = stored.pdfOptions?.renderer || 'chromium';
+    const choice = document.querySelector(`#renderer-form input[value="${renderer === 'pandoc' ? 'pandoc' : 'chromium'}"]`);
+    if (choice) choice.checked = true;
+    const snapshot = stored.lastWebPdfJob;
+    if (snapshot?.htmlUrl?.startsWith('http://127.0.0.1:8765/api/pdf/v1/')) {
+      $('#last-snapshot').href = snapshot.htmlUrl;
+      $('#last-snapshot').hidden = false;
+    }
     await loadFeedback();
   } catch (error) { $("#status").textContent = error.message + " 请启动 local-pdf-server/start.command，然后重新检查连接。"; }
 }
@@ -61,6 +74,14 @@ form("#feedback-form", "#feedback-result", async () => {
   await api("/api/feedback/v1", { type: "note", message: $("#message").value, context: "local-dashboard" });
   $("#message").value = "";
   await loadFeedback();
+});
+form('#renderer-form', '#renderer-result', async () => {
+  const renderer = document.querySelector('#renderer-form input:checked')?.value;
+  if (!['chromium', 'pandoc'].includes(renderer)) throw new Error('请选择导出方式');
+  const stored = await chrome.storage.local.get('pdfOptions');
+  const pdfOptions = { ...stored.pdfOptions, renderer };
+  await api('/api/settings', { settings: { pdfOptions } });
+  await chrome.storage.local.set({ pdfOptions });
 });
 $("#refresh").addEventListener("click", refresh);
 $("#options").addEventListener("click", () => chrome.runtime.openOptionsPage());

@@ -80,7 +80,7 @@ let lastPayload;
 const context = vm.createContext({ console, URL, Request, Response, Blob, FormData, Uint8Array, atob, btoa,
   DOMParser, XMLSerializer: xml.XMLSerializer, Image, document, location: { href: pathToFileURL(sourcePath).href },
   fetch: async address => { assert(String(address).startsWith('data:image/'), 'Unexpected network request'); return fetch(address); },
-  chrome: { runtime: { sendMessage: async message => {
+  chrome: { storage: { local: { get: async () => ({pdfOptions:{renderer:'pandoc'}}) } }, runtime: { sendMessage: async message => {
     if (message.cmd === 'local_ready') return { errcode: 0 };
     if (message.cmd === 'pdf') { lastPayload = message.payload.payload; return { errcode: 0, jobId: 'verified' }; }
     const image = message.payload.upload;

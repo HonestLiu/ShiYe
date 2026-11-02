@@ -5,9 +5,9 @@ import vm from 'node:vm';
 const root = new URL('../local-extension/', import.meta.url);
 const read = name => fs.readFileSync(new URL(name, root), 'utf8');
 const manifest = JSON.parse(read('manifest.json'));
-assert.deepEqual(manifest.host_permissions, ['http://127.0.0.1:8765/*']);
+assert.deepEqual(manifest.host_permissions, ['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*']);
 assert.equal(manifest.externally_connectable, undefined);
-assert.deepEqual(manifest.content_scripts[0].js, ['bridge.js', 'content.js']);
+assert.deepEqual(manifest.content_scripts[0].js, ['bridge.js', 'web-snapshot.js', 'content.js']);
 assert.equal(manifest.content_scripts.length, 1);
 for (const name of ['content.js', 'popup.js', 'options.js']) {
   const source = read(name);
@@ -20,6 +20,7 @@ assert(read('content.js').includes('LocalExporter.createPdf('));
 assert(read('content.js').includes('type:"exppdf"')); // settings dialog restored
 assert(read('content.js').includes('!e.isComposing'));
 assert(!read('background.js').includes('chatgptexporter.com'));
+new vm.Script(read('web-snapshot.js'));
 
 const messages = [], actualFetch = [], beacons = [], xhrCalls = [];
 const svgDecodes = [], canvasDraws = [];
@@ -61,11 +62,11 @@ const context = vm.createContext({
   navigator: { sendBeacon: (...args) => { beacons.push(args); return true; } },
   XMLHttpRequest: FakeXHR,
   fetch: async (url) => { actualFetch.push(String(url)); return String(url).startsWith('data:') ? fetch(url) : new Response(new Blob(['png'], { type: 'image/png' })); },
-  chrome: { runtime: { sendMessage: async message => {
+  chrome: { storage: { local: { get: async () => ({pdfOptions:{renderer:'pandoc'}}), set: async () => {} } }, runtime: { sendMessage: async message => {
     messages.push(message);
     if (message.cmd === 'local_ready') return { errcode: 0 };
     if (message.cmd === 'pdf') return { errcode: 0, jobId: 'local-test' };
-    return { status: 200, mime: 'application/json', text: JSON.stringify(message.payload.upload ? { errcode: 0, url: 'http://127.0.0.1:8765/api/file/test.png' } : { selectors: {} }) };
+    return { status: 200, mime: 'application/json', text: JSON.stringify(message.payload.upload ? { errcode: 0, url: 'http://127.0.0.1:8765/api/file/test.png' } : message.payload.path === '/health' ? { engines:{chromium:{available:true}} } : { selectors: {} }) };
   } } }
 });
 vm.runInContext(read('bridge.js'), context);
@@ -129,6 +130,12 @@ assert.equal(context.LocalExporter.insertDiagram(ordered, { address: 'local-test
 const repeated = context.LocalExporter.insertDiagram('因此需要先审题。\n\n函数的正负由正弦函数决定。\n\n因此：\n\n开始列式。', { address: 'repeated-caption-image', before: ['函数的正负由正弦函数决定。'], after: ['因此：'] });
 assert(repeated.indexOf('![') > repeated.indexOf('函数的正负'));
 assert(repeated.indexOf('![') < repeated.indexOf('因此：'));
+let capturedWebPayload;
+context.LocalWebSnapshot = { capture: async payload => { capturedWebPayload = payload; return {html:'<p>original webpage</p>',css:'',width:760,theme:'light'}; } };
+await context.LocalExporter.createPdf({title:'网页原貌',messages:[{turnId:'chosen',role:'Response',markdown:'fallback body'}],options:{renderer:'chromium'}});
+assert.equal(capturedWebPayload.title,'网页原貌');
+assert.equal(messages.at(-1).payload.payload.engine,'chromium');
+assert.equal(messages.at(-1).payload.payload.webDocument.html,'<p>original webpage</p>');
 
 // Exercise the actual service worker with local HTTP responses and storage.
 const stored = { commonOptions: { removeBrand: true } };
@@ -165,6 +172,7 @@ assert.equal((await vm.runInContext('dispatch({cmd:"usage",payload:{cmd:"get"}})
 await vm.runInContext('dispatch({cmd:"pdf",payload:{cmd:"create",payload:{markdown:"test"}}})', background);
 await assert.rejects(vm.runInContext('dispatch({cmd:"local_request",payload:{path:"//example.com",method:"GET"}})', background));
 await assert.rejects(vm.runInContext('dispatch({cmd:"local_request",payload:{path:"/api/../secret",method:"GET"}})', background));
+await assert.rejects(vm.runInContext('dispatch({cmd:"snapshot_resource",url:"https://example.org/image.png"})', background));
 assert(requests.length > 3);
 offline = true;
 stored.localSettingsDirty = true;

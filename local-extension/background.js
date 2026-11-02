@@ -1,4 +1,4 @@
-/* Local replacement service worker. No third-party network or analytics. */
+/* Local service worker: no developer backend or telemetry; allowlisted OpenAI assets only. */
 const BASE = "http://127.0.0.1:8765";
 const PREFS = ["commonOptions", "pdfOptions", "userInfo", "exportType", "selectType"];
 let restoring = false;
@@ -45,6 +45,20 @@ async function jsonApi(path, options) {
   return data;
 }
 
+async function snapshotResource(address) {
+  const url = new URL(address);
+  if (url.protocol !== 'https:' || url.username || url.password ||
+      !(/(^|\.)(oaistatic\.com|oaiusercontent\.com)$/i.test(url.hostname) || url.hostname === 'cdn.openai.com')) throw new Error('Unsupported page resource origin');
+  const response = await fetch(url.href, { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(20000) });
+  if (!response.ok) throw new Error(`Page resource HTTP ${response.status}`);
+  if (Number(response.headers.get('content-length')) > 16 * 1024 * 1024) throw new Error('Page resource exceeds 16 MiB');
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.length > 16 * 1024 * 1024) throw new Error('Page resource exceeds 16 MiB');
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += 32768) binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
+  return { base64: btoa(binary), mime: response.headers.get('content-type') || 'application/octet-stream' };
+}
+
 async function cacheAccount(account) {
   const { session = {} } = await chrome.storage.local.get("session");
   await chrome.storage.local.set({
@@ -88,6 +102,7 @@ async function reconcile() {
 async function route(message) {
   switch (message.cmd) {
     case "local_ready": return { errcode: 0, local: true };
+    case "snapshot_resource": return snapshotResource(message.url);
     case "local_request": return api(message.payload.path, message.payload);
     case "account": {
       const result = await jsonApi("/api/account", { method: "POST", body: message.payload });
