@@ -1,0 +1,47 @@
+{
+   "action": {
+      "default_icon": {
+         "128": "assets/icon128.png",
+         "16": "assets/icon16.png",
+         "32": "assets/icon32.png",
+         "48": "assets/icon48.png"
+      },
+      "default_popup": "popup.html"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [ {
+      "all_frames": false,
+      "js": [ "content.js" ],
+      "matches": [ "https://chat.openai.com/*", "https://chatgpt.com/*" ],
+      "run_at": "document_end"
+   }, {
+      "js": [ "contentweb.js" ],
+      "matches": [ "https://*.chatgptexporter.com/*" ],
+      "run_at": "document_end"
+   } ],
+   "default_locale": "en",
+   "description": "__MSG_ext_description__",
+   "externally_connectable": {
+      "matches": [ "https://*.chatgptexporter.com/*" ]
+   },
+   "host_permissions": [ "https://*.chatgptexporter.com/" ],
+   "icons": {
+      "128": "assets/icon128.png",
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAg1o9+nENeOF5oTVHlk5VC7YSgk81Wjm8WXEYrrH0uhmRtTx/QMeZItGYymbSNaCEWdSnn5LbzDPrJCQkEH5oQyxP+Q1n/BIES5140cOIrPkcu8TiMCXBXV3ZNt8fu43DzCSa6gvaFNLaTTD7ISsg18FCrcWIkP9GKLbrdYfiiBMEx700SHIpFizOJ27LSgumjxKUSAxqtbyKh55RycJE3jw5wiT0dZuQC6vsXp7No2PAlQVrz0R8Ib9iVak4EZH/Wir5oYdXGYUWN5bQLjm/D3oKe64c7XTaxW5VxLJEPHCDMNHvxWbMKmSnWDy9NE/P/ISLaiT6SE5ysONGOcZWeQIDAQAB",
+   "manifest_version": 3,
+   "name": "__MSG_ext_fulltitle__",
+   "options_page": "options.html",
+   "permissions": [ "storage", "activeTab" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "6.13.2",
+   "web_accessible_resources": [ {
+      "matches": [ "https://chatgpt.com/*", "https://chat.openai.com/*" ],
+      "resources": [ "inj.js" ]
+   } ]
+}

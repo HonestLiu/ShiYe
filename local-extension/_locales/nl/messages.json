@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Bekijk de plannen"
+  },
+  "btn_collapse": {
+    "message": "Invouwen"
+  },
+  "btn_expand": {
+    "message": "Uitvouwen"
+  },
+  "btn_export": {
+    "message": "EXPORTEREN"
+  },
+  "error_dialog_title": {
+    "message": "Export mislukt"
+  },
+  "error_no_messages": {
+    "message": "Geen berichten gevonden. Open een bestaand gesprek of stuur ten minste één bericht voordat u exporteert."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Instellingen voor niet-PDF exporttypes."
+  },
+  "export_settings_tagline": {
+    "message": "Algemene instellingen."
+  },
+  "export_settings_title": {
+    "message": "Export Instellingen"
+  },
+  "ext_description": {
+    "message": "Download ChatGPT-gesprekken als PDF, Markdown, Tekst, etc. Download ChatGPT-resultaten naar PDF. Converteer ChatGPT eenvoudig naar een mooie PDF."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT naar PDF, MD en meer"
+  },
+  "feedback": {
+    "message": "Feedback"
+  },
+  "feedback_btn_cancel": {
+    "message": "Annuleren"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Bestand kiezen"
+  },
+  "feedback_btn_close": {
+    "message": "Sluiten"
+  },
+  "feedback_btn_report": {
+    "message": "Feedback"
+  },
+  "feedback_btn_submit": {
+    "message": "Verzenden"
+  },
+  "feedback_description_required": {
+    "message": "Beschrijving is verplicht"
+  },
+  "feedback_dialog_title": {
+    "message": "Feedback"
+  },
+  "feedback_hint_paste": {
+    "message": "of Ctrl+V om te plakken"
+  },
+  "feedback_label_description": {
+    "message": "Beschrijving"
+  },
+  "feedback_label_email": {
+    "message": "E-mail (optioneel)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Schermafbeeldingen (optioneel, plak met Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Type"
+  },
+  "feedback_submit_failed": {
+    "message": "Feedback verzenden mislukt. Probeer het opnieuw."
+  },
+  "feedback_submit_success": {
+    "message": "Bedankt! Uw feedback is verzonden."
+  },
+  "label_auto_close_selector": {
+    "message": "Selectie automatisch sluiten na export"
+  },
+  "label_auto_show_thinking": {
+    "message": "Automatisch denkproces tonen"
+  },
+  "label_content_title": {
+    "message": "Inhoudstitel"
+  },
+  "label_convo_link": {
+    "message": "Gesprekslink"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Kopiëren naar klembord"
+  },
+  "label_dark_mode": {
+    "message": "Donkere modus"
+  },
+  "label_date_and_time": {
+    "message": "Datum & Tijd"
+  },
+  "label_display_btns": {
+    "message": "Exportknoppen tonen / verbergen"
+  },
+  "label_download_location": {
+    "message": "Downloadlocatie"
+  },
+  "label_file_name": {
+    "message": "Bestandsnaam"
+  },
+  "label_file_name_custom_part": {
+    "message": "Aangepast deel"
+  },
+  "label_file_name_format": {
+    "message": "Bestandsnaamformaat"
+  },
+  "label_font_family": {
+    "message": "Lettertype"
+  },
+  "label_font_size": {
+    "message": "Lettergrootte"
+  },
+  "label_include_deep_research_references": {
+    "message": "Deep Research-referenties"
+  },
+  "label_include_model_name": {
+    "message": "Modelnaam"
+  },
+  "label_include_per_msg_time": {
+    "message": "Berichttijdstempels"
+  },
+  "label_include_thought_process": {
+    "message": "Denkproces"
+  },
+  "label_include_web_search_sources": {
+    "message": "Webzoekbronnen"
+  },
+  "label_mute_export": {
+    "message": "Export dempen"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Pagina-einde per prompt"
+  },
+  "label_page_format": {
+    "message": "Paginaformaat"
+  },
+  "label_page_margin": {
+    "message": "Paginamarge"
+  },
+  "label_pdf_language": {
+    "message": "Taal"
+  },
+  "label_remove_branding": {
+    "message": "Branding verwijderen"
+  },
+  "label_remove_icons": {
+    "message": "Pictogrammen verwijderen"
+  },
+  "label_remove_page_number": {
+    "message": "Paginanummer verwijderen"
+  },
+  "label_role_assistant": {
+    "message": "Assistent"
+  },
+  "label_role_labels": {
+    "message": "Rollabels"
+  },
+  "label_role_user": {
+    "message": "Gebruiker"
+  },
+  "label_table_of_contents": {
+    "message": "Inhoudsopgave"
+  },
+  "label_toc_background": {
+    "message": "Achtergrond"
+  },
+  "label_toc_prefix": {
+    "message": "Voorvoegsel"
+  },
+  "label_toc_style": {
+    "message": "Inhoudsstijl"
+  },
+  "label_toc_text": {
+    "message": "Tekst"
+  },
+  "label_user_info": {
+    "message": "Gebruikersinformatie"
+  },
+  "language": {
+    "message": "Dutch"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Functieverzoek"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Open ChatGPT Website"
+  },
+  "link_settings_download": {
+    "message": "Instellingen openen"
+  },
+  "msg_bad": {
+    "message": "Slecht"
+  },
+  "msg_export_success": {
+    "message": "Export succesvol!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Kopiëren naar klembord succesvol!"
+  },
+  "msg_good": {
+    "message": "Goed"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "Dit zou anderen helpen meer over de extensie te leren."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Als u problemen of ideeën heeft, neem dan gerust contact op."
+  },
+  "msg_rate_or_review": {
+    "message": "Beoordeel of schrijf een recensie in Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Gerelateerde extensie:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Bedankt voor uw steun!"
+  },
+  "msg_usage": {
+    "message": "Gebruik"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "dagelijkse limiet bereikt"
+  },
+  "msg_what_you_think": {
+    "message": "Wat vindt u van deze extensie?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Aangepast deel}-{Tijdstempel}-{Gesprekstitel}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Aangepast deel}-{Gesprekstitel}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Aangepast deel}-{Gesprekstitel}-{Tijdstempel}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Tijdstempel}-{Aangepast deel}-{Gesprekstitel}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Tijdstempel}-{Gesprekstitel}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Tijdstempel}-{Gesprekstitel}-{Aangepast deel}"
+  },
+  "option_filename_format_title": {
+    "message": "{Gesprekstitel}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Gesprekstitel}-{Aangepast deel}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Gesprekstitel}-{Aangepast deel}-{Tijdstempel}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Gesprekstitel}-{Tijdstempel}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Gesprekstitel}-{Tijdstempel}-{Aangepast deel}"
+  },
+  "recent_updates_got_it": {
+    "message": "Begrepen"
+  },
+  "recent_updates_item_1": {
+    "message": "Verbeterde export van tijdelijke chats"
+  },
+  "recent_updates_item_2": {
+    "message": "Pas de naam van het geëxporteerde bestand aan, eventueel met tijdstempel"
+  },
+  "recent_updates_item_3": {
+    "message": "Stel de PDF-taal in zodat tekst in het juiste lettertype verschijnt"
+  },
+  "recent_updates_item_4": {
+    "message": "Meer opties om de PDF-inhoudsopgave aan te passen"
+  },
+  "recent_updates_title": {
+    "message": "Recente updates"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Ondersteuning voor de intelligente ChatGPT-interface in pdf's"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Incidentele problemen bij het exporteren van gedeelde chats opgelost"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Mermaid-stroomdiagrammen weergeven in pdf's"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Als solo-ontwikkelaar vraag ik een kleine vergoeding om de kosten van het onderhouden van de service te helpen dekken. Ik waardeer uw begrip en steun echt."
+  },
+  "thanks": {
+    "message": "Gemaakt met ❤️. Bedankt voor het gebruik."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Dit zijpaneel automatisch sluiten na export — schakel het in bij Instellingen"
+  },
+  "tip_choose_export_format": {
+    "message": "Klik hier om het exportformaat te kiezen"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "Voor niet-PDF-formaten kunt u direct naar het klembord kopiëren in plaats van een bestand op te slaan — schakel het in bij Instellingen"
+  },
+  "tip_dock_toggle": {
+    "message": "Klik op het pictogram linksboven in de selector om hem naar de andere kant te verplaatsen"
+  },
+  "tip_filename_format": {
+    "message": "Kies hoe de exportbestandsnaam wordt opgebouwd — stel het formaat in bij Instellingen"
+  },
+  "tip_hover_preview": {
+    "message": "Beweeg over een bericht om de volledige inhoud te bekijken"
+  },
+  "tip_resizable_expandable": {
+    "message": "Sleep de binnenrand om de selector aan te passen; klik op een bericht om de voorvertoning uit/in te klappen"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Klik om een reeks selectievakjes tegelijk te selecteren/deselecteren"
+  },
+  "tip_support_temp_shared": {
+    "message": "Ondersteunt nu het exporteren van tijdelijke en gedeelde chats"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Wanneer je een denkproces uitvouwt, wordt het opgenomen in je export. Je kunt elk denkproces uitvouwen of inklappen om te bepalen wat er wordt geëxporteerd."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Kopieer inhoud naar klembord in plaats van downloaden als bestand."
+  },
+  "tooltip_dock_left": {
+    "message": "Aan linkerkant vastzetten"
+  },
+  "tooltip_dock_right": {
+    "message": "Aan rechterkant vastzetten"
+  },
+  "tooltip_download_location": {
+    "message": "Wijzig waar bestanden worden opgeslagen of kies om elke keer gevraagd te worden in Chrome-instellingen."
+  },
+  "tooltip_file_name_format": {
+    "message": "Kies hoe de geëxporteerde bestandsnaam wordt samengesteld: bijv. \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\" of \"20260808-1430-MyChat-ChatGPT\"."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Wilt u een ander naampatroon? Wijzig de naamopmaak bij de algemene instellingen."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Selecteer of deselecteer snel alle berichten."
+  },
+  "tooltip_mute_export": {
+    "message": "Toon het Export Succes dialoogvenster niet."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Nieuwste eerst weergeven"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Oudste eerst weergeven"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Indien ingeschakeld, begint elke gebruikersprompt op een nieuwe pagina."
+  },
+  "tooltip_pdf_language": {
+    "message": "Kies de taal van de gespreksinhoud om vervormde of onleesbare lettertypen in de gegenereerde PDF te voorkomen."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Pro plan functie"
+  },
+  "tooltip_remove_branding": {
+    "message": "Verwijder ChatGPT Exporter branding, inclusief pictogram en link."
+  },
+  "tooltip_remove_icons": {
+    "message": "Verwijder gebruikers- en ChatGPT-pictogrammen in de PDF"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Naar beneden scrollen"
+  },
+  "tooltip_toc_style": {
+    "message": "Pas het voorvoegsel en de kleuren van inhoudsopgave-items aan om gebruiker en assistent te onderscheiden"
+  },
+  "turn_selector_title": {
+    "message": "Berichten selecteren"
+  }
+}

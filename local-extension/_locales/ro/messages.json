@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Vezi planurile"
+  },
+  "btn_collapse": {
+    "message": "Restrângere"
+  },
+  "btn_expand": {
+    "message": "Extindere"
+  },
+  "btn_export": {
+    "message": "EXPORTĂ"
+  },
+  "error_dialog_title": {
+    "message": "Exportul a eșuat"
+  },
+  "error_no_messages": {
+    "message": "Nu s-au găsit mesaje. Deschideți o conversație existentă sau trimiteți cel puțin un mesaj înainte de export."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Setări pentru tipuri de export non-PDF."
+  },
+  "export_settings_tagline": {
+    "message": "Setări comune."
+  },
+  "export_settings_title": {
+    "message": "Setări export"
+  },
+  "ext_description": {
+    "message": "Descărcați conversațiile ChatGPT ca PDF, Markdown, Text etc. Descărcați rezultatele ChatGPT în PDF. Convertiți cu ușurință ChatGPT într-un PDF frumos."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT în PDF, MD și altele"
+  },
+  "feedback": {
+    "message": "Feedback"
+  },
+  "feedback_btn_cancel": {
+    "message": "Anulare"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Alegeți fișierul"
+  },
+  "feedback_btn_close": {
+    "message": "Închide"
+  },
+  "feedback_btn_report": {
+    "message": "Feedback"
+  },
+  "feedback_btn_submit": {
+    "message": "Trimite"
+  },
+  "feedback_description_required": {
+    "message": "Descrierea este obligatorie"
+  },
+  "feedback_dialog_title": {
+    "message": "Feedback"
+  },
+  "feedback_hint_paste": {
+    "message": "sau Ctrl+V pentru a lipi"
+  },
+  "feedback_label_description": {
+    "message": "Descriere"
+  },
+  "feedback_label_email": {
+    "message": "E-mail (opțional)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Capturi de ecran (opțional, lipiți cu Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Tip"
+  },
+  "feedback_submit_failed": {
+    "message": "Trimiterea feedback-ului a eșuat. Vă rugăm să încercați din nou."
+  },
+  "feedback_submit_success": {
+    "message": "Mulțumim! Feedback-ul dvs. a fost trimis."
+  },
+  "label_auto_close_selector": {
+    "message": "Închide automat selectorul după export"
+  },
+  "label_auto_show_thinking": {
+    "message": "Afișează automat procesul de gândire"
+  },
+  "label_content_title": {
+    "message": "Titlul conținutului"
+  },
+  "label_convo_link": {
+    "message": "Link conversație"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Copiază în clipboard"
+  },
+  "label_dark_mode": {
+    "message": "Mod întunecat"
+  },
+  "label_date_and_time": {
+    "message": "Data și Ora"
+  },
+  "label_display_btns": {
+    "message": "Afișare / Ascundere butoane export"
+  },
+  "label_download_location": {
+    "message": "Locația descărcării"
+  },
+  "label_file_name": {
+    "message": "Nume fișier"
+  },
+  "label_file_name_custom_part": {
+    "message": "Parte personalizată"
+  },
+  "label_file_name_format": {
+    "message": "Format nume fișier"
+  },
+  "label_font_family": {
+    "message": "Font"
+  },
+  "label_font_size": {
+    "message": "Dimensiune font"
+  },
+  "label_include_deep_research_references": {
+    "message": "Referințe cercetare aprofundată"
+  },
+  "label_include_model_name": {
+    "message": "Numele modelului"
+  },
+  "label_include_per_msg_time": {
+    "message": "Marcaje temporale ale mesajelor"
+  },
+  "label_include_thought_process": {
+    "message": "Proces de gândire"
+  },
+  "label_include_web_search_sources": {
+    "message": "Surse căutare web"
+  },
+  "label_mute_export": {
+    "message": "Dezactivează sunet export"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Salt de pagină pe prompt"
+  },
+  "label_page_format": {
+    "message": "Format pagină"
+  },
+  "label_page_margin": {
+    "message": "Margine pagină"
+  },
+  "label_pdf_language": {
+    "message": "Limbă"
+  },
+  "label_remove_branding": {
+    "message": "Elimină branding"
+  },
+  "label_remove_icons": {
+    "message": "Elimină iconițe"
+  },
+  "label_remove_page_number": {
+    "message": "Elimină numărul paginii"
+  },
+  "label_role_assistant": {
+    "message": "Asistent"
+  },
+  "label_role_labels": {
+    "message": "Etichete de rol"
+  },
+  "label_role_user": {
+    "message": "Utilizator"
+  },
+  "label_table_of_contents": {
+    "message": "Cuprins"
+  },
+  "label_toc_background": {
+    "message": "Fundal"
+  },
+  "label_toc_prefix": {
+    "message": "Prefix"
+  },
+  "label_toc_style": {
+    "message": "Stil cuprins"
+  },
+  "label_toc_text": {
+    "message": "Text"
+  },
+  "label_user_info": {
+    "message": "Informații utilizator"
+  },
+  "language": {
+    "message": "Romanian"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Solicitare funcție"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Deschide site-ul ChatGPT"
+  },
+  "link_settings_download": {
+    "message": "Deschide setări"
+  },
+  "msg_bad": {
+    "message": "Rău"
+  },
+  "msg_export_success": {
+    "message": "Export reușit!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Copiere în clipboard reușită!"
+  },
+  "msg_good": {
+    "message": "Bun"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "Acest lucru ar ajuta pe alții să afle mai multe despre extensie."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Dacă aveți probleme sau idei, nu ezitați să ne contactați."
+  },
+  "msg_rate_or_review": {
+    "message": "Evaluați sau scrieți o recenzie în Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Extensie asociată:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Mulțumesc pentru suport!"
+  },
+  "msg_usage": {
+    "message": "Utilizare"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "utilizarea a atins cota zilnică"
+  },
+  "msg_what_you_think": {
+    "message": "Ce părere aveți despre această extensie?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Parte personalizată}-{Marcaj temporal}-{Titlul conversației}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Parte personalizată}-{Titlul conversației}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Parte personalizată}-{Titlul conversației}-{Marcaj temporal}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Marcaj temporal}-{Parte personalizată}-{Titlul conversației}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Marcaj temporal}-{Titlul conversației}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Marcaj temporal}-{Titlul conversației}-{Parte personalizată}"
+  },
+  "option_filename_format_title": {
+    "message": "{Titlul conversației}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Titlul conversației}-{Parte personalizată}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Titlul conversației}-{Parte personalizată}-{Marcaj temporal}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Titlul conversației}-{Marcaj temporal}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Titlul conversației}-{Marcaj temporal}-{Parte personalizată}"
+  },
+  "recent_updates_got_it": {
+    "message": "Am înțeles"
+  },
+  "recent_updates_item_1": {
+    "message": "Export îmbunătățit pentru conversațiile temporare"
+  },
+  "recent_updates_item_2": {
+    "message": "Personalizați numele fișierului exportat, cu marcaj temporal opțional"
+  },
+  "recent_updates_item_3": {
+    "message": "Setați limba PDF-ului pentru ca textul să fie redat cu fontul potrivit"
+  },
+  "recent_updates_item_4": {
+    "message": "Mai multe moduri de personalizare a cuprinsului PDF"
+  },
+  "recent_updates_title": {
+    "message": "Actualizări recente"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Suport pentru interfața inteligentă ChatGPT în PDF-uri"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Remedierea problemelor ocazionale la exportul conversațiilor partajate"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Redarea diagramelor de flux Mermaid în PDF-uri"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Ca dezvoltator independent, percep o taxă mică pentru a ajuta la acoperirea costurilor de întreținere a serviciului. Apreciez cu adevărat înțelegerea și suportul dumneavoastră."
+  },
+  "thanks": {
+    "message": "Construit cu ❤️. Mulțumesc pentru utilizare."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Închide automat acest panou după export — activează din Setări"
+  },
+  "tip_choose_export_format": {
+    "message": "Faceți clic aici pentru a alege formatul de export"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "Pentru formatele non-PDF, puteți copia direct în clipboard în loc să salvați un fișier — activați din Setări"
+  },
+  "tip_dock_toggle": {
+    "message": "Apasă pe pictograma din colțul stânga sus al selectorului pentru a-l ancora pe partea opusă"
+  },
+  "tip_filename_format": {
+    "message": "Alege cum se compune numele fișierului exportat — setează formatul din Setări"
+  },
+  "tip_hover_preview": {
+    "message": "Treceți cursorul peste orice rând pentru a vedea conținutul complet"
+  },
+  "tip_resizable_expandable": {
+    "message": "Trage marginea interioară pentru a redimensiona selectorul, dă clic pe un mesaj pentru a extinde/restrânge previzualizarea"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Clic pentru a selecta/deselecta un interval de casete de bifat simultan"
+  },
+  "tip_support_temp_shared": {
+    "message": "Acum acceptă exportul conversațiilor temporare și partajate"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Când extinzi un proces de gândire, va fi inclus în exportul tău. Poți extinde sau restrânge fiecare proces de gândire pentru a controla ce se exportă."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Copiază conținutul în clipboard în loc să îl descarci ca fișier."
+  },
+  "tooltip_dock_left": {
+    "message": "Ancorează la stânga"
+  },
+  "tooltip_dock_right": {
+    "message": "Ancorează la dreapta"
+  },
+  "tooltip_download_location": {
+    "message": "Schimbați unde sunt salvate fișierele sau alegeți să fiți întrebați de fiecare dată în Setările Chrome."
+  },
+  "tooltip_file_name_format": {
+    "message": "Alegeți cum se compune numele fișierului exportat, de ex. „ChatGPT-MyChat\", „ChatGPT-MyChat-20260808-1430\" sau „20260808-1430-MyChat-ChatGPT\"."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Doriți alt tipar de denumire? Schimbați formatul numelui de fișier în setările generale."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Selectați sau deselectați rapid toate mesajele."
+  },
+  "tooltip_mute_export": {
+    "message": "Nu afișa caseta de dialog pentru export reușit."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Afișează cele mai noi mai întâi"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Afișează cele mai vechi mai întâi"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Când este activat, fiecare prompt de utilizator va începe pe o pagină nouă."
+  },
+  "tooltip_pdf_language": {
+    "message": "Alegeți limba conținutului conversației pentru a evita fonturile deformate sau ilizibile în PDF-ul generat."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Funcție plan Pro"
+  },
+  "tooltip_remove_branding": {
+    "message": "Eliminați branding-ul ChatGPT Exporter, inclusiv iconița și link-ul."
+  },
+  "tooltip_remove_icons": {
+    "message": "Eliminați iconițele utilizatorului și ChatGPT din PDF"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Derulează până jos"
+  },
+  "tooltip_toc_style": {
+    "message": "Personalizați prefixul și culorile intrărilor din cuprins pentru a distinge utilizatorul de asistent"
+  },
+  "turn_selector_title": {
+    "message": "Selectați mesajele"
+  }
+}

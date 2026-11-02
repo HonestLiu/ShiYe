@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Переглянути плани"
+  },
+  "btn_collapse": {
+    "message": "Згорнути"
+  },
+  "btn_expand": {
+    "message": "Розгорнути"
+  },
+  "btn_export": {
+    "message": "ЕКСПОРТ"
+  },
+  "error_dialog_title": {
+    "message": "Помилка експорту"
+  },
+  "error_no_messages": {
+    "message": "Повідомлень не знайдено. Відкрийте наявну розмову або надішліть принаймні одне повідомлення перед експортом."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Налаштування для типів експорту, відмінних від PDF."
+  },
+  "export_settings_tagline": {
+    "message": "Загальні налаштування."
+  },
+  "export_settings_title": {
+    "message": "Налаштування експорту"
+  },
+  "ext_description": {
+    "message": "Завантажуйте розмови ChatGPT як PDF, Markdown, текст тощо. Завантажуйте результати ChatGPT у PDF. Легко конвертуйте ChatGPT у гарний PDF."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT у PDF, MD та більше"
+  },
+  "feedback": {
+    "message": "Відгук"
+  },
+  "feedback_btn_cancel": {
+    "message": "Скасувати"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Вибрати файл"
+  },
+  "feedback_btn_close": {
+    "message": "Закрити"
+  },
+  "feedback_btn_report": {
+    "message": "Відгук"
+  },
+  "feedback_btn_submit": {
+    "message": "Надіслати"
+  },
+  "feedback_description_required": {
+    "message": "Опис є обов'язковим"
+  },
+  "feedback_dialog_title": {
+    "message": "Відгук"
+  },
+  "feedback_hint_paste": {
+    "message": "або Ctrl+V для вставки"
+  },
+  "feedback_label_description": {
+    "message": "Опис"
+  },
+  "feedback_label_email": {
+    "message": "Ел. пошта (необов'язково)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Знімки екрана (необов'язково, вставте за допомогою Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Тип"
+  },
+  "feedback_submit_failed": {
+    "message": "Не вдалося надіслати відгук. Будь ласка, спробуйте ще раз."
+  },
+  "feedback_submit_success": {
+    "message": "Дякуємо! Ваш відгук надіслано."
+  },
+  "label_auto_close_selector": {
+    "message": "Автоматично закривати селектор після експорту"
+  },
+  "label_auto_show_thinking": {
+    "message": "Автоматично показувати процес мислення"
+  },
+  "label_content_title": {
+    "message": "Заголовок вмісту"
+  },
+  "label_convo_link": {
+    "message": "Посилання на розмову"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Копіювати в буфер обміну"
+  },
+  "label_dark_mode": {
+    "message": "Темний режим"
+  },
+  "label_date_and_time": {
+    "message": "Дата та час"
+  },
+  "label_display_btns": {
+    "message": "Показати / Приховати кнопки експорту"
+  },
+  "label_download_location": {
+    "message": "Місце завантаження"
+  },
+  "label_file_name": {
+    "message": "Назва файлу"
+  },
+  "label_file_name_custom_part": {
+    "message": "Власна частина"
+  },
+  "label_file_name_format": {
+    "message": "Формат назви файлу"
+  },
+  "label_font_family": {
+    "message": "Шрифт"
+  },
+  "label_font_size": {
+    "message": "Розмір шрифту"
+  },
+  "label_include_deep_research_references": {
+    "message": "Посилання глибокого дослідження"
+  },
+  "label_include_model_name": {
+    "message": "Назва моделі"
+  },
+  "label_include_per_msg_time": {
+    "message": "Мітки часу повідомлень"
+  },
+  "label_include_thought_process": {
+    "message": "Процес мислення"
+  },
+  "label_include_web_search_sources": {
+    "message": "Джерела веб-пошуку"
+  },
+  "label_mute_export": {
+    "message": "Вимкнути звук експорту"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Розрив сторінки на кожен запит"
+  },
+  "label_page_format": {
+    "message": "Формат сторінки"
+  },
+  "label_page_margin": {
+    "message": "Поля сторінки"
+  },
+  "label_pdf_language": {
+    "message": "Мова"
+  },
+  "label_remove_branding": {
+    "message": "Видалити брендинг"
+  },
+  "label_remove_icons": {
+    "message": "Видалити іконки"
+  },
+  "label_remove_page_number": {
+    "message": "Видалити номер сторінки"
+  },
+  "label_role_assistant": {
+    "message": "Асистент"
+  },
+  "label_role_labels": {
+    "message": "Назви ролей"
+  },
+  "label_role_user": {
+    "message": "Користувач"
+  },
+  "label_table_of_contents": {
+    "message": "Зміст"
+  },
+  "label_toc_background": {
+    "message": "Фон"
+  },
+  "label_toc_prefix": {
+    "message": "Префікс"
+  },
+  "label_toc_style": {
+    "message": "Стиль змісту"
+  },
+  "label_toc_text": {
+    "message": "Текст"
+  },
+  "label_user_info": {
+    "message": "Інформація про користувача"
+  },
+  "language": {
+    "message": "Ukrainian"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Запит функції"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Відкрити веб-сайт ChatGPT"
+  },
+  "link_settings_download": {
+    "message": "Відкрити налаштування"
+  },
+  "msg_bad": {
+    "message": "Погано"
+  },
+  "msg_export_success": {
+    "message": "Експорт успішний!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Копіювання в буфер обміну успішне!"
+  },
+  "msg_good": {
+    "message": "Добре"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "Це допоможе іншим дізнатися більше про розширення."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Якщо у вас є проблеми або ідеї, будь ласка, зв'яжіться з нами."
+  },
+  "msg_rate_or_review": {
+    "message": "Оцініть або залиште відгук у Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Пов'язане розширення:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Дякуємо за вашу підтримку!"
+  },
+  "msg_usage": {
+    "message": "Використання"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "досягнуто щоденну квоту"
+  },
+  "msg_what_you_think": {
+    "message": "Що ви думаєте про це розширення?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Власна частина}-{Мітка часу}-{Назва розмови}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Власна частина}-{Назва розмови}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Власна частина}-{Назва розмови}-{Мітка часу}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Мітка часу}-{Власна частина}-{Назва розмови}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Мітка часу}-{Назва розмови}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Мітка часу}-{Назва розмови}-{Власна частина}"
+  },
+  "option_filename_format_title": {
+    "message": "{Назва розмови}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Назва розмови}-{Власна частина}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Назва розмови}-{Власна частина}-{Мітка часу}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Назва розмови}-{Мітка часу}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Назва розмови}-{Мітка часу}-{Власна частина}"
+  },
+  "recent_updates_got_it": {
+    "message": "Зрозуміло"
+  },
+  "recent_updates_item_1": {
+    "message": "Покращено експорт тимчасових чатів"
+  },
+  "recent_updates_item_2": {
+    "message": "Налаштуйте назву експортованого файлу з необов'язковою міткою часу"
+  },
+  "recent_updates_item_3": {
+    "message": "Задайте мову PDF, щоб текст відображався правильним шрифтом"
+  },
+  "recent_updates_item_4": {
+    "message": "Більше способів налаштувати зміст PDF"
+  },
+  "recent_updates_title": {
+    "message": "Останні оновлення"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Підтримка розумного інтерфейсу ChatGPT у PDF"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Виправлено періодичні помилки експорту чатів за посиланням"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Відображення блок-схем Mermaid у PDF"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Як самостійний розробник, я стягую невелику плату, щоб допомогти покрити витрати на підтримку сервісу. Я дійсно ціную ваше розуміння та підтримку."
+  },
+  "thanks": {
+    "message": "Створено з ❤️. Дякуємо за використання."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Автоматично закривати цю бічну панель після експорту — увімкніть у Налаштуваннях"
+  },
+  "tip_choose_export_format": {
+    "message": "Натисніть тут, щоб вибрати формат експорту"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "Для форматів, відмінних від PDF, можна копіювати прямо в буфер обміну замість збереження файлу — увімкніть у Налаштуваннях"
+  },
+  "tip_dock_toggle": {
+    "message": "Клацніть на іконку у верхньому лівому куті селектора, щоб закріпити його з іншого боку"
+  },
+  "tip_filename_format": {
+    "message": "Виберіть, як складається назва експортованого файлу — задайте формат у Налаштуваннях"
+  },
+  "tip_hover_preview": {
+    "message": "Наведіть курсор на будь-який елемент, щоб переглянути повний вміст"
+  },
+  "tip_resizable_expandable": {
+    "message": "Перетягніть внутрішній край, щоб змінити розмір селектора; клацніть повідомлення, щоб розгорнути/згорнути попередній перегляд"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Клік для вибору/зняття вибору діапазону прапорців одночасно"
+  },
+  "tip_support_temp_shared": {
+    "message": "Тепер підтримує експорт тимчасових і спільних чатів"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Коли ви розгортаєте процес мислення, він буде включений у ваш експорт. Ви можете розгортати або згортати кожен процес мислення, щоб контролювати, що експортується."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Копіювати вміст в буфер обміну замість завантаження як файл."
+  },
+  "tooltip_dock_left": {
+    "message": "Закріпити ліворуч"
+  },
+  "tooltip_dock_right": {
+    "message": "Закріпити праворуч"
+  },
+  "tooltip_download_location": {
+    "message": "Змінити місце збереження файлів або вибрати, щоб запитувати кожного разу в налаштуваннях Chrome."
+  },
+  "tooltip_file_name_format": {
+    "message": "Виберіть, як складається назва експортованого файлу, напр. «ChatGPT-MyChat», «ChatGPT-MyChat-20260808-1430» або «20260808-1430-MyChat-ChatGPT»."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Потрібен інший шаблон назви? Змініть формат назви файлу в загальних налаштуваннях."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Швидко виберіть або скасуйте вибір усіх повідомлень."
+  },
+  "tooltip_mute_export": {
+    "message": "Не показувати діалогове вікно успішного експорту."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Спочатку найновіші"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Спочатку найстаріші"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Коли увімкнено, кожен користувацький запит починатиметься з нової сторінки."
+  },
+  "tooltip_pdf_language": {
+    "message": "Виберіть мову вмісту розмови, щоб уникнути спотворених або нечитабельних шрифтів у створеному PDF."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Функція Pro-плану"
+  },
+  "tooltip_remove_branding": {
+    "message": "Видаліть брендинг ChatGPT Exporter, включаючи іконку та посилання."
+  },
+  "tooltip_remove_icons": {
+    "message": "Видаліть іконки користувача та ChatGPT у PDF"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Прокрутити вниз"
+  },
+  "tooltip_toc_style": {
+    "message": "Налаштуйте префікс і кольори записів змісту для розрізнення користувача та асистента"
+  },
+  "turn_selector_title": {
+    "message": "Вибрати повідомлення"
+  }
+}

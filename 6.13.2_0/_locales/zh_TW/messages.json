@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "查看方案"
+   },
+   "btn_collapse": {
+      "message": "摺疊"
+   },
+   "btn_expand": {
+      "message": "展開"
+   },
+   "btn_export": {
+      "message": "匯出"
+   },
+   "error_dialog_title": {
+      "message": "匯出失敗"
+   },
+   "error_no_messages": {
+      "message": "找不到訊息。請先開啟現有對話，或傳送至少一則訊息後再匯出。"
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "非 PDF 匯出類型的設定。"
+   },
+   "export_settings_tagline": {
+      "message": "常用設定。"
+   },
+   "export_settings_title": {
+      "message": "匯出設定"
+   },
+   "ext_description": {
+      "message": "下載 ChatGPT 對話為 PDF、Markdown、文字等格式。下載 Chat GPT 結果為 PDF，輕鬆將 ChatGPT 轉換為美麗的 PDF。"
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT 匯出工具 - ChatGPT 轉換為 PDF、MD 等"
+   },
+   "feedback": {
+      "message": "問題迴響"
+   },
+   "feedback_btn_cancel": {
+      "message": "取消"
+   },
+   "feedback_btn_choose_file": {
+      "message": "選擇檔案"
+   },
+   "feedback_btn_close": {
+      "message": "關閉"
+   },
+   "feedback_btn_report": {
+      "message": "意見回饋"
+   },
+   "feedback_btn_submit": {
+      "message": "提交"
+   },
+   "feedback_description_required": {
+      "message": "描述為必填欄位"
+   },
+   "feedback_dialog_title": {
+      "message": "意見回饋"
+   },
+   "feedback_hint_paste": {
+      "message": "或按 Ctrl+V 貼上"
+   },
+   "feedback_label_description": {
+      "message": "描述"
+   },
+   "feedback_label_email": {
+      "message": "電子郵件（選填）"
+   },
+   "feedback_label_screenshots": {
+      "message": "螢幕截圖（選填，按 Ctrl+V 貼上）"
+   },
+   "feedback_label_type": {
+      "message": "類型"
+   },
+   "feedback_submit_failed": {
+      "message": "提交意見回饋失敗，請重試。"
+   },
+   "feedback_submit_success": {
+      "message": "謝謝！您的意見回饋已提交。"
+   },
+   "label_auto_close_selector": {
+      "message": "匯出後自動關閉選擇視窗"
+   },
+   "label_auto_show_thinking": {
+      "message": "自動顯示思考過程"
+   },
+   "label_content_title": {
+      "message": "內容標題"
+   },
+   "label_convo_link": {
+      "message": "對話連結"
+   },
+   "label_copy_to_clipboard": {
+      "message": "複製到剪貼簿"
+   },
+   "label_dark_mode": {
+      "message": "深色模式"
+   },
+   "label_date_and_time": {
+      "message": "日期和時間"
+   },
+   "label_display_btns": {
+      "message": "顯示/隱藏匯出按鈕"
+   },
+   "label_download_location": {
+      "message": "下載位置"
+   },
+   "label_file_name": {
+      "message": "檔案名稱"
+   },
+   "label_file_name_custom_part": {
+      "message": "自訂部分"
+   },
+   "label_file_name_format": {
+      "message": "檔案名稱格式"
+   },
+   "label_font_family": {
+      "message": "字體"
+   },
+   "label_font_size": {
+      "message": "字體大小"
+   },
+   "label_include_deep_research_references": {
+      "message": "深度研究參考文獻"
+   },
+   "label_include_model_name": {
+      "message": "模型名稱"
+   },
+   "label_include_per_msg_time": {
+      "message": "訊息時間戳"
+   },
+   "label_include_thought_process": {
+      "message": "思考過程"
+   },
+   "label_include_web_search_sources": {
+      "message": "網路搜尋來源"
+   },
+   "label_mute_export": {
+      "message": "靜音匯出"
+   },
+   "label_page_break_per_prompt": {
+      "message": "每個提示詞分頁"
+   },
+   "label_page_format": {
+      "message": "頁面格式"
+   },
+   "label_page_margin": {
+      "message": "頁面邊距"
+   },
+   "label_pdf_language": {
+      "message": "語言"
+   },
+   "label_remove_branding": {
+      "message": "移除品牌標識"
+   },
+   "label_remove_icons": {
+      "message": "移除圖示"
+   },
+   "label_remove_page_number": {
+      "message": "移除頁碼"
+   },
+   "label_role_assistant": {
+      "message": "助手"
+   },
+   "label_role_labels": {
+      "message": "角色標籤"
+   },
+   "label_role_user": {
+      "message": "使用者"
+   },
+   "label_table_of_contents": {
+      "message": "目錄"
+   },
+   "label_toc_background": {
+      "message": "背景"
+   },
+   "label_toc_prefix": {
+      "message": "前綴"
+   },
+   "label_toc_style": {
+      "message": "目錄樣式"
+   },
+   "label_toc_text": {
+      "message": "文字"
+   },
+   "label_user_info": {
+      "message": "使用者資訊"
+   },
+   "language": {
+      "message": "Chinese, Traditional"
+   },
+   "link_contact_support": {
+      "message": "聯絡支援"
+   },
+   "link_feature_request": {
+      "message": "功能請求"
+   },
+   "link_my_account": {
+      "message": "我的帳戶"
+   },
+   "link_open_chatgpt": {
+      "message": "開啟 ChatGPT 網站"
+   },
+   "link_settings_download": {
+      "message": "開啟設定"
+   },
+   "msg_bad": {
+      "message": "差"
+   },
+   "msg_export_success": {
+      "message": "匯出成功！"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "複製到剪貼簿成功！"
+   },
+   "msg_good": {
+      "message": "好"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "這將幫助其他人了解更多關於此擴充功能的資訊。"
+   },
+   "msg_if_issue_or_idea": {
+      "message": "如果您有任何問題或想法，請隨時聯絡我們。"
+   },
+   "msg_rate_or_review": {
+      "message": "在 Chrome 網上應用店評分或評論"
+   },
+   "msg_related_extension": {
+      "message": "相關擴充功能："
+   },
+   "msg_thanks_for_support": {
+      "message": "感謝您的支持！"
+   },
+   "msg_usage": {
+      "message": "使用情況"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "使用量已達每日配額"
+   },
+   "msg_what_you_think": {
+      "message": "您對這個擴充功能有何看法？"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{自訂部分}-{時間戳}-{對話標題}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{自訂部分}-{對話標題}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{自訂部分}-{對話標題}-{時間戳}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{時間戳}-{自訂部分}-{對話標題}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{時間戳}-{對話標題}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{時間戳}-{對話標題}-{自訂部分}"
+   },
+   "option_filename_format_title": {
+      "message": "{對話標題}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{對話標題}-{自訂部分}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{對話標題}-{自訂部分}-{時間戳}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{對話標題}-{時間戳}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{對話標題}-{時間戳}-{自訂部分}"
+   },
+   "recent_updates_got_it": {
+      "message": "知道了"
+   },
+   "recent_updates_item_1": {
+      "message": "優化了臨時對話的匯出"
+   },
+   "recent_updates_item_2": {
+      "message": "可自訂匯出檔名，並可選擇加上時間戳記"
+   },
+   "recent_updates_item_3": {
+      "message": "可指定 PDF 語言，讓文字以正確的字型呈現"
+   },
+   "recent_updates_item_4": {
+      "message": "PDF 目錄支援更多自訂選項"
+   },
+   "recent_updates_title": {
+      "message": "最近更新"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "支援在 PDF 中呈現 ChatGPT 智能 UI"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "修正匯出分享對話時偶爾發生的問題"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "支援在 PDF 中呈現 Mermaid 流程圖"
+   },
+   "solo_dev_charge_fee": {
+      "message": "作為獨立開發者，我收取少量費用來幫助支付維護服務的成本。我真誠地感謝您的理解和支持。"
+   },
+   "thanks": {
+      "message": "由 ❤️ 建立。感謝您的使用。"
+   },
+   "tip_auto_close_sidebar": {
+      "message": "匯出後自動關閉此側邊欄 — 可在設定中開啟"
+   },
+   "tip_choose_export_format": {
+      "message": "點擊這裡選擇匯出格式"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "非 PDF 格式可以直接複製到剪貼簿而不儲存檔案 — 可在設定中開啟"
+   },
+   "tip_dock_toggle": {
+      "message": "點擊選擇器左上角的圖示，可將其切換到另一側"
+   },
+   "tip_filename_format": {
+      "message": "匯出檔名的組合方式可以自訂 — 可在設定中選擇格式"
+   },
+   "tip_hover_preview": {
+      "message": "將滑鼠懸停在任意條目上可預覽完整內容"
+   },
+   "tip_resizable_expandable": {
+      "message": "拖曳內側邊緣可調整選擇器寬度，點擊訊息可展開/折疊預覽"
+   },
+   "tip_shift_click_range": {
+      "message": "按住 Shift 點擊可批量選取/取消選取一組核取方塊"
+   },
+   "tip_support_temp_shared": {
+      "message": "現已支援匯出臨時對話和共享對話"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "當您展開思考過程時，它將包含在您的匯出中。您可以展開或摺疊每個思考過程來控制匯出的內容。"
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "將內容複製到剪貼簿，而不是下載為檔案。"
+   },
+   "tooltip_dock_left": {
+      "message": "停靠至左側"
+   },
+   "tooltip_dock_right": {
+      "message": "停靠至右側"
+   },
+   "tooltip_download_location": {
+      "message": "更改檔案儲存位置或在 Chrome 設定中選擇每次都詢問。"
+   },
+   "tooltip_file_name_format": {
+      "message": "選擇匯出檔案名稱的拼接方式，例如「ChatGPT-MyChat」、「ChatGPT-MyChat-20260808-1430」或「20260808-1430-MyChat-ChatGPT」。"
+   },
+   "tooltip_file_name_hint": {
+      "message": "想要其他命名規則？可在「通用設定」中修改檔名格式。"
+   },
+   "tooltip_main_checkbox": {
+      "message": "快速選擇或取消選擇所有訊息。"
+   },
+   "tooltip_mute_export": {
+      "message": "不顯示匯出成功對話框。"
+   },
+   "tooltip_order_newest_first": {
+      "message": "按倒序顯示（最新在前）"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "按正序顯示（最早在前）"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "啟用時，每個使用者提示詞將在新頁面開始。"
+   },
+   "tooltip_pdf_language": {
+      "message": "選擇對話內容的語言，避免產生的 PDF 出現字型變形或亂碼。"
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "專業版功能"
+   },
+   "tooltip_remove_branding": {
+      "message": "移除 ChatGPT 匯出工具品牌標識，包括圖示和連結。"
+   },
+   "tooltip_remove_icons": {
+      "message": "在 PDF 中移除使用者和 ChatGPT 圖示"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "捲動到底部"
+   },
+   "tooltip_toc_style": {
+      "message": "自訂目錄條目前綴和顏色，便於區分使用者和助手的對話"
+   },
+   "turn_selector_title": {
+      "message": "選擇訊息"
+   }
+}

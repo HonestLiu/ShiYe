@@ -1,0 +1,7 @@
+{
+  "cmd": "create",
+  "payload": {
+    "markdown": "# 本地 PDF 导出验证\n\n## 用户\n\n请说明勾股定理。\n\n## 助手\n\n直角三角形满足 $a^2+b^2=c^2$。\n\n$$\\int_0^1 x^2\\,dx=\\frac{1}{3}$$\n\n```python\nprint(\"中文代码测试\")\n```\n\n| 项目 | 结果 |\n|---|---|\n| 中文 | 本机排版 |\n| 公式 | 本机生成 |\n",
+    "options": {"pageSize": "a4", "fontSize": 11}
+  }
+}

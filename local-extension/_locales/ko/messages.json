@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "요금제 확인하기"
+  },
+  "btn_collapse": {
+    "message": "접기"
+  },
+  "btn_expand": {
+    "message": "펼치기"
+  },
+  "btn_export": {
+    "message": "내보내기"
+  },
+  "error_dialog_title": {
+    "message": "내보내기 실패"
+  },
+  "error_no_messages": {
+    "message": "메시지를 찾을 수 없습니다. 기존 대화를 열거나 메시지를 하나 이상 보낸 후 내보내세요."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "PDF 가 아닌 내보내기 유형의 설정."
+  },
+  "export_settings_tagline": {
+    "message": "일반 설정."
+  },
+  "export_settings_title": {
+    "message": "내보내기 설정"
+  },
+  "ext_description": {
+    "message": "ChatGPT 대화를 PDF, Markdown, 텍스트 등으로 다운로드하세요. ChatGPT 결과를 PDF 로 다운로드하세요. ChatGPT 를 아름다운 PDF 로 쉽게 변환하세요."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT 익스포터 - ChatGPT 를 PDF, MD 등으로"
+  },
+  "feedback": {
+    "message": "피드백"
+  },
+  "feedback_btn_cancel": {
+    "message": "취소"
+  },
+  "feedback_btn_choose_file": {
+    "message": "파일 선택"
+  },
+  "feedback_btn_close": {
+    "message": "닫기"
+  },
+  "feedback_btn_report": {
+    "message": "피드백"
+  },
+  "feedback_btn_submit": {
+    "message": "제출"
+  },
+  "feedback_description_required": {
+    "message": "설명은 필수입니다"
+  },
+  "feedback_dialog_title": {
+    "message": "피드백"
+  },
+  "feedback_hint_paste": {
+    "message": "또는 Ctrl+V로 붙여넣기"
+  },
+  "feedback_label_description": {
+    "message": "설명"
+  },
+  "feedback_label_email": {
+    "message": "이메일 (선택사항)"
+  },
+  "feedback_label_screenshots": {
+    "message": "스크린샷 (선택사항, Ctrl+V로 붙여넣기)"
+  },
+  "feedback_label_type": {
+    "message": "유형"
+  },
+  "feedback_submit_failed": {
+    "message": "피드백 제출에 실패했습니다. 다시 시도해 주세요."
+  },
+  "feedback_submit_success": {
+    "message": "감사합니다! 피드백이 제출되었습니다."
+  },
+  "label_auto_close_selector": {
+    "message": "내보내기 후 선택기 자동 닫기"
+  },
+  "label_auto_show_thinking": {
+    "message": "자동으로 사고 과정 표시"
+  },
+  "label_content_title": {
+    "message": "콘텐츠 제목"
+  },
+  "label_convo_link": {
+    "message": "대화 링크"
+  },
+  "label_copy_to_clipboard": {
+    "message": "클립보드에 복사"
+  },
+  "label_dark_mode": {
+    "message": "다크 모드"
+  },
+  "label_date_and_time": {
+    "message": "날짜 및 시간"
+  },
+  "label_display_btns": {
+    "message": "내보내기 버튼 표시/숨기기"
+  },
+  "label_download_location": {
+    "message": "다운로드 위치"
+  },
+  "label_file_name": {
+    "message": "파일 이름"
+  },
+  "label_file_name_custom_part": {
+    "message": "사용자 지정 부분"
+  },
+  "label_file_name_format": {
+    "message": "파일 이름 형식"
+  },
+  "label_font_family": {
+    "message": "글꼴"
+  },
+  "label_font_size": {
+    "message": "글꼴 크기"
+  },
+  "label_include_deep_research_references": {
+    "message": "딥 리서치 참고문헌"
+  },
+  "label_include_model_name": {
+    "message": "모델 이름"
+  },
+  "label_include_per_msg_time": {
+    "message": "메시지 타임스탬프"
+  },
+  "label_include_thought_process": {
+    "message": "사고 과정"
+  },
+  "label_include_web_search_sources": {
+    "message": "웹 검색 출처"
+  },
+  "label_mute_export": {
+    "message": "내보내기 음소거"
+  },
+  "label_page_break_per_prompt": {
+    "message": "프롬프트마다 페이지 나눔기"
+  },
+  "label_page_format": {
+    "message": "페이지 형식"
+  },
+  "label_page_margin": {
+    "message": "페이지 여백"
+  },
+  "label_pdf_language": {
+    "message": "언어"
+  },
+  "label_remove_branding": {
+    "message": "브랜딩 제거"
+  },
+  "label_remove_icons": {
+    "message": "아이콘 제거"
+  },
+  "label_remove_page_number": {
+    "message": "페이지 번호 제거"
+  },
+  "label_role_assistant": {
+    "message": "어시스턴트"
+  },
+  "label_role_labels": {
+    "message": "역할 레이블"
+  },
+  "label_role_user": {
+    "message": "사용자"
+  },
+  "label_table_of_contents": {
+    "message": "목차"
+  },
+  "label_toc_background": {
+    "message": "배경"
+  },
+  "label_toc_prefix": {
+    "message": "접두사"
+  },
+  "label_toc_style": {
+    "message": "목차 스타일"
+  },
+  "label_toc_text": {
+    "message": "텍스트"
+  },
+  "label_user_info": {
+    "message": "사용자 정보"
+  },
+  "language": {
+    "message": "Korean"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "기능 요청"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "ChatGPT 웹사이트 열기"
+  },
+  "link_settings_download": {
+    "message": "설정 열기"
+  },
+  "msg_bad": {
+    "message": "나쁨"
+  },
+  "msg_export_success": {
+    "message": "내보내기 성공!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "클립보드에 복사 성공!"
+  },
+  "msg_good": {
+    "message": "좋음"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "이를 통해 다른 사람들이 확장 프로그램에 대해 더 많이 알 수 있습니다."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "문제나 아이디어가 있으시면 언제든지 연락해 주세요."
+  },
+  "msg_rate_or_review": {
+    "message": "Chrome 웹 스토어에서 평가 또는 리뷰"
+  },
+  "msg_related_extension": {
+    "message": "관련 확장 프로그램:"
+  },
+  "msg_thanks_for_support": {
+    "message": "지원해 주셔서 감사합니다!"
+  },
+  "msg_usage": {
+    "message": "사용량"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "사용량이 일일 할당량에 도달했습니다"
+  },
+  "msg_what_you_think": {
+    "message": "이 확장 프로그램에 대해 어떻게 생각하세요?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{사용자 지정 부분}-{타임스탬프}-{대화 제목}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{사용자 지정 부분}-{대화 제목}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{사용자 지정 부분}-{대화 제목}-{타임스탬프}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{타임스탬프}-{사용자 지정 부분}-{대화 제목}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{타임스탬프}-{대화 제목}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{타임스탬프}-{대화 제목}-{사용자 지정 부분}"
+  },
+  "option_filename_format_title": {
+    "message": "{대화 제목}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{대화 제목}-{사용자 지정 부분}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{대화 제목}-{사용자 지정 부분}-{타임스탬프}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{대화 제목}-{타임스탬프}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{대화 제목}-{타임스탬프}-{사용자 지정 부분}"
+  },
+  "recent_updates_got_it": {
+    "message": "확인"
+  },
+  "recent_updates_item_1": {
+    "message": "임시 대화 내보내기 개선"
+  },
+  "recent_updates_item_2": {
+    "message": "내보낼 파일 이름을 직접 지정 가능, 타임스탬프 추가 선택 가능"
+  },
+  "recent_updates_item_3": {
+    "message": "PDF 언어를 지정해 텍스트가 올바른 글꼴로 표시되도록 개선"
+  },
+  "recent_updates_item_4": {
+    "message": "PDF 목차에 사용할 수 있는 설정 항목 추가"
+  },
+  "recent_updates_title": {
+    "message": "최근 업데이트"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "PDF에서 ChatGPT 지능형 UI 지원"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "공유 채팅 내보내기 시 간헐적으로 발생하는 문제 수정"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "PDF에서 Mermaid 순서도 렌더링"
+  },
+  "solo_dev_charge_fee": {
+    "message": "개인 개발자로서, 서비스 유지 비용을 지원하기 위해 소액의 수수료를 부과하고 있습니다. 귀하의 이해와 지원에 진심으로 감사드립니다."
+  },
+  "thanks": {
+    "message": "❤️로 제작되었습니다. 사용해 주셔서 감사합니다."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "내보내기 후 이 사이드바를 자동으로 닫기 — 설정에서 활성화하세요"
+  },
+  "tip_choose_export_format": {
+    "message": "여기를 클릭하여 내보내기 형식을 선택하세요"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "PDF가 아닌 형식의 경우 파일 저장 대신 클립보드에 직접 복사할 수 있습니다 — 설정에서 활성화하세요"
+  },
+  "tip_dock_toggle": {
+    "message": "선택기의 좌측 상단 아이콘을 클릭하면 반대쪽에 도킹할 수 있습니다"
+  },
+  "tip_filename_format": {
+    "message": "내보낼 파일 이름의 구성을 선택하세요 — 설정에서 형식을 지정하세요"
+  },
+  "tip_hover_preview": {
+    "message": "각 턴에 마우스를 올리면 전체 내용을 미리 볼 수 있습니다"
+  },
+  "tip_resizable_expandable": {
+    "message": "안쪽 가장자리를 드래그하여 선택기 크기를 조정하고, 메시지를 클릭하여 미리보기 펼치기/접기"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+클릭으로 체크박스 범위를 한 번에 선택/해제"
+  },
+  "tip_support_temp_shared": {
+    "message": "임시 채팅과 공유 채팅 내보내기를 지원합니다"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "사고 과정을 확장하면 내보내기에 포함됩니다. 각 사고 과정을 확장하거나 축소하여 내보낼 내용을 제어할 수 있습니다."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "파일로 다운로드하는 대신 콘텐츠를 클립보드에 복사합니다."
+  },
+  "tooltip_dock_left": {
+    "message": "왼쪽에 도킹"
+  },
+  "tooltip_dock_right": {
+    "message": "오른쪽에 도킹"
+  },
+  "tooltip_download_location": {
+    "message": "파일이 저장되는 위치를 변경하거나 Chrome 설정에서 매번 묻도록 선택합니다."
+  },
+  "tooltip_file_name_format": {
+    "message": "내보낸 파일 이름을 조합하는 방식을 선택하세요. 예: \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\", \"20260808-1430-MyChat-ChatGPT\""
+  },
+  "tooltip_file_name_hint": {
+    "message": "다른 명명 규칙을 원하시나요? 공통 설정에서 파일 이름 형식을 변경할 수 있습니다."
+  },
+  "tooltip_main_checkbox": {
+    "message": "모든 메시지를 한 번에 빠르게 선택하거나 선택 해제합니다."
+  },
+  "tooltip_mute_export": {
+    "message": "내보내기 성공 대화 상자를 표시하지 않습니다."
+  },
+  "tooltip_order_newest_first": {
+    "message": "최신순으로 표시"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "오래된 순으로 표시"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "활성화되면 각 사용자 프롬프트가 새 페이지에서 시작됩니다."
+  },
+  "tooltip_pdf_language": {
+    "message": "생성된 PDF에서 글꼴이 깨지거나 손상되는 것을 방지하려면 대화 내용의 언어를 선택하세요."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "프로 플랜 기능"
+  },
+  "tooltip_remove_branding": {
+    "message": "아이콘 및 링크를 포함한 ChatGPT 익스포터 브랜딩을 제거합니다."
+  },
+  "tooltip_remove_icons": {
+    "message": "PDF 에서 사용자 및 ChatGPT 아이콘 제거"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "맨 아래로 스크롤"
+  },
+  "tooltip_toc_style": {
+    "message": "목차 항목의 접두사와 색상을 사용자 지정하여 사용자와 어시스턴트를 구분하세요"
+  },
+  "turn_selector_title": {
+    "message": "메시지 선택"
+  }
+}

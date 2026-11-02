@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Lihat paket"
+  },
+  "btn_collapse": {
+    "message": "Ciutkan"
+  },
+  "btn_expand": {
+    "message": "Perluas"
+  },
+  "btn_export": {
+    "message": "EKSPOR"
+  },
+  "error_dialog_title": {
+    "message": "Ekspor Gagal"
+  },
+  "error_no_messages": {
+    "message": "Tidak ada pesan yang ditemukan. Buka percakapan yang sudah ada atau kirim setidaknya satu pesan sebelum mengekspor."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Pengaturan untuk jenis ekspor non-PDF."
+  },
+  "export_settings_tagline": {
+    "message": "Pengaturan umum."
+  },
+  "export_settings_title": {
+    "message": "Pengaturan Ekspor"
+  },
+  "ext_description": {
+    "message": "Unduh percakapan ChatGPT sebagai PDF, Markdown, Teks, dll. Unduh hasil ChatGPT ke PDF. Mudah mengkonversi ChatGPT ke PDF yang indah."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT ke PDF, MD, dan lainnya"
+  },
+  "feedback": {
+    "message": "Umpan Balik"
+  },
+  "feedback_btn_cancel": {
+    "message": "Batal"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Pilih File"
+  },
+  "feedback_btn_close": {
+    "message": "Tutup"
+  },
+  "feedback_btn_report": {
+    "message": "Umpan Balik"
+  },
+  "feedback_btn_submit": {
+    "message": "Kirim"
+  },
+  "feedback_description_required": {
+    "message": "Deskripsi wajib diisi"
+  },
+  "feedback_dialog_title": {
+    "message": "Umpan Balik"
+  },
+  "feedback_hint_paste": {
+    "message": "atau Ctrl+V untuk menempel"
+  },
+  "feedback_label_description": {
+    "message": "Deskripsi"
+  },
+  "feedback_label_email": {
+    "message": "Email (opsional)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Tangkapan layar (opsional, tempel dengan Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Jenis"
+  },
+  "feedback_submit_failed": {
+    "message": "Gagal mengirim umpan balik. Silakan coba lagi."
+  },
+  "feedback_submit_success": {
+    "message": "Terima kasih! Umpan balik Anda telah dikirim."
+  },
+  "label_auto_close_selector": {
+    "message": "Tutup otomatis pemilih setelah ekspor"
+  },
+  "label_auto_show_thinking": {
+    "message": "Tampilkan proses berpikir otomatis"
+  },
+  "label_content_title": {
+    "message": "Judul Konten"
+  },
+  "label_convo_link": {
+    "message": "Tautan Percakapan"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Salin ke clipboard"
+  },
+  "label_dark_mode": {
+    "message": "Mode Gelap"
+  },
+  "label_date_and_time": {
+    "message": "Tanggal & Waktu"
+  },
+  "label_display_btns": {
+    "message": "Tampilkan / Sembunyikan Tombol Ekspor"
+  },
+  "label_download_location": {
+    "message": "Lokasi Unduhan"
+  },
+  "label_file_name": {
+    "message": "Nama File"
+  },
+  "label_file_name_custom_part": {
+    "message": "Bagian Kustom"
+  },
+  "label_file_name_format": {
+    "message": "Format Nama File"
+  },
+  "label_font_family": {
+    "message": "Font"
+  },
+  "label_font_size": {
+    "message": "Ukuran font"
+  },
+  "label_include_deep_research_references": {
+    "message": "Referensi Riset Mendalam"
+  },
+  "label_include_model_name": {
+    "message": "Nama model"
+  },
+  "label_include_per_msg_time": {
+    "message": "Stempel waktu pesan"
+  },
+  "label_include_thought_process": {
+    "message": "Proses Berpikir"
+  },
+  "label_include_web_search_sources": {
+    "message": "Sumber Pencarian Web"
+  },
+  "label_mute_export": {
+    "message": "Bisukan Ekspor"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Baris halaman per prompt"
+  },
+  "label_page_format": {
+    "message": "Format Halaman"
+  },
+  "label_page_margin": {
+    "message": "Margin Halaman"
+  },
+  "label_pdf_language": {
+    "message": "Bahasa"
+  },
+  "label_remove_branding": {
+    "message": "Hapus Branding"
+  },
+  "label_remove_icons": {
+    "message": "Hapus Ikon"
+  },
+  "label_remove_page_number": {
+    "message": "Hapus Nomor Halaman"
+  },
+  "label_role_assistant": {
+    "message": "Asisten"
+  },
+  "label_role_labels": {
+    "message": "Label peran"
+  },
+  "label_role_user": {
+    "message": "Pengguna"
+  },
+  "label_table_of_contents": {
+    "message": "Daftar Isi"
+  },
+  "label_toc_background": {
+    "message": "Latar Belakang"
+  },
+  "label_toc_prefix": {
+    "message": "Awalan"
+  },
+  "label_toc_style": {
+    "message": "Gaya Daftar Isi"
+  },
+  "label_toc_text": {
+    "message": "Teks"
+  },
+  "label_user_info": {
+    "message": "Info Pengguna"
+  },
+  "language": {
+    "message": "Indonesian"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Permintaan Fitur"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Buka Situs Web ChatGPT"
+  },
+  "link_settings_download": {
+    "message": "Buka Pengaturan"
+  },
+  "msg_bad": {
+    "message": "Buruk"
+  },
+  "msg_export_success": {
+    "message": "Ekspor berhasil!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Salin ke clipboard berhasil!"
+  },
+  "msg_good": {
+    "message": "Baik"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "Ini akan membantu orang lain mempelajari lebih lanjut tentang ekstensi."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Jika Anda memiliki masalah atau ide, silakan hubungi kami."
+  },
+  "msg_rate_or_review": {
+    "message": "Nilai atau Ulas di Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Ekstensi Terkait:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Terima kasih atas dukungan Anda!"
+  },
+  "msg_usage": {
+    "message": "Penggunaan"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "penggunaan telah mencapai kuota harian"
+  },
+  "msg_what_you_think": {
+    "message": "Apa pendapat Anda tentang ekstensi ini?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Bagian Kustom}-{Stempel Waktu}-{Judul Percakapan}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Bagian Kustom}-{Judul Percakapan}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Bagian Kustom}-{Judul Percakapan}-{Stempel Waktu}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Stempel Waktu}-{Bagian Kustom}-{Judul Percakapan}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Stempel Waktu}-{Judul Percakapan}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Stempel Waktu}-{Judul Percakapan}-{Bagian Kustom}"
+  },
+  "option_filename_format_title": {
+    "message": "{Judul Percakapan}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Judul Percakapan}-{Bagian Kustom}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Judul Percakapan}-{Bagian Kustom}-{Stempel Waktu}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Judul Percakapan}-{Stempel Waktu}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Judul Percakapan}-{Stempel Waktu}-{Bagian Kustom}"
+  },
+  "recent_updates_got_it": {
+    "message": "Mengerti"
+  },
+  "recent_updates_item_1": {
+    "message": "Ekspor obrolan sementara yang lebih baik"
+  },
+  "recent_updates_item_2": {
+    "message": "Sesuaikan nama berkas hasil ekspor, dengan stempel waktu opsional"
+  },
+  "recent_updates_item_3": {
+    "message": "Tentukan bahasa PDF agar teks tampil dengan fon yang tepat"
+  },
+  "recent_updates_item_4": {
+    "message": "Lebih banyak opsi untuk menyesuaikan daftar isi PDF"
+  },
+  "recent_updates_title": {
+    "message": "Pembaruan Terbaru"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Dukungan UI cerdas ChatGPT dalam PDF"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Perbaikan masalah sesekali saat mengekspor chat yang dibagikan"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Render diagram alur Mermaid dalam PDF"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Sebagai pengembang solo, saya mengenakan biaya kecil untuk membantu menutupi biaya pemeliharaan layanan. Saya sangat menghargai pengertian dan dukungan Anda."
+  },
+  "thanks": {
+    "message": "Dibuat dengan ❤️. Terima kasih telah menggunakan."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Tutup otomatis bilah sisi ini setelah ekspor — aktifkan di Pengaturan"
+  },
+  "tip_choose_export_format": {
+    "message": "Klik di sini untuk memilih format ekspor"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "Untuk format non-PDF, Anda dapat menyalin langsung ke clipboard alih-alih menyimpan file — aktifkan di Pengaturan"
+  },
+  "tip_dock_toggle": {
+    "message": "Klik ikon di sudut kiri atas selektor untuk memindahkannya ke sisi yang lain"
+  },
+  "tip_filename_format": {
+    "message": "Pilih cara nama file ekspor disusun — atur formatnya di Pengaturan"
+  },
+  "tip_hover_preview": {
+    "message": "Arahkan kursor ke giliran mana pun untuk melihat konten lengkapnya"
+  },
+  "tip_resizable_expandable": {
+    "message": "Seret tepi dalam untuk mengubah ukuran selektor, klik pesan untuk memperluas/menciutkan pratinjau"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Klik untuk memilih/membatalkan pilihan rentang kotak centang sekaligus"
+  },
+  "tip_support_temp_shared": {
+    "message": "Sekarang mendukung ekspor Obrolan Sementara dan Obrolan Bersama"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Ketika Anda memperluas proses berpikir, itu akan disertakan dalam ekspor Anda. Anda dapat memperluas atau menciutkan setiap proses berpikir untuk mengontrol apa yang diekspor."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Salin konten ke clipboard alih-alih mengunduh sebagai file."
+  },
+  "tooltip_dock_left": {
+    "message": "Tempelkan ke kiri"
+  },
+  "tooltip_dock_right": {
+    "message": "Tempelkan ke kanan"
+  },
+  "tooltip_download_location": {
+    "message": "Ubah tempat file disimpan atau pilih untuk ditanyakan setiap kali di Pengaturan Chrome."
+  },
+  "tooltip_file_name_format": {
+    "message": "Pilih cara nama file yang diekspor disusun: mis. \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\", atau \"20260808-1430-MyChat-ChatGPT\"."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Ingin pola penamaan lain? Ubah format nama berkas di pengaturan umum."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Cepat pilih atau hapus pilihan semua pesan."
+  },
+  "tooltip_mute_export": {
+    "message": "Jangan tampilkan dialog Sukses Ekspor."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Tampilkan yang terbaru terlebih dahulu"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Tampilkan yang terlama terlebih dahulu"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Saat diaktifkan, setiap prompt pengguna akan dimulai di halaman baru."
+  },
+  "tooltip_pdf_language": {
+    "message": "Pilih bahasa konten percakapan untuk menghindari font yang rusak atau tidak terbaca pada PDF yang dihasilkan."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Fitur paket Pro"
+  },
+  "tooltip_remove_branding": {
+    "message": "Hapus branding ChatGPT Exporter, termasuk ikon dan tautan."
+  },
+  "tooltip_remove_icons": {
+    "message": "Hapus ikon Pengguna & ChatGPT di PDF"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Gulir ke bawah"
+  },
+  "tooltip_toc_style": {
+    "message": "Sesuaikan awalan dan warna entri daftar isi untuk membedakan pengguna dan asisten"
+  },
+  "turn_selector_title": {
+    "message": "Pilih Pesan"
+  }
+}

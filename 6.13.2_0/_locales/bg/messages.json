@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "Преглед на плановете"
+   },
+   "btn_collapse": {
+      "message": "Свиване"
+   },
+   "btn_expand": {
+      "message": "Разгъване"
+   },
+   "btn_export": {
+      "message": "ЕКСПОРТ"
+   },
+   "error_dialog_title": {
+      "message": "Неуспешен експорт"
+   },
+   "error_no_messages": {
+      "message": "Не са намерени съобщения. Отворете съществуващ разговор или изпратете поне едно съобщение, преди да експортирате."
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "Настройки за типове експорт, различни от PDF."
+   },
+   "export_settings_tagline": {
+      "message": "Общи настройки."
+   },
+   "export_settings_title": {
+      "message": "Настройки за експорт"
+   },
+   "ext_description": {
+      "message": "Изтеглете ChatGPT разговори като PDF, Markdown, Текст и др. Изтеглете ChatGPT резултати в PDF. Лесно конвертирайте ChatGPT в красив PDF."
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT to PDF, MD and more"
+   },
+   "feedback": {
+      "message": "Обратна връзка"
+   },
+   "feedback_btn_cancel": {
+      "message": "Отказ"
+   },
+   "feedback_btn_choose_file": {
+      "message": "Избор на файл"
+   },
+   "feedback_btn_close": {
+      "message": "Затваряне"
+   },
+   "feedback_btn_report": {
+      "message": "Обратна връзка"
+   },
+   "feedback_btn_submit": {
+      "message": "Изпращане"
+   },
+   "feedback_description_required": {
+      "message": "Описанието е задължително"
+   },
+   "feedback_dialog_title": {
+      "message": "Обратна връзка"
+   },
+   "feedback_hint_paste": {
+      "message": "или Ctrl+V за поставяне"
+   },
+   "feedback_label_description": {
+      "message": "Описание"
+   },
+   "feedback_label_email": {
+      "message": "Имейл (незадължително)"
+   },
+   "feedback_label_screenshots": {
+      "message": "Екранни снимки (незадължително, поставете с Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "Тип"
+   },
+   "feedback_submit_failed": {
+      "message": "Неуспешно изпращане на обратна връзка. Моля, опитайте отново."
+   },
+   "feedback_submit_success": {
+      "message": "Благодарим ви! Вашата обратна връзка е изпратена."
+   },
+   "label_auto_close_selector": {
+      "message": "Автоматично затваряне на селектора след експорт"
+   },
+   "label_auto_show_thinking": {
+      "message": "Автоматично показване на процеса на мислене"
+   },
+   "label_content_title": {
+      "message": "Заглавие на съдържанието"
+   },
+   "label_convo_link": {
+      "message": "Връзка на разговора"
+   },
+   "label_copy_to_clipboard": {
+      "message": "Копиране в клипборда"
+   },
+   "label_dark_mode": {
+      "message": "Тъмен режим"
+   },
+   "label_date_and_time": {
+      "message": "Дата и час"
+   },
+   "label_display_btns": {
+      "message": "Показване / Скриване на бутони за експорт"
+   },
+   "label_download_location": {
+      "message": "Местоположение за изтегляне"
+   },
+   "label_file_name": {
+      "message": "Име на файл"
+   },
+   "label_file_name_custom_part": {
+      "message": "Персонализирана част"
+   },
+   "label_file_name_format": {
+      "message": "Формат на името на файла"
+   },
+   "label_font_family": {
+      "message": "Шрифт"
+   },
+   "label_font_size": {
+      "message": "Размер на шрифта"
+   },
+   "label_include_deep_research_references": {
+      "message": "Референции от задълбочено проучване"
+   },
+   "label_include_model_name": {
+      "message": "Име на модела"
+   },
+   "label_include_per_msg_time": {
+      "message": "Времеви отпечатъци на съобщенията"
+   },
+   "label_include_thought_process": {
+      "message": "Мисловен процес"
+   },
+   "label_include_web_search_sources": {
+      "message": "Източници от уеб търсене"
+   },
+   "label_mute_export": {
+      "message": "Изключване на звука при експорт"
+   },
+   "label_page_break_per_prompt": {
+      "message": "Нова страница за всеки въпрос"
+   },
+   "label_page_format": {
+      "message": "Формат на страницата"
+   },
+   "label_page_margin": {
+      "message": "Марж на страницата"
+   },
+   "label_pdf_language": {
+      "message": "Език"
+   },
+   "label_remove_branding": {
+      "message": "Премахване на брандинга"
+   },
+   "label_remove_icons": {
+      "message": "Премахване на иконите"
+   },
+   "label_remove_page_number": {
+      "message": "Премахване на номера на страницата"
+   },
+   "label_role_assistant": {
+      "message": "Асистент"
+   },
+   "label_role_labels": {
+      "message": "Етикети на ролите"
+   },
+   "label_role_user": {
+      "message": "Потребител"
+   },
+   "label_table_of_contents": {
+      "message": "Съдържание"
+   },
+   "label_toc_background": {
+      "message": "Фон"
+   },
+   "label_toc_prefix": {
+      "message": "Представка"
+   },
+   "label_toc_style": {
+      "message": "Стил на съдържанието"
+   },
+   "label_toc_text": {
+      "message": "Текст"
+   },
+   "label_user_info": {
+      "message": "Информация за потребителя"
+   },
+   "language": {
+      "message": "Bulgarian"
+   },
+   "link_contact_support": {
+      "message": "Свържете се с поддръжката"
+   },
+   "link_feature_request": {
+      "message": "Заявка за функция"
+   },
+   "link_my_account": {
+      "message": "Моят акаунт"
+   },
+   "link_open_chatgpt": {
+      "message": "Отваряне на уебсайта на ChatGPT"
+   },
+   "link_settings_download": {
+      "message": "Отваряне на настройки"
+   },
+   "msg_bad": {
+      "message": "Лошо"
+   },
+   "msg_export_success": {
+      "message": "Експортът е успешен!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "Копирането в клипборда е успешно!"
+   },
+   "msg_good": {
+      "message": "Добро"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "Това ще помогне на другите да научат повече за разширението."
+   },
+   "msg_if_issue_or_idea": {
+      "message": "Ако имате проблеми или идеи, не се колебайте да се свържете с нас."
+   },
+   "msg_rate_or_review": {
+      "message": "Оценете или напишете рецензия в Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "Свързано разширение:"
+   },
+   "msg_thanks_for_support": {
+      "message": "Благодаря за подкрепата!"
+   },
+   "msg_usage": {
+      "message": "Използване"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "използването е достигнало дневния лимит"
+   },
+   "msg_what_you_think": {
+      "message": "Какво мислите за това разширение?"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{Персонализирана част}-{Времеви печат}-{Заглавие на разговора}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{Персонализирана част}-{Заглавие на разговора}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{Персонализирана част}-{Заглавие на разговора}-{Времеви печат}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{Времеви печат}-{Персонализирана част}-{Заглавие на разговора}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{Времеви печат}-{Заглавие на разговора}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{Времеви печат}-{Заглавие на разговора}-{Персонализирана част}"
+   },
+   "option_filename_format_title": {
+      "message": "{Заглавие на разговора}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{Заглавие на разговора}-{Персонализирана част}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{Заглавие на разговора}-{Персонализирана част}-{Времеви печат}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{Заглавие на разговора}-{Времеви печат}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{Заглавие на разговора}-{Времеви печат}-{Персонализирана част}"
+   },
+   "recent_updates_got_it": {
+      "message": "Разбрах"
+   },
+   "recent_updates_item_1": {
+      "message": "Подобрен експорт на временните чатове"
+   },
+   "recent_updates_item_2": {
+      "message": "Персонализирано име на експортирания файл, по избор с времеви маркер"
+   },
+   "recent_updates_item_3": {
+      "message": "Задайте език на PDF файла, за да се изобрази текстът с правилния шрифт"
+   },
+   "recent_updates_item_4": {
+      "message": "Повече настройки за съдържанието на PDF файла"
+   },
+   "recent_updates_title": {
+      "message": "Последни актуализации"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "Поддръжка на интелигентния интерфейс на ChatGPT в PDF"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "Отстранени спорадични проблеми при експортиране на споделени чатове"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "Визуализиране на блок-схеми Mermaid в PDF"
+   },
+   "solo_dev_charge_fee": {
+      "message": "Като самостоятелен разработчик, таксувам малък такса, за да помогна покриването на разходите за поддръжка на услугата. Наистина оценявам разбирането и подкрепата ви."
+   },
+   "thanks": {
+      "message": "Създадено с ❤️. Благодаря, че го използвате."
+   },
+   "tip_auto_close_sidebar": {
+      "message": "Автоматично затваряне на този панел след експорт — активирайте го в Настройки"
+   },
+   "tip_choose_export_format": {
+      "message": "Щракнете тук, за да изберете формат за експортиране"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "За формати, различни от PDF, можете да копирате директно в клипборда вместо да запазвате файл — активирайте го в Настройки"
+   },
+   "tip_dock_toggle": {
+      "message": "Щракнете върху иконата в горния ляв ъгъл, за да преместите панела на другата страна"
+   },
+   "tip_filename_format": {
+      "message": "Изберете как се съставя името на експортирания файл — задайте формата в Настройки"
+   },
+   "tip_hover_preview": {
+      "message": "Задръжте курсора върху всеки ред, за да видите пълното му съдържание"
+   },
+   "tip_resizable_expandable": {
+      "message": "Плъзнете вътрешния ръб, за да преоразмерите панела, и щракнете върху съобщение, за да разгънете/свиете визуализацията му"
+   },
+   "tip_shift_click_range": {
+      "message": "Shift+Клик за избиране/отмяна на обхват от отметки наведнъж"
+   },
+   "tip_support_temp_shared": {
+      "message": "Вече поддържа експортиране на временни и споделени чатове"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "Когато разширите процес на мислене, той ще бъде включен във вашия експорт. Можете да разширявате или свивате всеки процес на мислене, за да контролирате какво се експортира."
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "Копиране на съдържанието в клипборда вместо изтегляне като файл."
+   },
+   "tooltip_dock_left": {
+      "message": "Закрепи отляво"
+   },
+   "tooltip_dock_right": {
+      "message": "Закрепи отдясно"
+   },
+   "tooltip_download_location": {
+      "message": "Променете къде се запазват файловете или изберете да бъдете питани всеки път в Настройките на Chrome."
+   },
+   "tooltip_file_name_format": {
+      "message": "Изберете как да се съставя изнесеното име на файла: напр. „ChatGPT-MyChat“, „ChatGPT-MyChat-20260808-1430“ или „20260808-1430-MyChat-ChatGPT“."
+   },
+   "tooltip_file_name_hint": {
+      "message": "Искате друг шаблон за имена? Променете формата на името на файла в общите настройки."
+   },
+   "tooltip_main_checkbox": {
+      "message": "Бързо изберете или премахнете избора на всички съобщения."
+   },
+   "tooltip_mute_export": {
+      "message": "Не показвайте диалоговия прозорец за успешен експорт."
+   },
+   "tooltip_order_newest_first": {
+      "message": "Показване на най-новите първо"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "Показване на най-старите първо"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "Когато е активирано, всеки потребителски въпрос ще започне на нова страница."
+   },
+   "tooltip_pdf_language": {
+      "message": "Изберете езика на съдържанието на разговора, за да избегнете изкривени или нечетливи шрифтове в генерирания PDF."
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "Функция на Pro план"
+   },
+   "tooltip_remove_branding": {
+      "message": "Премахнете брандинга на ChatGPT Exporter, включително иконата и връзката."
+   },
+   "tooltip_remove_icons": {
+      "message": "Премахнете иконите на потребителя и ChatGPT в PDF"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "Превъртане до края"
+   },
+   "tooltip_toc_style": {
+      "message": "Персонализирайте представката и цветовете на елементите в съдържанието, за да разграничите потребителя и асистента"
+   },
+   "turn_selector_title": {
+      "message": "Избор на съобщения"
+   }
+}

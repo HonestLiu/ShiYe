@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Ogled načrtov"
+  },
+  "btn_collapse": {
+    "message": "Strni"
+  },
+  "btn_expand": {
+    "message": "Razširi"
+  },
+  "btn_export": {
+    "message": "IZVOZI"
+  },
+  "error_dialog_title": {
+    "message": "Izvoz ni uspel"
+  },
+  "error_no_messages": {
+    "message": "Ni najdenih sporočil. Odprite obstoječi pogovor ali pred izvozom pošljite vsaj eno sporočilo."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Nastavitve za vrste izvoza, ki niso PDF."
+  },
+  "export_settings_tagline": {
+    "message": "Skupne nastavitve."
+  },
+  "export_settings_title": {
+    "message": "Nastavitve izvoza"
+  },
+  "ext_description": {
+    "message": "Prenesite ChatGPT pogovore kot PDF, Markdown, Besedilo itd. Prenesite ChatGPT rezultate v PDF. Enostavno pretvorite ChatGPT v lep PDF."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT v PDF, MD in več"
+  },
+  "feedback": {
+    "message": "Povratne informacije"
+  },
+  "feedback_btn_cancel": {
+    "message": "Prekliči"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Izberi datoteko"
+  },
+  "feedback_btn_close": {
+    "message": "Zapri"
+  },
+  "feedback_btn_report": {
+    "message": "Povratne informacije"
+  },
+  "feedback_btn_submit": {
+    "message": "Pošlji"
+  },
+  "feedback_description_required": {
+    "message": "Opis je obvezen"
+  },
+  "feedback_dialog_title": {
+    "message": "Povratne informacije"
+  },
+  "feedback_hint_paste": {
+    "message": "ali Ctrl+V za lepljenje"
+  },
+  "feedback_label_description": {
+    "message": "Opis"
+  },
+  "feedback_label_email": {
+    "message": "E-pošta (neobvezno)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Posnetki zaslona (neobvezno, prilepite s Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Vrsta"
+  },
+  "feedback_submit_failed": {
+    "message": "Pošiljanje povratnih informacij ni uspelo. Poskusite znova."
+  },
+  "feedback_submit_success": {
+    "message": "Hvala! Vaše povratne informacije so bile poslane."
+  },
+  "label_auto_close_selector": {
+    "message": "Samodejno zapri izbirnik po izvozu"
+  },
+  "label_auto_show_thinking": {
+    "message": "Samodejno prikaži miselni proces"
+  },
+  "label_content_title": {
+    "message": "Naslov vsebine"
+  },
+  "label_convo_link": {
+    "message": "Povezava pogovora"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Kopiraj v odložišče"
+  },
+  "label_dark_mode": {
+    "message": "Temni način"
+  },
+  "label_date_and_time": {
+    "message": "Datum in čas"
+  },
+  "label_display_btns": {
+    "message": "Prikaži / Skrij gumbe za izvoz"
+  },
+  "label_download_location": {
+    "message": "Lokacija prenosa"
+  },
+  "label_file_name": {
+    "message": "Ime datoteke"
+  },
+  "label_file_name_custom_part": {
+    "message": "Del po meri"
+  },
+  "label_file_name_format": {
+    "message": "Oblika imena datoteke"
+  },
+  "label_font_family": {
+    "message": "Pisava"
+  },
+  "label_font_size": {
+    "message": "Velikost pisave"
+  },
+  "label_include_deep_research_references": {
+    "message": "Reference poglobljenega raziskovanja"
+  },
+  "label_include_model_name": {
+    "message": "Ime modela"
+  },
+  "label_include_per_msg_time": {
+    "message": "Časovni žigi sporočil"
+  },
+  "label_include_thought_process": {
+    "message": "Miselni proces"
+  },
+  "label_include_web_search_sources": {
+    "message": "Viri spletnega iskanja"
+  },
+  "label_mute_export": {
+    "message": "Izključi zvok izvoza"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Prelom strani na prompt"
+  },
+  "label_page_format": {
+    "message": "Format strani"
+  },
+  "label_page_margin": {
+    "message": "Rob strani"
+  },
+  "label_pdf_language": {
+    "message": "Jezik"
+  },
+  "label_remove_branding": {
+    "message": "Odstrani znamko"
+  },
+  "label_remove_icons": {
+    "message": "Odstrani ikone"
+  },
+  "label_remove_page_number": {
+    "message": "Odstrani številko strani"
+  },
+  "label_role_assistant": {
+    "message": "Pomočnik"
+  },
+  "label_role_labels": {
+    "message": "Oznake vlog"
+  },
+  "label_role_user": {
+    "message": "Uporabnik"
+  },
+  "label_table_of_contents": {
+    "message": "Kazalo"
+  },
+  "label_toc_background": {
+    "message": "Ozadje"
+  },
+  "label_toc_prefix": {
+    "message": "Predpona"
+  },
+  "label_toc_style": {
+    "message": "Slog kazala vsebine"
+  },
+  "label_toc_text": {
+    "message": "Besedilo"
+  },
+  "label_user_info": {
+    "message": "Informacije o uporabniku"
+  },
+  "language": {
+    "message": "Slovenian"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Zahtevajte funkcijo"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Odpri spletno stran ChatGPT"
+  },
+  "link_settings_download": {
+    "message": "Odpri nastavitve"
+  },
+  "msg_bad": {
+    "message": "Slabo"
+  },
+  "msg_export_success": {
+    "message": "Izvoz uspešen!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Kopiranje v odložišče uspešno!"
+  },
+  "msg_good": {
+    "message": "Dobro"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "To bi pomagalo drugim, da izvejo več o razširitvi."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Če imate težave ali ideje, nas lahko kontaktirate."
+  },
+  "msg_rate_or_review": {
+    "message": "Ocenite ali napišite oceno v Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Povezana razširitev:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Hvala za podporo!"
+  },
+  "msg_usage": {
+    "message": "Uporaba"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "uporaba je dosegla dnevno kvoto"
+  },
+  "msg_what_you_think": {
+    "message": "Kaj mislite o tem razširitvi?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Del po meri}-{Časovni žig}-{Naslov pogovora}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Del po meri}-{Naslov pogovora}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Del po meri}-{Naslov pogovora}-{Časovni žig}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Časovni žig}-{Del po meri}-{Naslov pogovora}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Časovni žig}-{Naslov pogovora}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Časovni žig}-{Naslov pogovora}-{Del po meri}"
+  },
+  "option_filename_format_title": {
+    "message": "{Naslov pogovora}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Naslov pogovora}-{Del po meri}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Naslov pogovora}-{Del po meri}-{Časovni žig}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Naslov pogovora}-{Časovni žig}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Naslov pogovora}-{Časovni žig}-{Del po meri}"
+  },
+  "recent_updates_got_it": {
+    "message": "Razumem"
+  },
+  "recent_updates_item_1": {
+    "message": "Izboljšan izvoz začasnih pogovorov"
+  },
+  "recent_updates_item_2": {
+    "message": "Prilagodljivo ime izvožene datoteke, po želji s časovnim žigom"
+  },
+  "recent_updates_item_3": {
+    "message": "Nastavite jezik PDF, da se besedilo izriše s pravo pisavo"
+  },
+  "recent_updates_item_4": {
+    "message": "Več možnosti prilagajanja kazala v PDF"
+  },
+  "recent_updates_title": {
+    "message": "Nedavne posodobitve"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Podpora za inteligentni vmesnik ChatGPT v PDF-jih"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Odpravljene občasne težave pri izvozu deljenih klepetov"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Prikaz diagramov poteka Mermaid v PDF-jih"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Kot samostojni razvijalec zaračunavam majhno pristojbino, da pomagam pokriti stroške vzdrževanja storitve. Resnično cenim vaše razumevanje in podporo."
+  },
+  "thanks": {
+    "message": "Zgrajeno z ❤️. Hvala za uporabo."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Samodejno zapri to stransko vrstico po izvozu — omogočite v Nastavitvah"
+  },
+  "tip_choose_export_format": {
+    "message": "Kliknite tukaj za izbiro oblike izvoza"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "Za formate, ki niso PDF, lahko kopirate neposredno v odložišče namesto shranjevanja datoteke — omogočite v Nastavitvah"
+  },
+  "tip_dock_toggle": {
+    "message": "Kliknite ikono v zgornjem levem kotu izbirnika, da ga premaknete na drugo stran"
+  },
+  "tip_filename_format": {
+    "message": "Izberite, kako se sestavi ime izvožene datoteke — obliko nastavite v Nastavitvah"
+  },
+  "tip_hover_preview": {
+    "message": "Premaknite miško nad katerokoli vrstico za predogled celotne vsebine"
+  },
+  "tip_resizable_expandable": {
+    "message": "Povlecite notranji rob za spremembo velikosti izbirnika, kliknite na sporočilo za razširitev/skrčitev predogleda"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Klik za izbiro/preklic obsega potrditvenih polj hkrati"
+  },
+  "tip_support_temp_shared": {
+    "message": "Zdaj podpira izvoz začasnih in deljenih pogovorov"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Ko razširite miselni proces, bo vključen v vaš izvoz. Lahko razširite ali skrčite vsak miselni proces, da nadzirate, kaj se izvozi."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Kopiraj vsebino v odložišče namesto prenašanja kot datoteko."
+  },
+  "tooltip_dock_left": {
+    "message": "Zasidraj levo"
+  },
+  "tooltip_dock_right": {
+    "message": "Zasidraj desno"
+  },
+  "tooltip_download_location": {
+    "message": "Spremenite, kje se datoteke shranijo, ali izberite, da vas vprašajo vsakič v nastavitvah Chrome."
+  },
+  "tooltip_file_name_format": {
+    "message": "Izberite, kako je sestavljeno ime izvožene datoteke: npr. »ChatGPT-MyChat«, »ChatGPT-MyChat-20260808-1430« ali »20260808-1430-MyChat-ChatGPT«."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Želite drugačen vzorec imen? Obliko imena datoteke spremenite v skupnih nastavitvah."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Hitro izberite ali prekličite izbiro vseh sporočil."
+  },
+  "tooltip_mute_export": {
+    "message": "Ne prikazujte pogovornega okna za uspešen izvoz."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Najprej prikaži najnovejše"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Najprej prikaži najstarejše"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Ko je omogočeno, se bo vsak uporabniški prompt začel na novi strani."
+  },
+  "tooltip_pdf_language": {
+    "message": "Izberite jezik vsebine pogovora, da se izognete popačenim ali nečitljivim pisavam v ustvarjenem PDF-ju."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Funkcija Pro načrta"
+  },
+  "tooltip_remove_branding": {
+    "message": "Odstranite znamko ChatGPT Exporter, vključno z ikono in povezavo."
+  },
+  "tooltip_remove_icons": {
+    "message": "Odstranite uporabniške in ChatGPT ikone v PDF"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Pomakni se na dno"
+  },
+  "tooltip_toc_style": {
+    "message": "Prilagodite predpono in barve vnosov kazala, da ločite uporabnika in pomočnika"
+  },
+  "turn_selector_title": {
+    "message": "Izberite sporočila"
+  }
+}

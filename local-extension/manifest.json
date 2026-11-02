@@ -1,0 +1,59 @@
+{
+  "action": {
+    "default_icon": {
+      "128": "assets/icon128.png",
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "all_frames": false,
+      "js": [
+        "bridge.js",
+        "content.js"
+      ],
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://chatgpt.com/*"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "default_locale": "en",
+  "description": "Export conversations with local PDF, images, profile, settings and feedback.",
+  "host_permissions": [
+    "http://127.0.0.1:8765/*"
+  ],
+  "icons": {
+    "128": "assets/icon128.png",
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png"
+  },
+  "manifest_version": 3,
+  "name": "ChatGPT Exporter - Local Service",
+  "options_page": "options.html",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "version": "6.13.2",
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*"
+      ],
+      "resources": [
+        "inj.js"
+      ]
+    }
+  ],
+  "version_name": "6.13.2 Local Service 2.3 (Inline diagrams)"
+}

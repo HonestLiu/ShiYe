@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Katso suunnitelmat"
+  },
+  "btn_collapse": {
+    "message": "Pienennä"
+  },
+  "btn_expand": {
+    "message": "Laajenna"
+  },
+  "btn_export": {
+    "message": "VIE"
+  },
+  "error_dialog_title": {
+    "message": "Vienti epäonnistui"
+  },
+  "error_no_messages": {
+    "message": "Viestejä ei löytynyt. Avaa olemassa oleva keskustelu tai lähetä vähintään yksi viesti ennen vientiä."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Asetukset ei-PDF vientityypeille."
+  },
+  "export_settings_tagline": {
+    "message": "Yleiset asetukset."
+  },
+  "export_settings_title": {
+    "message": "Viennin asetukset"
+  },
+  "ext_description": {
+    "message": "Lataa ChatGPT-keskustelut PDF:ksi, Markdowniksi, Tekstiksi jne. Lataa ChatGPT-tulokset PDF:ksi. Muunna ChatGPT helposti kauniiksi PDF:ksi."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT PDF:ksi, MD:ksi ja muihin muotoihin"
+  },
+  "feedback": {
+    "message": "Palaute"
+  },
+  "feedback_btn_cancel": {
+    "message": "Peruuta"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Valitse tiedosto"
+  },
+  "feedback_btn_close": {
+    "message": "Sulje"
+  },
+  "feedback_btn_report": {
+    "message": "Palaute"
+  },
+  "feedback_btn_submit": {
+    "message": "Lähetä"
+  },
+  "feedback_description_required": {
+    "message": "Kuvaus on pakollinen"
+  },
+  "feedback_dialog_title": {
+    "message": "Palaute"
+  },
+  "feedback_hint_paste": {
+    "message": "tai Ctrl+V liittääksesi"
+  },
+  "feedback_label_description": {
+    "message": "Kuvaus"
+  },
+  "feedback_label_email": {
+    "message": "Sähköposti (valinnainen)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Kuvakaappaukset (valinnainen, liitä Ctrl+V:llä)"
+  },
+  "feedback_label_type": {
+    "message": "Tyyppi"
+  },
+  "feedback_submit_failed": {
+    "message": "Palautteen lähetys epäonnistui. Yritä uudelleen."
+  },
+  "feedback_submit_success": {
+    "message": "Kiitos! Palautteesi on lähetetty."
+  },
+  "label_auto_close_selector": {
+    "message": "Sulje valitsin automaattisesti viennin jälkeen"
+  },
+  "label_auto_show_thinking": {
+    "message": "Näytä ajatteluprosessi automaattisesti"
+  },
+  "label_content_title": {
+    "message": "Sisällön otsikko"
+  },
+  "label_convo_link": {
+    "message": "Keskustelun linkki"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Kopioi leikepöydälle"
+  },
+  "label_dark_mode": {
+    "message": "Tumma tila"
+  },
+  "label_date_and_time": {
+    "message": "Päivämäärä & Aika"
+  },
+  "label_display_btns": {
+    "message": "Näytä / Piilota vientipainikkeet"
+  },
+  "label_download_location": {
+    "message": "Lataussijainti"
+  },
+  "label_file_name": {
+    "message": "Tiedoston nimi"
+  },
+  "label_file_name_custom_part": {
+    "message": "Mukautettu osa"
+  },
+  "label_file_name_format": {
+    "message": "Tiedostonimen muoto"
+  },
+  "label_font_family": {
+    "message": "Kirjasin"
+  },
+  "label_font_size": {
+    "message": "Kirjasimen koko"
+  },
+  "label_include_deep_research_references": {
+    "message": "Syvätutkimuksen viitteet"
+  },
+  "label_include_model_name": {
+    "message": "Mallin nimi"
+  },
+  "label_include_per_msg_time": {
+    "message": "Viestien aikaleimat"
+  },
+  "label_include_thought_process": {
+    "message": "Ajatusprosessi"
+  },
+  "label_include_web_search_sources": {
+    "message": "Verkkohaun lähteet"
+  },
+  "label_mute_export": {
+    "message": "Mykistä vienti"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Sivunvaihto per kysymys"
+  },
+  "label_page_format": {
+    "message": "Sivun muoto"
+  },
+  "label_page_margin": {
+    "message": "Sivun marginaali"
+  },
+  "label_pdf_language": {
+    "message": "Kieli"
+  },
+  "label_remove_branding": {
+    "message": "Poista brändäys"
+  },
+  "label_remove_icons": {
+    "message": "Poista kuvakkeet"
+  },
+  "label_remove_page_number": {
+    "message": "Poista sivunumero"
+  },
+  "label_role_assistant": {
+    "message": "Avustaja"
+  },
+  "label_role_labels": {
+    "message": "Roolien nimet"
+  },
+  "label_role_user": {
+    "message": "Käyttäjä"
+  },
+  "label_table_of_contents": {
+    "message": "Sisällysluettelo"
+  },
+  "label_toc_background": {
+    "message": "Tausta"
+  },
+  "label_toc_prefix": {
+    "message": "Etuliite"
+  },
+  "label_toc_style": {
+    "message": "Sisällysluettelo"
+  },
+  "label_toc_text": {
+    "message": "Teksti"
+  },
+  "label_user_info": {
+    "message": "Käyttäjätiedot"
+  },
+  "language": {
+    "message": "Finnish"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Ominaisuuspyyntö"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Avaa ChatGPT-sivusto"
+  },
+  "link_settings_download": {
+    "message": "Avaa asetukset"
+  },
+  "msg_bad": {
+    "message": "Huono"
+  },
+  "msg_export_success": {
+    "message": "Vienti onnistui!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Kopiointi leikepöydälle onnistui!"
+  },
+  "msg_good": {
+    "message": "Hyvä"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "Tämä auttaisi muita oppimaan lisää laajennuksesta."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Jos sinulla on ongelmia tai ideoita, ota meihin yhteyttä."
+  },
+  "msg_rate_or_review": {
+    "message": "Arvioi tai kirjoita arvostelu Chrome Web Storeen"
+  },
+  "msg_related_extension": {
+    "message": "Liittyvä laajennus:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Kiitos tuestasi!"
+  },
+  "msg_usage": {
+    "message": "Käyttö"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "käyttö on saavuttanut päivittäisen kiintiön"
+  },
+  "msg_what_you_think": {
+    "message": "Mitä mieltä olet tästä laajennuksesta?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Mukautettu osa}-{Aikaleima}-{Keskustelun otsikko}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Mukautettu osa}-{Keskustelun otsikko}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Mukautettu osa}-{Keskustelun otsikko}-{Aikaleima}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Aikaleima}-{Mukautettu osa}-{Keskustelun otsikko}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Aikaleima}-{Keskustelun otsikko}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Aikaleima}-{Keskustelun otsikko}-{Mukautettu osa}"
+  },
+  "option_filename_format_title": {
+    "message": "{Keskustelun otsikko}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Keskustelun otsikko}-{Mukautettu osa}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Keskustelun otsikko}-{Mukautettu osa}-{Aikaleima}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Keskustelun otsikko}-{Aikaleima}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Keskustelun otsikko}-{Aikaleima}-{Mukautettu osa}"
+  },
+  "recent_updates_got_it": {
+    "message": "Selvä"
+  },
+  "recent_updates_item_1": {
+    "message": "Parannettu väliaikaisten keskustelujen vientiä"
+  },
+  "recent_updates_item_2": {
+    "message": "Mukautettava vietävän tiedoston nimi, halutessasi aikaleimalla"
+  },
+  "recent_updates_item_3": {
+    "message": "Aseta PDF:n kieli, jotta teksti näkyy oikealla fontilla"
+  },
+  "recent_updates_item_4": {
+    "message": "Lisää mukautusvaihtoehtoja PDF:n sisällysluetteloon"
+  },
+  "recent_updates_title": {
+    "message": "Viimeisimmät päivitykset"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "ChatGPT:n älykkään käyttöliittymän tuki PDF-tiedostoissa"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Korjattu satunnaisia ongelmia jaettujen keskustelujen viennissä"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Mermaid-vuokaavioiden esitys PDF-tiedostoissa"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Yksittäisenä kehittäjänä veloitan pienen maksun palvelun ylläpitokustannusten kattamiseksi. Arvostan todella ymmärrystäsi ja tukeasi."
+  },
+  "thanks": {
+    "message": "Tehty ❤️:llä. Kiitos käytöstä."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Sulje tämä sivupalkki automaattisesti viennin jälkeen — ota käyttöön Asetuksissa"
+  },
+  "tip_choose_export_format": {
+    "message": "Valitse vientimuoto napsauttamalla tästä"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "Muille kuin PDF-muodoille voit kopioida suoraan leikepöydälle tiedoston tallentamisen sijaan — ota käyttöön Asetuksissa"
+  },
+  "tip_dock_toggle": {
+    "message": "Vaihda paneelin puolta napsauttamalla vasemmassa yläkulmassa olevaa kuvaketta"
+  },
+  "tip_filename_format": {
+    "message": "Valitse, miten viedyn tiedoston nimi muodostetaan — aseta muoto Asetuksissa"
+  },
+  "tip_hover_preview": {
+    "message": "Vie hiiri minkä tahansa rivin päälle nähdäksesi koko sisällön"
+  },
+  "tip_resizable_expandable": {
+    "message": "Muuta paneelin kokoa vetämällä sisäreunasta; napsauta viestiä laajentaaksesi tai kutistaaksesi sen esikatselun"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Klikkaa valitaksesi/poistaaksesi valinnan useista valintaruuduista kerralla"
+  },
+  "tip_support_temp_shared": {
+    "message": "Tukee nyt väliaikaisten ja jaettujen keskustelujen vientiä"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Kun laajennat ajatteluprosessin, se sisällytetään vientiin. Voit laajentaa tai supistaa jokaisen ajatteluprosessin kontrolloidaksesi mitä viedään."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Kopioi sisältö leikepöydälle tiedoston lataamisen sijaan."
+  },
+  "tooltip_dock_left": {
+    "message": "Kiinnitä vasemmalle"
+  },
+  "tooltip_dock_right": {
+    "message": "Kiinnitä oikealle"
+  },
+  "tooltip_download_location": {
+    "message": "Muuta, missä tiedostot tallennetaan, tai valitse, että sinulta kysytään joka kerta Chrome-asetuksissa."
+  },
+  "tooltip_file_name_format": {
+    "message": "Valitse, miten viedyn tiedoston nimi kootaan: esim. \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\" tai \"20260808-1430-MyChat-ChatGPT\"."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Haluatko toisenlaisen nimeämistavan? Muuta tiedostonimen muotoa yleisissä asetuksissa."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Valitse tai poista valinta kaikista viesteistä nopeasti."
+  },
+  "tooltip_mute_export": {
+    "message": "Älä näytä onnistuneen viennin dialogia."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Näytä uusimmat ensin"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Näytä vanhimmat ensin"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Kun käytössä, jokainen käyttäjän kysymys aloittaa uudelta sivulta."
+  },
+  "tooltip_pdf_language": {
+    "message": "Valitse keskustelun sisällön kieli välttääksesi vääristyneet tai lukukelvottomat fontit luodussa PDF-tiedostossa."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Pro-suunnitelman ominaisuus"
+  },
+  "tooltip_remove_branding": {
+    "message": "Poista ChatGPT Exporter -brändäys, mukaan lukien kuvake ja linkki."
+  },
+  "tooltip_remove_icons": {
+    "message": "Poista käyttäjän ja ChatGPT-kuvakkeet PDF:stä"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Vieritä alas"
+  },
+  "tooltip_toc_style": {
+    "message": "Mukauta sisällysluettelon merkintöjen etuliitettä ja värejä erottaaksesi käyttäjän ja avustajan"
+  },
+  "turn_selector_title": {
+    "message": "Valitse viestit"
+  }
+}

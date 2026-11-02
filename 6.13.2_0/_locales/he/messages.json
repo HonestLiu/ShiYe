@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "בדוק את התוכניות"
+   },
+   "btn_collapse": {
+      "message": "כווץ"
+   },
+   "btn_expand": {
+      "message": "הרחב"
+   },
+   "btn_export": {
+      "message": "ייצוא"
+   },
+   "error_dialog_title": {
+      "message": "הייצוא נכשל"
+   },
+   "error_no_messages": {
+      "message": "לא נמצאו הודעות. פתח שיחה קיימת, או שלח לפחות הודעה אחת לפני הייצוא."
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "הגדרות לסוגי ייצוא שאינם PDF."
+   },
+   "export_settings_tagline": {
+      "message": "הגדרות נפוצות."
+   },
+   "export_settings_title": {
+      "message": "הגדרות ייצוא"
+   },
+   "ext_description": {
+      "message": "הורד שיחות ChatGPT כ-PDF, Markdown, טקסט וכו'. הורד תוצאות ChatGPT ל-PDF. המר בקלות ChatGPT ל-PDF יפה."
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT ל-PDF, MD ועוד"
+   },
+   "feedback": {
+      "message": "משוב"
+   },
+   "feedback_btn_cancel": {
+      "message": "ביטול"
+   },
+   "feedback_btn_choose_file": {
+      "message": "בחר קובץ"
+   },
+   "feedback_btn_close": {
+      "message": "סגירה"
+   },
+   "feedback_btn_report": {
+      "message": "משוב"
+   },
+   "feedback_btn_submit": {
+      "message": "שליחה"
+   },
+   "feedback_description_required": {
+      "message": "התיאור הוא שדה חובה"
+   },
+   "feedback_dialog_title": {
+      "message": "משוב"
+   },
+   "feedback_hint_paste": {
+      "message": "או Ctrl+V להדבקה"
+   },
+   "feedback_label_description": {
+      "message": "תיאור"
+   },
+   "feedback_label_email": {
+      "message": "אימייל (אופציונלי)"
+   },
+   "feedback_label_screenshots": {
+      "message": "צילומי מסך (אופציונלי, הדבק עם Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "סוג"
+   },
+   "feedback_submit_failed": {
+      "message": "שליחת המשוב נכשלה. אנא נסה שוב."
+   },
+   "feedback_submit_success": {
+      "message": "תודה! המשוב שלך נשלח."
+   },
+   "label_auto_close_selector": {
+      "message": "סגירה אוטומטית של הבורר לאחר ייצוא"
+   },
+   "label_auto_show_thinking": {
+      "message": "הצג תהליך חשיבה אוטומטית"
+   },
+   "label_content_title": {
+      "message": "כותרת תוכן"
+   },
+   "label_convo_link": {
+      "message": "קישור שיחה"
+   },
+   "label_copy_to_clipboard": {
+      "message": "העתק ללוח"
+   },
+   "label_dark_mode": {
+      "message": "מצב כהה"
+   },
+   "label_date_and_time": {
+      "message": "תאריך ושעה"
+   },
+   "label_display_btns": {
+      "message": "הצג / הסתר כפתורי ייצוא"
+   },
+   "label_download_location": {
+      "message": "מיקום הורדה"
+   },
+   "label_file_name": {
+      "message": "שם קובץ"
+   },
+   "label_file_name_custom_part": {
+      "message": "חלק מותאם אישית"
+   },
+   "label_file_name_format": {
+      "message": "פורמט שם קובץ"
+   },
+   "label_font_family": {
+      "message": "גופן"
+   },
+   "label_font_size": {
+      "message": "גודל גופן"
+   },
+   "label_include_deep_research_references": {
+      "message": "הפניות מחקר מעמיק"
+   },
+   "label_include_model_name": {
+      "message": "שם המודל"
+   },
+   "label_include_per_msg_time": {
+      "message": "חותמות זמן של הודעות"
+   },
+   "label_include_thought_process": {
+      "message": "תהליך חשיבה"
+   },
+   "label_include_web_search_sources": {
+      "message": "מקורות חיפוש באינטרנט"
+   },
+   "label_mute_export": {
+      "message": "השתק ייצוא"
+   },
+   "label_page_break_per_prompt": {
+      "message": "מעבר עמוד לכל בקשה"
+   },
+   "label_page_format": {
+      "message": "פורמט דף"
+   },
+   "label_page_margin": {
+      "message": "שוליים"
+   },
+   "label_pdf_language": {
+      "message": "שפה"
+   },
+   "label_remove_branding": {
+      "message": "הסר מיתוג"
+   },
+   "label_remove_icons": {
+      "message": "הסר סמלים"
+   },
+   "label_remove_page_number": {
+      "message": "הסר מספר עמוד"
+   },
+   "label_role_assistant": {
+      "message": "עוזר"
+   },
+   "label_role_labels": {
+      "message": "תוויות תפקידים"
+   },
+   "label_role_user": {
+      "message": "משתמש"
+   },
+   "label_table_of_contents": {
+      "message": "תוכן עניינים"
+   },
+   "label_toc_background": {
+      "message": "רקע"
+   },
+   "label_toc_prefix": {
+      "message": "קידומת"
+   },
+   "label_toc_style": {
+      "message": "סגנון תוכן עניינים"
+   },
+   "label_toc_text": {
+      "message": "טקסט"
+   },
+   "label_user_info": {
+      "message": "מידע משתמש"
+   },
+   "language": {
+      "message": "Hebrew"
+   },
+   "link_contact_support": {
+      "message": "צור קשר עם התמיכה"
+   },
+   "link_feature_request": {
+      "message": "בקשת תכונה"
+   },
+   "link_my_account": {
+      "message": "החשבון שלי"
+   },
+   "link_open_chatgpt": {
+      "message": "פתח את אתר ChatGPT"
+   },
+   "link_settings_download": {
+      "message": "פתח הגדרות"
+   },
+   "msg_bad": {
+      "message": "רע"
+   },
+   "msg_export_success": {
+      "message": "יצוא הצליח!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "העתקה ללוח הצליחה!"
+   },
+   "msg_good": {
+      "message": "טוב"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "זה יעזור לאחרים ללמוד יותר על התוספת."
+   },
+   "msg_if_issue_or_idea": {
+      "message": "אם יש לך בעיות או רעיונות, אל תהסס ליצור איתנו קשר."
+   },
+   "msg_rate_or_review": {
+      "message": "דרג או כתוב ביקורת ב-Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "תוספת קשורה:"
+   },
+   "msg_thanks_for_support": {
+      "message": "תודה על התמיכה שלך!"
+   },
+   "msg_usage": {
+      "message": "שימוש"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "השימוש הגיע למכסה היומית"
+   },
+   "msg_what_you_think": {
+      "message": "מה דעתך על התוספת הזו?"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{חלק מותאם אישית}-{חותמת זמן}-{כותרת השיחה}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{חלק מותאם אישית}-{כותרת השיחה}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{חלק מותאם אישית}-{כותרת השיחה}-{חותמת זמן}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{חותמת זמן}-{חלק מותאם אישית}-{כותרת השיחה}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{חותמת זמן}-{כותרת השיחה}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{חותמת זמן}-{כותרת השיחה}-{חלק מותאם אישית}"
+   },
+   "option_filename_format_title": {
+      "message": "{כותרת השיחה}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{כותרת השיחה}-{חלק מותאם אישית}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{כותרת השיחה}-{חלק מותאם אישית}-{חותמת זמן}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{כותרת השיחה}-{חותמת זמן}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{כותרת השיחה}-{חותמת זמן}-{חלק מותאם אישית}"
+   },
+   "recent_updates_got_it": {
+      "message": "הבנתי"
+   },
+   "recent_updates_item_1": {
+      "message": "שיפור הייצוא של צ'אטים זמניים"
+   },
+   "recent_updates_item_2": {
+      "message": "התאמה אישית של שם הקובץ המיוצא, עם חותמת זמן לבחירה"
+   },
+   "recent_updates_item_3": {
+      "message": "הגדרת שפת ה-PDF כדי שהטקסט יוצג בגופן הנכון"
+   },
+   "recent_updates_item_4": {
+      "message": "אפשרויות התאמה נוספות לתוכן העניינים ב-PDF"
+   },
+   "recent_updates_title": {
+      "message": "עדכונים אחרונים"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "תמיכה בממשק החכם של ChatGPT בקובצי PDF"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "תיקון תקלות מזדמנות בייצוא שיחות משותפות"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "הצגת תרשימי זרימה של Mermaid בקובצי PDF"
+   },
+   "solo_dev_charge_fee": {
+      "message": "כמפתח עצמאי, אני גובה עמלה קטנה כדי לעזור לכסות את עלויות התחזוקה של השירות. אני באמת מעריך את ההבנה והתמיכה שלך."
+   },
+   "thanks": {
+      "message": "נבנה עם ❤️. תודה על השימוש."
+   },
+   "tip_auto_close_sidebar": {
+      "message": "סגירה אוטומטית של סרגל זה לאחר ייצוא — הפעל בהגדרות"
+   },
+   "tip_choose_export_format": {
+      "message": "לחצו כאן לבחירת פורמט הייצוא"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "עבור פורמטים שאינם PDF, ניתן להעתיק ישירות ללוח במקום לשמור קובץ — הפעל בהגדרות"
+   },
+   "tip_dock_toggle": {
+      "message": "לחץ על הסמל בפינה השמאלית העליונה של הבורר כדי לעגן אותו בצד השני"
+   },
+   "tip_filename_format": {
+      "message": "בחר כיצד נבנה שם הקובץ המיוצא — הגדר את התבנית בהגדרות"
+   },
+   "tip_hover_preview": {
+      "message": "העבר את העכבר מעל כל תור כדי לראות את התוכן המלא"
+   },
+   "tip_resizable_expandable": {
+      "message": "גרור את הקצה הפנימי לשינוי גודל הבורר, ולחץ על הודעה לפתיחה/קיפול התצוגה המקדימה"
+   },
+   "tip_shift_click_range": {
+      "message": "Shift+לחיצה לבחירה/ביטול בחירה של טווח תיבות סימון בבת אחת"
+   },
+   "tip_support_temp_shared": {
+      "message": "תומך כעת בייצוא שיחות זמניות ושיחות משותפות"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "כאשר אתה מרחיב תהליך חשיבה, הוא ייכלל בייצוא שלך. אתה יכול להרחיב או לצמצם כל תהליך חשיבה כדי לשלוט במה שמיוצא."
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "העתק תוכן ללוח במקום להוריד כקובץ."
+   },
+   "tooltip_dock_left": {
+      "message": "עגן בצד שמאל"
+   },
+   "tooltip_dock_right": {
+      "message": "עגן בצד ימין"
+   },
+   "tooltip_download_location": {
+      "message": "שנה איפה קבצים נשמרים או בחר שישאלו אותך כל פעם בהגדרות Chrome."
+   },
+   "tooltip_file_name_format": {
+      "message": "בחר כיצד מורכב שם הקובץ המיוצא: למשל \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\" או \"20260808-1430-MyChat-ChatGPT\"."
+   },
+   "tooltip_file_name_hint": {
+      "message": "רוצים תבנית שמות אחרת? שנו את תבנית שם הקובץ בהגדרות הנפוצות."
+   },
+   "tooltip_main_checkbox": {
+      "message": "בחר או בטל בחירה של כל ההודעות במהירות."
+   },
+   "tooltip_mute_export": {
+      "message": "אל תציג את חלון הדו-שיח של הצלחת הייצוא."
+   },
+   "tooltip_order_newest_first": {
+      "message": "הצגת החדשים ביותר תחילה"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "הצגת הישנים ביותר תחילה"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "כאשר מופעל, כל בקשת משתמש תתחיל בעמוד חדש."
+   },
+   "tooltip_pdf_language": {
+      "message": "בחר את שפת תוכן השיחה כדי למנוע גופנים מעוותים או בלתי קריאים ב-PDF שנוצר."
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "תכונת תוכנית Pro"
+   },
+   "tooltip_remove_branding": {
+      "message": "הסר את המיתוג של ChatGPT Exporter, כולל סמל וקישור."
+   },
+   "tooltip_remove_icons": {
+      "message": "הסר סמלי משתמש ו-ChatGPT ב-PDF"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "גלילה לתחתית"
+   },
+   "tooltip_toc_style": {
+      "message": "התאם אישית את הקידומת והצבעים של רשומות תוכן העניינים כדי להבחין בין המשתמש לעוזר"
+   },
+   "turn_selector_title": {
+      "message": "בחירת הודעות"
+   }
+}

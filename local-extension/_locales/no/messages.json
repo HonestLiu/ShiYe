@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Se planene"
+  },
+  "btn_collapse": {
+    "message": "Skjul"
+  },
+  "btn_expand": {
+    "message": "Utvid"
+  },
+  "btn_export": {
+    "message": "EKSPORTER"
+  },
+  "error_dialog_title": {
+    "message": "Eksport mislyktes"
+  },
+  "error_no_messages": {
+    "message": "Fant ingen meldinger. Åpne en eksisterende samtale, eller send minst én melding før du eksporterer."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Innstillinger for ikke-PDF eksporttyper."
+  },
+  "export_settings_tagline": {
+    "message": "Vanlige innstillinger."
+  },
+  "export_settings_title": {
+    "message": "Eksportinnstillinger"
+  },
+  "ext_description": {
+    "message": "Last ned ChatGPT-samtaler som PDF, Markdown, Tekst osv. Last ned ChatGPT-resultater til PDF. Konverter enkelt ChatGPT til en vakker PDF."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT til PDF, MD og mer"
+  },
+  "feedback": {
+    "message": "Tilbakemelding"
+  },
+  "feedback_btn_cancel": {
+    "message": "Avbryt"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Velg fil"
+  },
+  "feedback_btn_close": {
+    "message": "Lukk"
+  },
+  "feedback_btn_report": {
+    "message": "Tilbakemelding"
+  },
+  "feedback_btn_submit": {
+    "message": "Send inn"
+  },
+  "feedback_description_required": {
+    "message": "Beskrivelse er påkrevd"
+  },
+  "feedback_dialog_title": {
+    "message": "Tilbakemelding"
+  },
+  "feedback_hint_paste": {
+    "message": "eller Ctrl+V for å lime inn"
+  },
+  "feedback_label_description": {
+    "message": "Beskrivelse"
+  },
+  "feedback_label_email": {
+    "message": "E-post (valgfritt)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Skjermbilder (valgfritt, lim inn med Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Type"
+  },
+  "feedback_submit_failed": {
+    "message": "Kunne ikke sende tilbakemelding. Vennligst prøv igjen."
+  },
+  "feedback_submit_success": {
+    "message": "Takk! Din tilbakemelding er sendt."
+  },
+  "label_auto_close_selector": {
+    "message": "Lukk velgeren automatisk etter eksport"
+  },
+  "label_auto_show_thinking": {
+    "message": "Vis tenkeprosess automatisk"
+  },
+  "label_content_title": {
+    "message": "Innholdstittel"
+  },
+  "label_convo_link": {
+    "message": "Samtalelenke"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Kopier til utklippstavle"
+  },
+  "label_dark_mode": {
+    "message": "Mørk modus"
+  },
+  "label_date_and_time": {
+    "message": "Dato & Tid"
+  },
+  "label_display_btns": {
+    "message": "Vis / Skjul eksportknapper"
+  },
+  "label_download_location": {
+    "message": "Nedlastingsplassering"
+  },
+  "label_file_name": {
+    "message": "Filnavn"
+  },
+  "label_file_name_custom_part": {
+    "message": "Egendefinert del"
+  },
+  "label_file_name_format": {
+    "message": "Filnavnformat"
+  },
+  "label_font_family": {
+    "message": "Skrifttype"
+  },
+  "label_font_size": {
+    "message": "Skriftstørrelse"
+  },
+  "label_include_deep_research_references": {
+    "message": "Deep Research-referanser"
+  },
+  "label_include_model_name": {
+    "message": "Modellnavn"
+  },
+  "label_include_per_msg_time": {
+    "message": "Meldingstidsstempler"
+  },
+  "label_include_thought_process": {
+    "message": "Tankeprosess"
+  },
+  "label_include_web_search_sources": {
+    "message": "Nettsøkkilder"
+  },
+  "label_mute_export": {
+    "message": "Demp eksport"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Sideskift per prompt"
+  },
+  "label_page_format": {
+    "message": "Sideformat"
+  },
+  "label_page_margin": {
+    "message": "Sidemargin"
+  },
+  "label_pdf_language": {
+    "message": "Språk"
+  },
+  "label_remove_branding": {
+    "message": "Fjern merkevarebygging"
+  },
+  "label_remove_icons": {
+    "message": "Fjern ikoner"
+  },
+  "label_remove_page_number": {
+    "message": "Fjern sidenummer"
+  },
+  "label_role_assistant": {
+    "message": "Assistent"
+  },
+  "label_role_labels": {
+    "message": "Rollebetegnelser"
+  },
+  "label_role_user": {
+    "message": "Bruker"
+  },
+  "label_table_of_contents": {
+    "message": "Innholdsfortegnelse"
+  },
+  "label_toc_background": {
+    "message": "Bakgrunn"
+  },
+  "label_toc_prefix": {
+    "message": "Prefiks"
+  },
+  "label_toc_style": {
+    "message": "Innholdsstil"
+  },
+  "label_toc_text": {
+    "message": "Tekst"
+  },
+  "label_user_info": {
+    "message": "Brukerinfo"
+  },
+  "language": {
+    "message": "Norwegian"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Funksjonsforespørsel"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Åpne ChatGPT nettside"
+  },
+  "link_settings_download": {
+    "message": "Åpne innstillinger"
+  },
+  "msg_bad": {
+    "message": "Dårlig"
+  },
+  "msg_export_success": {
+    "message": "Eksport vellykket!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Kopiering til utklippstavle vellykket!"
+  },
+  "msg_good": {
+    "message": "Bra"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "Dette ville hjelpe andre med å lære mer om utvidelsen."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "Hvis du har problemer eller ideer, er du velkommen til å kontakte oss."
+  },
+  "msg_rate_or_review": {
+    "message": "Vurder eller skriv anmeldelse i Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Relatert utvidelse:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Takk for din støtte!"
+  },
+  "msg_usage": {
+    "message": "Bruk"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "bruk har nådd daglig kvote"
+  },
+  "msg_what_you_think": {
+    "message": "Hva synes du om denne utvidelsen?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Egendefinert del}-{Tidsstempel}-{Samtaletittel}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Egendefinert del}-{Samtaletittel}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Egendefinert del}-{Samtaletittel}-{Tidsstempel}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Tidsstempel}-{Egendefinert del}-{Samtaletittel}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Tidsstempel}-{Samtaletittel}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Tidsstempel}-{Samtaletittel}-{Egendefinert del}"
+  },
+  "option_filename_format_title": {
+    "message": "{Samtaletittel}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Samtaletittel}-{Egendefinert del}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Samtaletittel}-{Egendefinert del}-{Tidsstempel}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Samtaletittel}-{Tidsstempel}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Samtaletittel}-{Tidsstempel}-{Egendefinert del}"
+  },
+  "recent_updates_got_it": {
+    "message": "Forstått"
+  },
+  "recent_updates_item_1": {
+    "message": "Forbedret eksport av midlertidige chatter"
+  },
+  "recent_updates_item_2": {
+    "message": "Tilpass det eksporterte filnavnet, med valgfritt tidsstempel"
+  },
+  "recent_updates_item_3": {
+    "message": "Angi PDF-språket slik at teksten vises med riktig skrifttype"
+  },
+  "recent_updates_item_4": {
+    "message": "Flere måter å tilpasse PDF-innholdsfortegnelsen på"
+  },
+  "recent_updates_title": {
+    "message": "Siste oppdateringer"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Støtte for ChatGPTs intelligente grensesnitt i PDF-filer"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Rettet sporadiske problemer ved eksport av delte samtaler"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Visning av Mermaid-flytskjemaer i PDF-filer"
+  },
+  "solo_dev_charge_fee": {
+    "message": "Som solo-utvikler tar jeg et lite gebyr for å hjelpe med å dekke kostnadene ved å vedlikeholde tjenesten. Jeg setter virkelig pris på din forståelse og støtte."
+  },
+  "thanks": {
+    "message": "Bygget med ❤️. Takk for at du bruker det."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Lukk dette sidepanelet automatisk etter eksport — aktiver det i Innstillinger"
+  },
+  "tip_choose_export_format": {
+    "message": "Klikk her for å velge eksportformat"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "For ikke-PDF-formater kan du kopiere direkte til utklippstavlen i stedet for å lagre en fil — aktiver det i Innstillinger"
+  },
+  "tip_dock_toggle": {
+    "message": "Klikk på ikonet øverst til venstre i velgeren for å feste den til motsatt side"
+  },
+  "tip_filename_format": {
+    "message": "Velg hvordan det eksporterte filnavnet settes sammen — angi formatet i Innstillinger"
+  },
+  "tip_hover_preview": {
+    "message": "Hold musen over en melding for å se hele innholdet"
+  },
+  "tip_resizable_expandable": {
+    "message": "Dra den innvendige kanten for å endre størrelse, klikk på en melding for å åpne/lukke forhåndsvisning"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Klikk for å velge/fjerne valg av en rekke avkrysningsbokser samtidig"
+  },
+  "tip_support_temp_shared": {
+    "message": "Støtter nå eksport av midlertidige og delte samtaler"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "Når du utvider en tenkeprosess, vil den bli inkludert i eksporten din. Du kan utvide eller kollapse hver tenkeprosess for å kontrollere hva som eksporteres."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Kopier innhold til utklippstavle i stedet for å laste ned som fil."
+  },
+  "tooltip_dock_left": {
+    "message": "Fest til venstre"
+  },
+  "tooltip_dock_right": {
+    "message": "Fest til høyre"
+  },
+  "tooltip_download_location": {
+    "message": "Endre hvor filer lagres eller velg å bli spurt hver gang i Chrome-innstillinger."
+  },
+  "tooltip_file_name_format": {
+    "message": "Velg hvordan det eksporterte filnavnet settes sammen, f.eks. «ChatGPT-MyChat», «ChatGPT-MyChat-20260808-1430» eller «20260808-1430-MyChat-ChatGPT»."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Vil du ha et annet navnemønster? Endre filnavnformatet i de generelle innstillingene."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Velg eller fjern raskt alle meldinger."
+  },
+  "tooltip_mute_export": {
+    "message": "Ikke vis dialogboksen for vellykket eksport."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Vis nyeste først"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Vis eldste først"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "Når aktivert, vil hver bruker-prompt starte på en ny side."
+  },
+  "tooltip_pdf_language": {
+    "message": "Velg språket i samtaleinnholdet for å unngå forvrengte eller ødelagte skrifttyper i den genererte PDF-en."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Pro plan funksjon"
+  },
+  "tooltip_remove_branding": {
+    "message": "Fjern ChatGPT Exporter merkevarebygging, inkludert ikon og lenke."
+  },
+  "tooltip_remove_icons": {
+    "message": "Fjern bruker- og ChatGPT-ikoner i PDF-en"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Rull til bunnen"
+  },
+  "tooltip_toc_style": {
+    "message": "Tilpass prefiks og farger for innholdsfortegnelsens oppføringer for å skille mellom bruker og assistent"
+  },
+  "turn_selector_title": {
+    "message": "Velg meldinger"
+  }
+}

@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "ดูแผน"
+   },
+   "btn_collapse": {
+      "message": "ย่อ"
+   },
+   "btn_expand": {
+      "message": "ขยาย"
+   },
+   "btn_export": {
+      "message": "ส่งออก"
+   },
+   "error_dialog_title": {
+      "message": "การส่งออกล้มเหลว"
+   },
+   "error_no_messages": {
+      "message": "ไม่พบข้อความ โปรดเปิดบทสนทนาที่มีอยู่ หรือส่งข้อความอย่างน้อยหนึ่งข้อความก่อนส่งออก"
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "การตั้งค่าสำหรับประเภทการส่งออกที่ไม่ใช่ PDF"
+   },
+   "export_settings_tagline": {
+      "message": "การตั้งค่าทั่วไป"
+   },
+   "export_settings_title": {
+      "message": "การตั้งค่าการส่งออก"
+   },
+   "ext_description": {
+      "message": "ดาวน์โหลดบทสนทนา ChatGPT เป็น PDF, Markdown, ข้อความ ฯลฯ ดาวน์โหลดผลลัพธ์ ChatGPT เป็น PDF แปลง ChatGPT เป็น PDF ที่สวยงามได้อย่างง่ายดาย"
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT เป็น PDF, MD และอื่นๆ"
+   },
+   "feedback": {
+      "message": "ข้อเสนอแนะ"
+   },
+   "feedback_btn_cancel": {
+      "message": "ยกเลิก"
+   },
+   "feedback_btn_choose_file": {
+      "message": "เลือกไฟล์"
+   },
+   "feedback_btn_close": {
+      "message": "ปิด"
+   },
+   "feedback_btn_report": {
+      "message": "ข้อเสนอแนะ"
+   },
+   "feedback_btn_submit": {
+      "message": "ส่ง"
+   },
+   "feedback_description_required": {
+      "message": "จำเป็นต้องกรอกคำอธิบาย"
+   },
+   "feedback_dialog_title": {
+      "message": "ข้อเสนอแนะ"
+   },
+   "feedback_hint_paste": {
+      "message": "หรือ Ctrl+V เพื่อวาง"
+   },
+   "feedback_label_description": {
+      "message": "คำอธิบาย"
+   },
+   "feedback_label_email": {
+      "message": "อีเมล (ไม่บังคับ)"
+   },
+   "feedback_label_screenshots": {
+      "message": "ภาพหน้าจอ (ไม่บังคับ, วางด้วย Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "ประเภท"
+   },
+   "feedback_submit_failed": {
+      "message": "ไม่สามารถส่งข้อเสนอแนะได้ กรุณาลองอีกครั้ง"
+   },
+   "feedback_submit_success": {
+      "message": "ขอบคุณ! ข้อเสนอแนะของคุณถูกส่งแล้ว"
+   },
+   "label_auto_close_selector": {
+      "message": "ปิดตัวเลือกอัตโนมัติหลังส่งออก"
+   },
+   "label_auto_show_thinking": {
+      "message": "แสดงกระบวนการคิดอัตโนมัติ"
+   },
+   "label_content_title": {
+      "message": "ชื่อเนื้อหา"
+   },
+   "label_convo_link": {
+      "message": "ลิงก์การสนทนา"
+   },
+   "label_copy_to_clipboard": {
+      "message": "คัดลอกไปยังคลิปบอร์ด"
+   },
+   "label_dark_mode": {
+      "message": "โหมดมืด"
+   },
+   "label_date_and_time": {
+      "message": "วันที่และเวลา"
+   },
+   "label_display_btns": {
+      "message": "แสดง/ซ่อนปุ่มส่งออก"
+   },
+   "label_download_location": {
+      "message": "ตำแหน่งการดาวน์โหลด"
+   },
+   "label_file_name": {
+      "message": "ชื่อไฟล์"
+   },
+   "label_file_name_custom_part": {
+      "message": "ส่วนกำหนดเอง"
+   },
+   "label_file_name_format": {
+      "message": "รูปแบบชื่อไฟล์"
+   },
+   "label_font_family": {
+      "message": "ฟอนต์"
+   },
+   "label_font_size": {
+      "message": "ขนาดฟอนต์"
+   },
+   "label_include_deep_research_references": {
+      "message": "ข้อมูลอ้างอิงจากการวิจัยเชิงลึก"
+   },
+   "label_include_model_name": {
+      "message": "ชื่อโมเดล"
+   },
+   "label_include_per_msg_time": {
+      "message": "ประทับเวลาข้อความ"
+   },
+   "label_include_thought_process": {
+      "message": "กระบวนการคิด"
+   },
+   "label_include_web_search_sources": {
+      "message": "แหล่งที่มาจากการค้นหาเว็บ"
+   },
+   "label_mute_export": {
+      "message": "ปิดเสียงการส่งออก"
+   },
+   "label_page_break_per_prompt": {
+      "message": "ข้ามหน้าต่อคำถาม"
+   },
+   "label_page_format": {
+      "message": "รูปแบบหน้า"
+   },
+   "label_page_margin": {
+      "message": "ขอบหน้า"
+   },
+   "label_pdf_language": {
+      "message": "ภาษา"
+   },
+   "label_remove_branding": {
+      "message": "ลบแบรนด์"
+   },
+   "label_remove_icons": {
+      "message": "ลบไอคอน"
+   },
+   "label_remove_page_number": {
+      "message": "ลบหมายเลขหน้า"
+   },
+   "label_role_assistant": {
+      "message": "ผู้ช่วย"
+   },
+   "label_role_labels": {
+      "message": "ป้ายกำกับบทบาท"
+   },
+   "label_role_user": {
+      "message": "ผู้ใช้"
+   },
+   "label_table_of_contents": {
+      "message": "สารบัญ"
+   },
+   "label_toc_background": {
+      "message": "พื้นหลัง"
+   },
+   "label_toc_prefix": {
+      "message": "คำนำหน้า"
+   },
+   "label_toc_style": {
+      "message": "รูปแบบสารบัญ"
+   },
+   "label_toc_text": {
+      "message": "ข้อความ"
+   },
+   "label_user_info": {
+      "message": "ข้อมูลผู้ใช้"
+   },
+   "language": {
+      "message": "Thai"
+   },
+   "link_contact_support": {
+      "message": "ติดต่อฝ่ายสนับสนุน"
+   },
+   "link_feature_request": {
+      "message": "ขอคุณสมบัติ"
+   },
+   "link_my_account": {
+      "message": "บัญชีของฉัน"
+   },
+   "link_open_chatgpt": {
+      "message": "เปิดเว็บไซต์ ChatGPT"
+   },
+   "link_settings_download": {
+      "message": "เปิดการตั้งค่า"
+   },
+   "msg_bad": {
+      "message": "แย่"
+   },
+   "msg_export_success": {
+      "message": "ส่งออกสำเร็จ!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "คัดลอกไปยังคลิปบอร์ดสำเร็จ!"
+   },
+   "msg_good": {
+      "message": "ดี"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "นี่จะช่วยให้ผู้อื่นเรียนรู้เพิ่มเติมเกี่ยวกับส่วนขยาย"
+   },
+   "msg_if_issue_or_idea": {
+      "message": "หากคุณมีปัญหาหรือความคิดเห็น โปรดติดต่อเรา"
+   },
+   "msg_rate_or_review": {
+      "message": "ให้คะแนนหรือเขียนรีวิวใน Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "ส่วนขยายที่เกี่ยวข้อง:"
+   },
+   "msg_thanks_for_support": {
+      "message": "ขอบคุณสำหรับการสนับสนุน!"
+   },
+   "msg_usage": {
+      "message": "การใช้งาน"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "การใช้งานถึงโควตารายวันแล้ว"
+   },
+   "msg_what_you_think": {
+      "message": "คุณคิดอย่างไรกับส่วนขยายนี้?"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{ส่วนกำหนดเอง}-{การประทับเวลา}-{ชื่อบทสนทนา}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{ส่วนกำหนดเอง}-{ชื่อบทสนทนา}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{ส่วนกำหนดเอง}-{ชื่อบทสนทนา}-{การประทับเวลา}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{การประทับเวลา}-{ส่วนกำหนดเอง}-{ชื่อบทสนทนา}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{การประทับเวลา}-{ชื่อบทสนทนา}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{การประทับเวลา}-{ชื่อบทสนทนา}-{ส่วนกำหนดเอง}"
+   },
+   "option_filename_format_title": {
+      "message": "{ชื่อบทสนทนา}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{ชื่อบทสนทนา}-{ส่วนกำหนดเอง}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{ชื่อบทสนทนา}-{ส่วนกำหนดเอง}-{การประทับเวลา}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{ชื่อบทสนทนา}-{การประทับเวลา}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{ชื่อบทสนทนา}-{การประทับเวลา}-{ส่วนกำหนดเอง}"
+   },
+   "recent_updates_got_it": {
+      "message": "เข้าใจแล้ว"
+   },
+   "recent_updates_item_1": {
+      "message": "ปรับปรุงการส่งออกแชทชั่วคราว"
+   },
+   "recent_updates_item_2": {
+      "message": "กำหนดชื่อไฟล์ที่ส่งออกได้เอง พร้อมเลือกใส่วันที่และเวลาได้"
+   },
+   "recent_updates_item_3": {
+      "message": "ระบุภาษาของ PDF เพื่อให้ข้อความแสดงด้วยฟอนต์ที่ถูกต้อง"
+   },
+   "recent_updates_item_4": {
+      "message": "ปรับแต่งสารบัญของ PDF ได้มากขึ้น"
+   },
+   "recent_updates_title": {
+      "message": "การอัปเดตล่าสุด"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "รองรับ UI อัจฉริยะของ ChatGPT ใน PDF"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "แก้ไขปัญหาที่เกิดขึ้นเป็นครั้งคราวเมื่อส่งออกแชทที่แชร์"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "แสดงผังงาน Mermaid ใน PDF"
+   },
+   "solo_dev_charge_fee": {
+      "message": "ในฐานะนักพัฒนาอิสระ ฉันเรียกเก็บค่าธรรมเนียมเล็กน้อยเพื่อช่วยครอบคลุมค่าใช้จ่ายในการบำรุงรักษาบริการ ฉันขอบคุณจริงๆ สำหรับความเข้าใจและการสนับสนุนของคุณ"
+   },
+   "thanks": {
+      "message": "สร้างด้วย ❤️ ขอบคุณที่ใช้งาน"
+   },
+   "tip_auto_close_sidebar": {
+      "message": "ปิดแถบด้านข้างนี้อัตโนมัติหลังส่งออก — เปิดใช้งานในการตั้งค่า"
+   },
+   "tip_choose_export_format": {
+      "message": "คลิกที่นี่เพื่อเลือกรูปแบบการส่งออก"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "สำหรับรูปแบบที่ไม่ใช่ PDF คุณสามารถคัดลอกไปยังคลิปบอร์ดโดยตรงแทนการบันทึกไฟล์ — เปิดใช้งานในการตั้งค่า"
+   },
+   "tip_dock_toggle": {
+      "message": "คลิกที่ไอคอนที่มุมซ้ายบนของตัวเลือกเพื่อย้ายไปยังอีกด้านหนึ่ง"
+   },
+   "tip_filename_format": {
+      "message": "เลือกรูปแบบการตั้งชื่อไฟล์ที่ส่งออก — กำหนดรูปแบบในการตั้งค่า"
+   },
+   "tip_hover_preview": {
+      "message": "เลื่อนเมาส์ไปวางบนแต่ละรายการเพื่อดูตัวอย่างเนื้อหาทั้งหมด"
+   },
+   "tip_resizable_expandable": {
+      "message": "ลากขอบด้านในเพื่อปรับขนาดตัวเลือก คลิกที่ข้อความเพื่อขยาย/ย่อตัวอย่าง"
+   },
+   "tip_shift_click_range": {
+      "message": "Shift+คลิกเพื่อเลือก/ยกเลิกเลือกช่องทำเครื่องหมายหลายช่องพร้อมกัน"
+   },
+   "tip_support_temp_shared": {
+      "message": "รองรับการส่งออกแชทชั่วคราวและแชทที่แชร์แล้ว"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "เมื่อคุณขยายกระบวนการคิด มันจะถูกรวมไว้ในการส่งออกของคุณ คุณสามารถขยายหรือย่อกระบวนการคิดแต่ละอันเพื่อควบคุมสิ่งที่จะถูกส่งออก"
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "คัดลอกเนื้อหาไปยังคลิปบอร์ดแทนการดาวน์โหลดเป็นไฟล์"
+   },
+   "tooltip_dock_left": {
+      "message": "ตรึงไว้ทางซ้าย"
+   },
+   "tooltip_dock_right": {
+      "message": "ตรึงไว้ทางขวา"
+   },
+   "tooltip_download_location": {
+      "message": "เปลี่ยนตำแหน่งที่ไฟล์ถูกบันทึกหรือเลือกให้ถามทุกครั้งในการตั้งค่า Chrome"
+   },
+   "tooltip_file_name_format": {
+      "message": "เลือกวิธีประกอบชื่อไฟล์ที่ส่งออก เช่น \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\" หรือ \"20260808-1430-MyChat-ChatGPT\""
+   },
+   "tooltip_file_name_hint": {
+      "message": "ต้องการรูปแบบการตั้งชื่อแบบอื่นใช่ไหม เปลี่ยนรูปแบบชื่อไฟล์ได้ในการตั้งค่าทั่วไป"
+   },
+   "tooltip_main_checkbox": {
+      "message": "เลือกหรือยกเลิกการเลือกข้อความทั้งหมดอย่างรวดเร็ว"
+   },
+   "tooltip_mute_export": {
+      "message": "ไม่แสดงกล่องโต้ตอบการส่งออกสำเร็จ"
+   },
+   "tooltip_order_newest_first": {
+      "message": "แสดงรายการใหม่ที่สุดก่อน"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "แสดงรายการเก่าที่สุดก่อน"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "เมื่อเปิดใช้งาน คำถามของผู้ใช้แต่ละคำจะเริ่มต้นที่หน้าใหม่"
+   },
+   "tooltip_pdf_language": {
+      "message": "เลือกภาษาของเนื้อหาการสนทนาเพื่อหลีกเลี่ยงฟอนต์ที่ผิดเพี้ยนหรืออ่านไม่ออกใน PDF ที่สร้างขึ้น"
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "คุณสมบัติแผน Pro"
+   },
+   "tooltip_remove_branding": {
+      "message": "ลบแบรนด์ ChatGPT Exporter รวมถึงไอคอนและลิงก์"
+   },
+   "tooltip_remove_icons": {
+      "message": "ลบไอคอนผู้ใช้และ ChatGPT ใน PDF"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "เลื่อนไปด้านล่างสุด"
+   },
+   "tooltip_toc_style": {
+      "message": "ปรับแต่งคำนำหน้าและสีของรายการสารบัญเพื่อแยกความแตกต่างระหว่างผู้ใช้และผู้ช่วย"
+   },
+   "turn_selector_title": {
+      "message": "เลือกข้อความ"
+   }
+}

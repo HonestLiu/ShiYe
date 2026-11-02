@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "Zobraziť plány"
+   },
+   "btn_collapse": {
+      "message": "Zbaliť"
+   },
+   "btn_expand": {
+      "message": "Rozbaliť"
+   },
+   "btn_export": {
+      "message": "EXPORTOVAŤ"
+   },
+   "error_dialog_title": {
+      "message": "Export zlyhal"
+   },
+   "error_no_messages": {
+      "message": "Nenašli sa žiadne správy. Otvorte existujúcu konverzáciu alebo pred exportom odošlite aspoň jednu správu."
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "Nastavenia pre typy exportu iné ako PDF."
+   },
+   "export_settings_tagline": {
+      "message": "Bežné nastavenia."
+   },
+   "export_settings_title": {
+      "message": "Nastavenia exportu"
+   },
+   "ext_description": {
+      "message": "Stiahnite konverzácie ChatGPT ako PDF, Markdown, Text atď. Stiahnite výsledky ChatGPT do PDF. Jednoducho previesť ChatGPT do krásneho PDF."
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT do PDF, MD a viac"
+   },
+   "feedback": {
+      "message": "Spätná väzba"
+   },
+   "feedback_btn_cancel": {
+      "message": "Zrušiť"
+   },
+   "feedback_btn_choose_file": {
+      "message": "Vybrať súbor"
+   },
+   "feedback_btn_close": {
+      "message": "Zavrieť"
+   },
+   "feedback_btn_report": {
+      "message": "Spätná väzba"
+   },
+   "feedback_btn_submit": {
+      "message": "Odoslať"
+   },
+   "feedback_description_required": {
+      "message": "Popis je povinný"
+   },
+   "feedback_dialog_title": {
+      "message": "Spätná väzba"
+   },
+   "feedback_hint_paste": {
+      "message": "alebo Ctrl+V na prilepenie"
+   },
+   "feedback_label_description": {
+      "message": "Popis"
+   },
+   "feedback_label_email": {
+      "message": "E-mail (voliteľné)"
+   },
+   "feedback_label_screenshots": {
+      "message": "Snímky obrazovky (voliteľné, prilepte pomocou Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "Typ"
+   },
+   "feedback_submit_failed": {
+      "message": "Odoslanie spätnej väzby zlyhalo. Skúste to prosím znova."
+   },
+   "feedback_submit_success": {
+      "message": "Ďakujeme! Vaša spätná väzba bola odoslaná."
+   },
+   "label_auto_close_selector": {
+      "message": "Automaticky zavrieť výber po exporte"
+   },
+   "label_auto_show_thinking": {
+      "message": "Automaticky zobraziť myšlienkový proces"
+   },
+   "label_content_title": {
+      "message": "Názov obsahu"
+   },
+   "label_convo_link": {
+      "message": "Odkaz na konverzáciu"
+   },
+   "label_copy_to_clipboard": {
+      "message": "Kopírovať do schránky"
+   },
+   "label_dark_mode": {
+      "message": "Tmavý režim"
+   },
+   "label_date_and_time": {
+      "message": "Dátum a čas"
+   },
+   "label_display_btns": {
+      "message": "Zobraziť / Skryť tlačidlá exportu"
+   },
+   "label_download_location": {
+      "message": "Umiestnenie sťahovania"
+   },
+   "label_file_name": {
+      "message": "Názov súboru"
+   },
+   "label_file_name_custom_part": {
+      "message": "Vlastná časť"
+   },
+   "label_file_name_format": {
+      "message": "Formát názvu súboru"
+   },
+   "label_font_family": {
+      "message": "Písmo"
+   },
+   "label_font_size": {
+      "message": "Veľkosť písma"
+   },
+   "label_include_deep_research_references": {
+      "message": "Referencie hĺbkového výskumu"
+   },
+   "label_include_model_name": {
+      "message": "Názov modelu"
+   },
+   "label_include_per_msg_time": {
+      "message": "Časové pečiatky správ"
+   },
+   "label_include_thought_process": {
+      "message": "Myšlienkový proces"
+   },
+   "label_include_web_search_sources": {
+      "message": "Zdroje webového vyhľadávania"
+   },
+   "label_mute_export": {
+      "message": "Stlmiť export"
+   },
+   "label_page_break_per_prompt": {
+      "message": "Zalomenie stránky na prompt"
+   },
+   "label_page_format": {
+      "message": "Formát stránky"
+   },
+   "label_page_margin": {
+      "message": "Okraj stránky"
+   },
+   "label_pdf_language": {
+      "message": "Jazyk"
+   },
+   "label_remove_branding": {
+      "message": "Odstrániť značku"
+   },
+   "label_remove_icons": {
+      "message": "Odstrániť ikony"
+   },
+   "label_remove_page_number": {
+      "message": "Odstrániť číslo stránky"
+   },
+   "label_role_assistant": {
+      "message": "Asistent"
+   },
+   "label_role_labels": {
+      "message": "Menovky rolí"
+   },
+   "label_role_user": {
+      "message": "Používateľ"
+   },
+   "label_table_of_contents": {
+      "message": "Obsah"
+   },
+   "label_toc_background": {
+      "message": "Pozadie"
+   },
+   "label_toc_prefix": {
+      "message": "Predpona"
+   },
+   "label_toc_style": {
+      "message": "Štýl obsahu"
+   },
+   "label_toc_text": {
+      "message": "Text"
+   },
+   "label_user_info": {
+      "message": "Informácie o používateľovi"
+   },
+   "language": {
+      "message": "Slovak"
+   },
+   "link_contact_support": {
+      "message": "Kontaktovať podporu"
+   },
+   "link_feature_request": {
+      "message": "Požiadať o funkciu"
+   },
+   "link_my_account": {
+      "message": "Môj účet"
+   },
+   "link_open_chatgpt": {
+      "message": "Otvoriť webovú stránku ChatGPT"
+   },
+   "link_settings_download": {
+      "message": "Otvoriť nastavenia"
+   },
+   "msg_bad": {
+      "message": "Zlé"
+   },
+   "msg_export_success": {
+      "message": "Export úspešný!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "Kopírovanie do schránky úspešné!"
+   },
+   "msg_good": {
+      "message": "Dobré"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "Toto by pomohlo ostatným dozvedieť sa viac o rozšírení."
+   },
+   "msg_if_issue_or_idea": {
+      "message": "Ak máte problémy alebo nápady, neváhajte nás kontaktovať."
+   },
+   "msg_rate_or_review": {
+      "message": "Ohodnoťte alebo napíšte recenziu v Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "Súvisiace rozšírenie:"
+   },
+   "msg_thanks_for_support": {
+      "message": "Ďakujeme za podporu!"
+   },
+   "msg_usage": {
+      "message": "Použitie"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "použitie dosiahlo denný limit"
+   },
+   "msg_what_you_think": {
+      "message": "Čo si myslíte o tomto rozšírení?"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{Vlastná časť}-{Časová pečiatka}-{Názov konverzácie}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{Vlastná časť}-{Názov konverzácie}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{Vlastná časť}-{Názov konverzácie}-{Časová pečiatka}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{Časová pečiatka}-{Vlastná časť}-{Názov konverzácie}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{Časová pečiatka}-{Názov konverzácie}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{Časová pečiatka}-{Názov konverzácie}-{Vlastná časť}"
+   },
+   "option_filename_format_title": {
+      "message": "{Názov konverzácie}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{Názov konverzácie}-{Vlastná časť}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{Názov konverzácie}-{Vlastná časť}-{Časová pečiatka}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{Názov konverzácie}-{Časová pečiatka}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{Názov konverzácie}-{Časová pečiatka}-{Vlastná časť}"
+   },
+   "recent_updates_got_it": {
+      "message": "Rozumiem"
+   },
+   "recent_updates_item_1": {
+      "message": "Vylepšený export dočasných konverzácií"
+   },
+   "recent_updates_item_2": {
+      "message": "Vlastný názov exportovaného súboru, voliteľne s časovou pečiatkou"
+   },
+   "recent_updates_item_3": {
+      "message": "Nastavte jazyk PDF, aby sa text vykreslil správnym písmom"
+   },
+   "recent_updates_item_4": {
+      "message": "Viac možností nastavenia obsahu v PDF"
+   },
+   "recent_updates_title": {
+      "message": "Nedávne aktualizácie"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "Podpora inteligentného rozhrania ChatGPT v PDF"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "Oprava občasných problémov pri exporte zdieľaných četov"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "Vykresľovanie vývojových diagramov Mermaid v PDF"
+   },
+   "solo_dev_charge_fee": {
+      "message": "Ako samostatný vývojár si účtujem malý poplatok, aby som pomohol pokryť náklady na údržbu služby. Naozaj si vážim vaše pochopenie a podporu."
+   },
+   "thanks": {
+      "message": "Vytvorené s ❤️. Ďakujeme za používanie."
+   },
+   "tip_auto_close_sidebar": {
+      "message": "Automaticky zavrieť tento panel po exporte — povoľte v Nastaveniach"
+   },
+   "tip_choose_export_format": {
+      "message": "Kliknutím sem vyberiete formát exportu"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "Pre formáty iné ako PDF môžete kopírovať priamo do schránky namiesto ukladania súboru — povoľte v Nastaveniach"
+   },
+   "tip_dock_toggle": {
+      "message": "Kliknite na ikonu v ľavom hornom rohu výberu pre jeho ukotvenie na opačnej strane"
+   },
+   "tip_filename_format": {
+      "message": "Vyberte, ako sa skladá názov exportovaného súboru — formát nastavte v Nastaveniach"
+   },
+   "tip_hover_preview": {
+      "message": "Podržte myš nad ľubovoľným riadkom pre zobrazenie celého obsahu"
+   },
+   "tip_resizable_expandable": {
+      "message": "Potiahnutím vnútorného okraja zmeníte veľkosť výberu, kliknutím na správu rozbalíte/zbalíte jej náhľad"
+   },
+   "tip_shift_click_range": {
+      "message": "Shift+Klik na výber/zrušenie výberu rozsahu zaškrtávacích políčok naraz"
+   },
+   "tip_support_temp_shared": {
+      "message": "Teraz podporuje export dočasných a zdieľaných chatov"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "Keď rozbalíte myšlienkový proces, bude zahrnutý vo vašom exporte. Môžete rozbaliť alebo zbaliť každý myšlienkový proces na kontrolu toho, čo sa exportuje."
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "Kopírovať obsah do schránky namiesto sťahovania ako súbor."
+   },
+   "tooltip_dock_left": {
+      "message": "Ukotviť vľavo"
+   },
+   "tooltip_dock_right": {
+      "message": "Ukotviť vpravo"
+   },
+   "tooltip_download_location": {
+      "message": "Zmeňte, kde sa súbory ukladajú, alebo si vyberte, že sa budete pýtať zakaždým v nastaveniach Chrome."
+   },
+   "tooltip_file_name_format": {
+      "message": "Vyberte, ako sa zostaví názov exportovaného súboru: napr. „ChatGPT-MyChat“, „ChatGPT-MyChat-20260808-1430“ alebo „20260808-1430-MyChat-ChatGPT“."
+   },
+   "tooltip_file_name_hint": {
+      "message": "Chcete inú schému názvov? Zmeňte formát názvu súboru vo všeobecných nastaveniach."
+   },
+   "tooltip_main_checkbox": {
+      "message": "Rýchlo vyberte alebo zrušte výber všetkých správ."
+   },
+   "tooltip_mute_export": {
+      "message": "Nezobrazovať dialógové okno úspešného exportu."
+   },
+   "tooltip_order_newest_first": {
+      "message": "Zobraziť najnovšie ako prvé"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "Zobraziť najstaršie ako prvé"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "Keď je povolené, každý užívateľský prompt začne na novej stránke."
+   },
+   "tooltip_pdf_language": {
+      "message": "Vyberte jazyk obsahu konverzácie, aby ste sa vyhli poškodeným alebo nečitateľným písmam vo vygenerovanom PDF."
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "Funkcia Pro plánu"
+   },
+   "tooltip_remove_branding": {
+      "message": "Odstráňte značku ChatGPT Exporter, vrátane ikony a odkazu."
+   },
+   "tooltip_remove_icons": {
+      "message": "Odstráňte ikony používateľa a ChatGPT v PDF"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "Posunúť na koniec"
+   },
+   "tooltip_toc_style": {
+      "message": "Prispôsobte predponu a farby položiek obsahu, aby ste odlíšili používateľa a asistenta"
+   },
+   "turn_selector_title": {
+      "message": "Vybrať správy"
+   }
+}

@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "Veure plans"
+   },
+   "btn_collapse": {
+      "message": "Contrau"
+   },
+   "btn_expand": {
+      "message": "Expandeix"
+   },
+   "btn_export": {
+      "message": "EXPORTA"
+   },
+   "error_dialog_title": {
+      "message": "Error d'exportació"
+   },
+   "error_no_messages": {
+      "message": "No s'han trobat missatges. Obre una conversa existent o envia almenys un missatge abans d'exportar."
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "Configuració per a tipus d'exportació que no són PDF."
+   },
+   "export_settings_tagline": {
+      "message": "Configuració comuna."
+   },
+   "export_settings_title": {
+      "message": "Configuració d'exportació"
+   },
+   "ext_description": {
+      "message": "Descarrega converses de ChatGPT com a PDF, Markdown, Text, etc. Descarrega resultats de ChatGPT a PDF. Converteix fàcilment ChatGPT en un PDF bonic."
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT a PDF, MD i més"
+   },
+   "feedback": {
+      "message": "Comentaris"
+   },
+   "feedback_btn_cancel": {
+      "message": "Cancel·lar"
+   },
+   "feedback_btn_choose_file": {
+      "message": "Triar fitxer"
+   },
+   "feedback_btn_close": {
+      "message": "Tancar"
+   },
+   "feedback_btn_report": {
+      "message": "Comentaris"
+   },
+   "feedback_btn_submit": {
+      "message": "Enviar"
+   },
+   "feedback_description_required": {
+      "message": "La descripció és obligatòria"
+   },
+   "feedback_dialog_title": {
+      "message": "Comentaris"
+   },
+   "feedback_hint_paste": {
+      "message": "o Ctrl+V per enganxar"
+   },
+   "feedback_label_description": {
+      "message": "Descripció"
+   },
+   "feedback_label_email": {
+      "message": "Correu electrònic (opcional)"
+   },
+   "feedback_label_screenshots": {
+      "message": "Captures de pantalla (opcional, enganxeu amb Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "Tipus"
+   },
+   "feedback_submit_failed": {
+      "message": "No s'han pogut enviar els comentaris. Si us plau, torneu-ho a provar."
+   },
+   "feedback_submit_success": {
+      "message": "Gràcies! Els vostres comentaris s'han enviat."
+   },
+   "label_auto_close_selector": {
+      "message": "Tanca automàticament el selector després d'exportar"
+   },
+   "label_auto_show_thinking": {
+      "message": "Mostrar automàticament el procés de pensament"
+   },
+   "label_content_title": {
+      "message": "Títol del contingut"
+   },
+   "label_convo_link": {
+      "message": "Enllaç de conversa"
+   },
+   "label_copy_to_clipboard": {
+      "message": "Copiar al porta-retalls"
+   },
+   "label_dark_mode": {
+      "message": "Mode fosc"
+   },
+   "label_date_and_time": {
+      "message": "Data i hora"
+   },
+   "label_display_btns": {
+      "message": "Mostrar / Amagar botons d'exportació"
+   },
+   "label_download_location": {
+      "message": "Ubicació de descàrrega"
+   },
+   "label_file_name": {
+      "message": "Nom del fitxer"
+   },
+   "label_file_name_custom_part": {
+      "message": "Part personalitzada"
+   },
+   "label_file_name_format": {
+      "message": "Format del nom del fitxer"
+   },
+   "label_font_family": {
+      "message": "Font"
+   },
+   "label_font_size": {
+      "message": "Mida de la font"
+   },
+   "label_include_deep_research_references": {
+      "message": "Referències de recerca profunda"
+   },
+   "label_include_model_name": {
+      "message": "Nom del model"
+   },
+   "label_include_per_msg_time": {
+      "message": "Marques de temps dels missatges"
+   },
+   "label_include_thought_process": {
+      "message": "Procés de pensament"
+   },
+   "label_include_web_search_sources": {
+      "message": "Fonts de cerca web"
+   },
+   "label_mute_export": {
+      "message": "Silenciar exportació"
+   },
+   "label_page_break_per_prompt": {
+      "message": "Salt de pàgina per pregunta"
+   },
+   "label_page_format": {
+      "message": "Format de pàgina"
+   },
+   "label_page_margin": {
+      "message": "Marge de pàgina"
+   },
+   "label_pdf_language": {
+      "message": "Idioma"
+   },
+   "label_remove_branding": {
+      "message": "Eliminar marca"
+   },
+   "label_remove_icons": {
+      "message": "Eliminar icones"
+   },
+   "label_remove_page_number": {
+      "message": "Eliminar número de pàgina"
+   },
+   "label_role_assistant": {
+      "message": "Assistent"
+   },
+   "label_role_labels": {
+      "message": "Etiquetes de rol"
+   },
+   "label_role_user": {
+      "message": "Usuari"
+   },
+   "label_table_of_contents": {
+      "message": "Taula de continguts"
+   },
+   "label_toc_background": {
+      "message": "Fons"
+   },
+   "label_toc_prefix": {
+      "message": "Prefix"
+   },
+   "label_toc_style": {
+      "message": "Estil de l’índex"
+   },
+   "label_toc_text": {
+      "message": "Text"
+   },
+   "label_user_info": {
+      "message": "Informació de l'usuari"
+   },
+   "language": {
+      "message": "Català"
+   },
+   "link_contact_support": {
+      "message": "Contactar amb suport"
+   },
+   "link_feature_request": {
+      "message": "Sol·licitar funció"
+   },
+   "link_my_account": {
+      "message": "El meu compte"
+   },
+   "link_open_chatgpt": {
+      "message": "Obrir lloc web de ChatGPT"
+   },
+   "link_settings_download": {
+      "message": "Obrir configuració"
+   },
+   "msg_bad": {
+      "message": "Dolent"
+   },
+   "msg_export_success": {
+      "message": "Exportació exitosa!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "Còpia al porta-retalls exitosa!"
+   },
+   "msg_good": {
+      "message": "Bé"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "Això ajudaria a altres a conèixer més sobre l'extensió."
+   },
+   "msg_if_issue_or_idea": {
+      "message": "Si tens problemes o idees, no dubtis a contactar-nos."
+   },
+   "msg_rate_or_review": {
+      "message": "Valora o escriu una ressenya a Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "Extensió relacionada:"
+   },
+   "msg_thanks_for_support": {
+      "message": "Gràcies pel teu suport!"
+   },
+   "msg_usage": {
+      "message": "Ús"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "l'ús ha arribat a la quota diària"
+   },
+   "msg_what_you_think": {
+      "message": "Què en penses d'aquesta extensió?"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{Part personalitzada}-{Marca horària}-{Títol de la conversa}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{Part personalitzada}-{Títol de la conversa}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{Part personalitzada}-{Títol de la conversa}-{Marca horària}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{Marca horària}-{Part personalitzada}-{Títol de la conversa}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{Marca horària}-{Títol de la conversa}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{Marca horària}-{Títol de la conversa}-{Part personalitzada}"
+   },
+   "option_filename_format_title": {
+      "message": "{Títol de la conversa}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{Títol de la conversa}-{Part personalitzada}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{Títol de la conversa}-{Part personalitzada}-{Marca horària}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{Títol de la conversa}-{Marca horària}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{Títol de la conversa}-{Marca horària}-{Part personalitzada}"
+   },
+   "recent_updates_got_it": {
+      "message": "Entès"
+   },
+   "recent_updates_item_1": {
+      "message": "Exportació millorada dels xats temporals"
+   },
+   "recent_updates_item_2": {
+      "message": "Personalitza el nom del fitxer exportat, amb marca de temps opcional"
+   },
+   "recent_updates_item_3": {
+      "message": "Defineix l'idioma del PDF perquè el text es mostri amb la tipografia correcta"
+   },
+   "recent_updates_item_4": {
+      "message": "Més opcions per personalitzar l'índex del PDF"
+   },
+   "recent_updates_title": {
+      "message": "Actualitzacions recents"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "Compatibilitat amb la interfície intel·ligent de ChatGPT als PDF"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "Correcció d'errors ocasionals en exportar xats compartits"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "Renderització de diagrames de flux Mermaid als PDF"
+   },
+   "solo_dev_charge_fee": {
+      "message": "Com a desenvolupador independent, cobro una petita tarifa per ajudar a cobrir els costos de manteniment del servei. Realment aprecio la teva comprensió i suport."
+   },
+   "thanks": {
+      "message": "Construït amb ❤️. Gràcies per utilitzar-lo."
+   },
+   "tip_auto_close_sidebar": {
+      "message": "Tanca automàticament aquesta barra lateral després d'exportar — activa-ho a Configuració"
+   },
+   "tip_choose_export_format": {
+      "message": "Fes clic aquí per triar el format d’exportació"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "Per a formats que no siguin PDF, pots copiar directament al porta-retalls en lloc de desar un fitxer — activa-ho a Configuració"
+   },
+   "tip_dock_toggle": {
+      "message": "Fes clic a la icona del cantó superior esquerre del selector per acoblar-lo a l'altre costat"
+   },
+   "tip_filename_format": {
+      "message": "Tria com es compon el nom del fitxer exportat — defineix el format a Configuració"
+   },
+   "tip_hover_preview": {
+      "message": "Passa el cursor per sobre qualsevol torn per previsualitzar el contingut complet"
+   },
+   "tip_resizable_expandable": {
+      "message": "Arrossega la vora interior per redimensionar el selector, fes clic en qualsevol missatge per desplegar/replegar la previsualització"
+   },
+   "tip_shift_click_range": {
+      "message": "Maj+Clic per seleccionar/desseleccionar un rang de caselles alhora"
+   },
+   "tip_support_temp_shared": {
+      "message": "Ara admet l'exportació de xats temporals i xats compartits"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "Quan expandeixis un procés de pensament, s'inclourà a la teva exportació. Pots expandir o contraure cada procés de pensament per controlar què s'exporta."
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "Copiar contingut al porta-retalls en lloc de descarregar com a fitxer."
+   },
+   "tooltip_dock_left": {
+      "message": "Acobla a l'esquerra"
+   },
+   "tooltip_dock_right": {
+      "message": "Acobla a la dreta"
+   },
+   "tooltip_download_location": {
+      "message": "Canvia on es desen els fitxers o tria que et preguntin cada vegada a la Configuració de Chrome."
+   },
+   "tooltip_file_name_format": {
+      "message": "Trieu com es compon el nom del fitxer exportat: p. ex. \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\" o \"20260808-1430-MyChat-ChatGPT\"."
+   },
+   "tooltip_file_name_hint": {
+      "message": "Vols un altre patró de noms? Canvia el format del nom del fitxer a la configuració comuna."
+   },
+   "tooltip_main_checkbox": {
+      "message": "Selecciona o desmarca ràpidament tots els missatges."
+   },
+   "tooltip_mute_export": {
+      "message": "No mostris el diàleg d'exportació exitosa."
+   },
+   "tooltip_order_newest_first": {
+      "message": "Mostra primer els més recents"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "Mostra primer els més antics"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "Quan està activat, cada pregunta de l'usuari començarà en una pàgina nova."
+   },
+   "tooltip_pdf_language": {
+      "message": "Trieu l'idioma del contingut de la conversa per evitar tipus de lletra distorsionats o il·legibles al PDF generat."
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "Funció del pla Pro"
+   },
+   "tooltip_remove_branding": {
+      "message": "Elimina la marca de ChatGPT Exporter, incloent la icona i l'enllaç."
+   },
+   "tooltip_remove_icons": {
+      "message": "Elimina les icones de l'usuari i ChatGPT al PDF"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "Desplaça’t fins al final"
+   },
+   "tooltip_toc_style": {
+      "message": "Personalitzeu el prefix i els colors de les entrades de l'índex per distingir l'usuari de l'assistent"
+   },
+   "turn_selector_title": {
+      "message": "Seleccionar missatges"
+   }
+}

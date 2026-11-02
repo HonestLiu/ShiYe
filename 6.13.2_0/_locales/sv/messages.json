@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "Kolla in planerna"
+   },
+   "btn_collapse": {
+      "message": "Komprimera"
+   },
+   "btn_expand": {
+      "message": "Expandera"
+   },
+   "btn_export": {
+      "message": "EXPORTERA"
+   },
+   "error_dialog_title": {
+      "message": "Export misslyckades"
+   },
+   "error_no_messages": {
+      "message": "Inga meddelanden hittades. Öppna en befintlig konversation eller skicka minst ett meddelande innan du exporterar."
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "Inställningar för icke-PDF exporttyper."
+   },
+   "export_settings_tagline": {
+      "message": "Vanliga inställningar."
+   },
+   "export_settings_title": {
+      "message": "Exportinställningar"
+   },
+   "ext_description": {
+      "message": "Ladda ner ChatGPT-konversationer som PDF, Markdown, Text, etc. Ladda ner ChatGPT-resultat till PDF. Konvertera enkelt ChatGPT till en vacker PDF."
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT till PDF, MD och mer"
+   },
+   "feedback": {
+      "message": "Feedback"
+   },
+   "feedback_btn_cancel": {
+      "message": "Avbryt"
+   },
+   "feedback_btn_choose_file": {
+      "message": "Välj fil"
+   },
+   "feedback_btn_close": {
+      "message": "Stäng"
+   },
+   "feedback_btn_report": {
+      "message": "Feedback"
+   },
+   "feedback_btn_submit": {
+      "message": "Skicka"
+   },
+   "feedback_description_required": {
+      "message": "Beskrivning krävs"
+   },
+   "feedback_dialog_title": {
+      "message": "Feedback"
+   },
+   "feedback_hint_paste": {
+      "message": "eller Ctrl+V för att klistra in"
+   },
+   "feedback_label_description": {
+      "message": "Beskrivning"
+   },
+   "feedback_label_email": {
+      "message": "E-post (valfritt)"
+   },
+   "feedback_label_screenshots": {
+      "message": "Skärmdumpar (valfritt, klistra in med Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "Typ"
+   },
+   "feedback_submit_failed": {
+      "message": "Det gick inte att skicka feedback. Försök igen."
+   },
+   "feedback_submit_success": {
+      "message": "Tack! Din feedback har skickats."
+   },
+   "label_auto_close_selector": {
+      "message": "Stäng väljaren automatiskt efter export"
+   },
+   "label_auto_show_thinking": {
+      "message": "Visa tankeprocess automatiskt"
+   },
+   "label_content_title": {
+      "message": "Innehållstitel"
+   },
+   "label_convo_link": {
+      "message": "Konversationslänk"
+   },
+   "label_copy_to_clipboard": {
+      "message": "Kopiera till urklipp"
+   },
+   "label_dark_mode": {
+      "message": "Mörkt läge"
+   },
+   "label_date_and_time": {
+      "message": "Datum & Tid"
+   },
+   "label_display_btns": {
+      "message": "Visa / Dölj exportknappar"
+   },
+   "label_download_location": {
+      "message": "Nedladdningsplats"
+   },
+   "label_file_name": {
+      "message": "Filnamn"
+   },
+   "label_file_name_custom_part": {
+      "message": "Anpassad del"
+   },
+   "label_file_name_format": {
+      "message": "Filnamnsformat"
+   },
+   "label_font_family": {
+      "message": "Typsnitt"
+   },
+   "label_font_size": {
+      "message": "Teckenstorlek"
+   },
+   "label_include_deep_research_references": {
+      "message": "Deep Research-referenser"
+   },
+   "label_include_model_name": {
+      "message": "Modellnamn"
+   },
+   "label_include_per_msg_time": {
+      "message": "Meddelandetidsstämplar"
+   },
+   "label_include_thought_process": {
+      "message": "Tankeprocess"
+   },
+   "label_include_web_search_sources": {
+      "message": "Webbsökningskällor"
+   },
+   "label_mute_export": {
+      "message": "Stäng av export"
+   },
+   "label_page_break_per_prompt": {
+      "message": "Sidbrytning per prompt"
+   },
+   "label_page_format": {
+      "message": "Sidformat"
+   },
+   "label_page_margin": {
+      "message": "Sidmarginal"
+   },
+   "label_pdf_language": {
+      "message": "Språk"
+   },
+   "label_remove_branding": {
+      "message": "Ta bort varumärke"
+   },
+   "label_remove_icons": {
+      "message": "Ta bort ikoner"
+   },
+   "label_remove_page_number": {
+      "message": "Ta bort sidnummer"
+   },
+   "label_role_assistant": {
+      "message": "Assistent"
+   },
+   "label_role_labels": {
+      "message": "Rolletiketter"
+   },
+   "label_role_user": {
+      "message": "Användare"
+   },
+   "label_table_of_contents": {
+      "message": "Innehållsförteckning"
+   },
+   "label_toc_background": {
+      "message": "Bakgrund"
+   },
+   "label_toc_prefix": {
+      "message": "Prefix"
+   },
+   "label_toc_style": {
+      "message": "Innehållsstil"
+   },
+   "label_toc_text": {
+      "message": "Text"
+   },
+   "label_user_info": {
+      "message": "Användarinformation"
+   },
+   "language": {
+      "message": "Swedish"
+   },
+   "link_contact_support": {
+      "message": "Kontakta support"
+   },
+   "link_feature_request": {
+      "message": "Funktionsförslag"
+   },
+   "link_my_account": {
+      "message": "Mitt konto"
+   },
+   "link_open_chatgpt": {
+      "message": "Öppna ChatGPT-webbplats"
+   },
+   "link_settings_download": {
+      "message": "Öppna inställningar"
+   },
+   "msg_bad": {
+      "message": "Dåligt"
+   },
+   "msg_export_success": {
+      "message": "Export lyckad!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "Kopiering till urklipp lyckad!"
+   },
+   "msg_good": {
+      "message": "Bra"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "Detta skulle hjälpa andra att lära sig mer om tillägget."
+   },
+   "msg_if_issue_or_idea": {
+      "message": "Om du har några problem eller idéer, tveka inte att kontakta oss."
+   },
+   "msg_rate_or_review": {
+      "message": "Betygsätt eller recensera i Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "Relaterat tillägg:"
+   },
+   "msg_thanks_for_support": {
+      "message": "Tack för ditt stöd!"
+   },
+   "msg_usage": {
+      "message": "Användning"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "användning har nått daglig kvot"
+   },
+   "msg_what_you_think": {
+      "message": "Vad tycker du om detta tillägg?"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{Anpassad del}-{Tidsstämpel}-{Konversationstitel}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{Anpassad del}-{Konversationstitel}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{Anpassad del}-{Konversationstitel}-{Tidsstämpel}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{Tidsstämpel}-{Anpassad del}-{Konversationstitel}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{Tidsstämpel}-{Konversationstitel}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{Tidsstämpel}-{Konversationstitel}-{Anpassad del}"
+   },
+   "option_filename_format_title": {
+      "message": "{Konversationstitel}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{Konversationstitel}-{Anpassad del}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{Konversationstitel}-{Anpassad del}-{Tidsstämpel}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{Konversationstitel}-{Tidsstämpel}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{Konversationstitel}-{Tidsstämpel}-{Anpassad del}"
+   },
+   "recent_updates_got_it": {
+      "message": "Uppfattat"
+   },
+   "recent_updates_item_1": {
+      "message": "Förbättrad export av tillfälliga chattar"
+   },
+   "recent_updates_item_2": {
+      "message": "Anpassa namnet på den exporterade filen, med tidsstämpel om du vill"
+   },
+   "recent_updates_item_3": {
+      "message": "Ange PDF-språket så att texten visas med rätt typsnitt"
+   },
+   "recent_updates_item_4": {
+      "message": "Fler sätt att anpassa PDF-innehållsförteckningen"
+   },
+   "recent_updates_title": {
+      "message": "Senaste uppdateringar"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "Stöd för ChatGPT:s intelligenta gränssnitt i PDF-filer"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "Åtgärdat tillfälliga problem vid export av delade chattar"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "Visning av Mermaid-flödesscheman i PDF-filer"
+   },
+   "solo_dev_charge_fee": {
+      "message": "Som ensam utvecklare tar jag ut en liten avgift för att hjälpa till att täcka kostnaderna för att underhålla tjänsten. Jag uppskattar verkligen ditt förstående och stöd."
+   },
+   "thanks": {
+      "message": "Skapad med ❤️. Tack för att du använder."
+   },
+   "tip_auto_close_sidebar": {
+      "message": "Stäng automatiskt detta sidofält efter export — aktivera i Inställningar"
+   },
+   "tip_choose_export_format": {
+      "message": "Klicka här för att välja exportformat"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "För icke-PDF-format kan du kopiera direkt till urklipp istället för att spara en fil — aktivera i Inställningar"
+   },
+   "tip_dock_toggle": {
+      "message": "Klicka på ikonen längst upp till vänster i väljaren för att flytta den till andra sidan"
+   },
+   "tip_filename_format": {
+      "message": "Välj hur det exporterade filnamnet byggs upp — ange formatet i Inställningar"
+   },
+   "tip_hover_preview": {
+      "message": "Håll muspekaren över ett meddelande för att se hela innehållet"
+   },
+   "tip_resizable_expandable": {
+      "message": "Dra i den inre kanten för att ändra panelens storlek, klicka på ett meddelande för att fälla ut/in förhandsvisningen"
+   },
+   "tip_shift_click_range": {
+      "message": "Shift+Klicka för att markera/avmarkera ett intervall av kryssrutor samtidigt"
+   },
+   "tip_support_temp_shared": {
+      "message": "Stöder nu export av tillfälliga och delade chattar"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "När du expanderar en tankeprocess kommer den att inkluderas i din export. Du kan expandera eller kollapsa varje tankeprocess för att kontrollera vad som exporteras."
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "Kopiera innehåll till urklipp istället för att ladda ner som fil."
+   },
+   "tooltip_dock_left": {
+      "message": "Förankra till vänster"
+   },
+   "tooltip_dock_right": {
+      "message": "Förankra till höger"
+   },
+   "tooltip_download_location": {
+      "message": "Ändra var filer sparas eller välj att bli frågad varje gång i Chrome-inställningar."
+   },
+   "tooltip_file_name_format": {
+      "message": "Välj hur det exporterade filnamnet sätts ihop: t.ex. \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\" eller \"20260808-1430-MyChat-ChatGPT\"."
+   },
+   "tooltip_file_name_hint": {
+      "message": "Vill du ha ett annat namnmönster? Ändra filnamnsformatet under de allmänna inställningarna."
+   },
+   "tooltip_main_checkbox": {
+      "message": "Välj eller avmarkera snabbt alla meddelanden."
+   },
+   "tooltip_mute_export": {
+      "message": "Visa inte dialogrutan för lyckad export."
+   },
+   "tooltip_order_newest_first": {
+      "message": "Visa nyaste först"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "Visa äldsta först"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "När aktiverat kommer varje användarprompt att börja på en ny sida."
+   },
+   "tooltip_pdf_language": {
+      "message": "Välj språket för konversationsinnehållet för att undvika förvrängda eller oläsliga teckensnitt i den genererade PDF-filen."
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "Pro plan funktion"
+   },
+   "tooltip_remove_branding": {
+      "message": "Ta bort ChatGPT Exporter-varumärke, inklusive ikon och länk."
+   },
+   "tooltip_remove_icons": {
+      "message": "Ta bort användar- och ChatGPT-ikoner i PDF:en"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "Rulla längst ned"
+   },
+   "tooltip_toc_style": {
+      "message": "Anpassa prefix och färger för innehållsförteckningens poster för att skilja på användare och assistent"
+   },
+   "turn_selector_title": {
+      "message": "Välj meddelanden"
+   }
+}

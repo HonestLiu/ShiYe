@@ -1,0 +1,14 @@
+:root { color-scheme: light; font: 16px/1.7 system-ui, sans-serif; color: #202b34; background: #f4f6f8; }
+* { box-sizing: border-box; } body { margin: 0; }
+main { max-width: 840px; margin: 3rem auto; padding: 0 1.5rem; }
+header, section { background: #fff; border: 1px solid #d9e0e5; border-radius: 12px; padding: 1.7rem 2rem; margin-bottom: 1rem; }
+h1 { font-size: 2rem; margin: .2rem 0; } h2 { font-size: 1.2rem; margin-top: 0; }
+.eyebrow { font-size: .75rem; letter-spacing: .12em; color: #4b6679; }
+label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
+input, textarea { font: inherit; padding: .65rem; width: 100%; border: 1px solid #8999a7; border-radius: 6px; }
+textarea { resize: vertical; } button { font: inherit; margin-top: .8rem; padding: .65rem 1rem; border: 1px solid #1d5a77; border-radius: 6px; background: #1d5a77; color: #fff; cursor: pointer; min-height: 48px; }
+button:disabled { opacity: .55; cursor: wait; }
+:focus-visible { outline: 3px solid #3281b1; outline-offset: 3px; }
+[role="status"] { overflow-wrap: anywhere; } footer { font-size: .85rem; color: #506575; padding: 1rem; }
+li { white-space: pre-wrap; overflow-wrap: anywhere; border-top: 1px solid #e2e7eb; padding: .6rem; }
+@media (max-width: 520px) { main { margin: 1rem auto; padding: 0 .7rem; } header, section { padding: 1.2rem; } }

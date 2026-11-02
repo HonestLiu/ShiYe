@@ -1,0 +1,392 @@
+{
+   "btn_checkout_plans": {
+      "message": "Δείτε τα σχέδια"
+   },
+   "btn_collapse": {
+      "message": "Σύμπτυξη"
+   },
+   "btn_expand": {
+      "message": "Ανάπτυξη"
+   },
+   "btn_export": {
+      "message": "ΕΞΑΓΩΓΗ"
+   },
+   "error_dialog_title": {
+      "message": "Αποτυχία εξαγωγής"
+   },
+   "error_no_messages": {
+      "message": "Δεν βρέθηκαν μηνύματα. Ανοίξτε μια υπάρχουσα συνομιλία ή στείλτε τουλάχιστον ένα μήνυμα πριν από την εξαγωγή."
+   },
+   "export_settings_not_pdf_tagline": {
+      "message": "Ρυθμίσεις για τύπους εξαγωγής που δεν είναι PDF."
+   },
+   "export_settings_tagline": {
+      "message": "Κοινές ρυθμίσεις."
+   },
+   "export_settings_title": {
+      "message": "Ρυθμίσεις εξαγωγής"
+   },
+   "ext_description": {
+      "message": "Κατεβάστε συνομιλίες ChatGPT ως PDF, Markdown, Κείμενο κ.λπ. Κατεβάστε αποτελέσματα ChatGPT σε PDF. Μετατρέψτε εύκολα το ChatGPT σε όμορφο PDF."
+   },
+   "ext_fulltitle": {
+      "message": "ChatGPT Exporter - ChatGPT σε PDF, MD και άλλα"
+   },
+   "feedback": {
+      "message": "Σχόλια"
+   },
+   "feedback_btn_cancel": {
+      "message": "Ακύρωση"
+   },
+   "feedback_btn_choose_file": {
+      "message": "Επιλογή αρχείου"
+   },
+   "feedback_btn_close": {
+      "message": "Κλείσιμο"
+   },
+   "feedback_btn_report": {
+      "message": "Σχόλια"
+   },
+   "feedback_btn_submit": {
+      "message": "Υποβολή"
+   },
+   "feedback_description_required": {
+      "message": "Η περιγραφή είναι υποχρεωτική"
+   },
+   "feedback_dialog_title": {
+      "message": "Σχόλια"
+   },
+   "feedback_hint_paste": {
+      "message": "ή Ctrl+V για επικόλληση"
+   },
+   "feedback_label_description": {
+      "message": "Περιγραφή"
+   },
+   "feedback_label_email": {
+      "message": "Email (προαιρετικό)"
+   },
+   "feedback_label_screenshots": {
+      "message": "Στιγμιότυπα οθόνης (προαιρετικό, επικολλήστε με Ctrl+V)"
+   },
+   "feedback_label_type": {
+      "message": "Τύπος"
+   },
+   "feedback_submit_failed": {
+      "message": "Αποτυχία υποβολής σχολίων. Παρακαλώ δοκιμάστε ξανά."
+   },
+   "feedback_submit_success": {
+      "message": "Ευχαριστούμε! Τα σχόλιά σας υποβλήθηκαν."
+   },
+   "label_auto_close_selector": {
+      "message": "Αυτόματο κλείσιμο επιλογέα μετά την εξαγωγή"
+   },
+   "label_auto_show_thinking": {
+      "message": "Αυτόματη εμφάνιση διαδικασίας σκέψης"
+   },
+   "label_content_title": {
+      "message": "Τίτλος περιεχομένου"
+   },
+   "label_convo_link": {
+      "message": "Σύνδεσμος συνομιλίας"
+   },
+   "label_copy_to_clipboard": {
+      "message": "Αντιγραφή στο πρόχειρο"
+   },
+   "label_dark_mode": {
+      "message": "Σκούρη λειτουργία"
+   },
+   "label_date_and_time": {
+      "message": "Ημερομηνία & Ώρα"
+   },
+   "label_display_btns": {
+      "message": "Εμφάνιση / Απόκρυψη κουμπιών εξαγωγής"
+   },
+   "label_download_location": {
+      "message": "Τοποθεσία λήψης"
+   },
+   "label_file_name": {
+      "message": "Όνομα αρχείου"
+   },
+   "label_file_name_custom_part": {
+      "message": "Προσαρμοσμένο τμήμα"
+   },
+   "label_file_name_format": {
+      "message": "Μορφή ονόματος αρχείου"
+   },
+   "label_font_family": {
+      "message": "Γραμματοσειρά"
+   },
+   "label_font_size": {
+      "message": "Μέγεθος γραμματοσειράς"
+   },
+   "label_include_deep_research_references": {
+      "message": "Αναφορές Βαθιάς Έρευνας"
+   },
+   "label_include_model_name": {
+      "message": "Όνομα μοντέλου"
+   },
+   "label_include_per_msg_time": {
+      "message": "Χρονοσήμανση μηνυμάτων"
+   },
+   "label_include_thought_process": {
+      "message": "Διαδικασία Σκέψης"
+   },
+   "label_include_web_search_sources": {
+      "message": "Πηγές Αναζήτησης Ιστού"
+   },
+   "label_mute_export": {
+      "message": "Σίγαση εξαγωγής"
+   },
+   "label_page_break_per_prompt": {
+      "message": "Αλλαγή σελίδας ανά ερώτηση"
+   },
+   "label_page_format": {
+      "message": "Μορφή σελίδας"
+   },
+   "label_page_margin": {
+      "message": "Περιθώριο σελίδας"
+   },
+   "label_pdf_language": {
+      "message": "Γλώσσα"
+   },
+   "label_remove_branding": {
+      "message": "Αφαίρεση επωνυμίας"
+   },
+   "label_remove_icons": {
+      "message": "Αφαίρεση εικονιδίων"
+   },
+   "label_remove_page_number": {
+      "message": "Αφαίρεση αριθμού σελίδας"
+   },
+   "label_role_assistant": {
+      "message": "Βοηθός"
+   },
+   "label_role_labels": {
+      "message": "Ετικέτες ρόλων"
+   },
+   "label_role_user": {
+      "message": "Χρήστης"
+   },
+   "label_table_of_contents": {
+      "message": "Πίνακας περιεχομένων"
+   },
+   "label_toc_background": {
+      "message": "Φόντο"
+   },
+   "label_toc_prefix": {
+      "message": "Πρόθεμα"
+   },
+   "label_toc_style": {
+      "message": "Στυλ περιεχομένων"
+   },
+   "label_toc_text": {
+      "message": "Κείμενο"
+   },
+   "label_user_info": {
+      "message": "Πληροφορίες χρήστη"
+   },
+   "language": {
+      "message": "Greek"
+   },
+   "link_contact_support": {
+      "message": "Επικοινωνία με την υποστήριξη"
+   },
+   "link_feature_request": {
+      "message": "Αίτηση λειτουργίας"
+   },
+   "link_my_account": {
+      "message": "Ο λογαριασμός μου"
+   },
+   "link_open_chatgpt": {
+      "message": "Άνοιγμα ιστοσελίδας ChatGPT"
+   },
+   "link_settings_download": {
+      "message": "Άνοιγμα ρυθμίσεων"
+   },
+   "msg_bad": {
+      "message": "Κακή"
+   },
+   "msg_export_success": {
+      "message": "Επιτυχής εξαγωγή!"
+   },
+   "msg_export_success_copy_to_clipboard": {
+      "message": "Επιτυχής αντιγραφή στο πρόχειρο!"
+   },
+   "msg_good": {
+      "message": "Καλή"
+   },
+   "msg_help_others_learn_about_us": {
+      "message": "Αυτό θα βοηθούσε άλλους να μάθουν περισσότερα για την επέκταση."
+   },
+   "msg_if_issue_or_idea": {
+      "message": "Εάν έχετε προβλήματα ή ιδέες, μη διστάσετε να επικοινωνήσετε μαζί μας."
+   },
+   "msg_rate_or_review": {
+      "message": "Αξιολογήστε ή γράψτε μια κριτική στο Chrome Web Store"
+   },
+   "msg_related_extension": {
+      "message": "Σχετική επέκταση:"
+   },
+   "msg_thanks_for_support": {
+      "message": "Ευχαριστώ για την υποστήριξή σας!"
+   },
+   "msg_usage": {
+      "message": "Χρήση"
+   },
+   "msg_usage_reach_daily_quota": {
+      "message": "η χρήση έφτασε το ημερήσιο όριο"
+   },
+   "msg_what_you_think": {
+      "message": "Τι πιστεύετε για αυτή την επέκταση;"
+   },
+   "option_filename_format_custom_time_title": {
+      "message": "{Προσαρμοσμένο τμήμα}-{Χρονοσήμανση}-{Τίτλος συνομιλίας}"
+   },
+   "option_filename_format_custom_title": {
+      "message": "{Προσαρμοσμένο τμήμα}-{Τίτλος συνομιλίας}"
+   },
+   "option_filename_format_custom_title_time": {
+      "message": "{Προσαρμοσμένο τμήμα}-{Τίτλος συνομιλίας}-{Χρονοσήμανση}"
+   },
+   "option_filename_format_time_custom_title": {
+      "message": "{Χρονοσήμανση}-{Προσαρμοσμένο τμήμα}-{Τίτλος συνομιλίας}"
+   },
+   "option_filename_format_time_title": {
+      "message": "{Χρονοσήμανση}-{Τίτλος συνομιλίας}"
+   },
+   "option_filename_format_time_title_custom": {
+      "message": "{Χρονοσήμανση}-{Τίτλος συνομιλίας}-{Προσαρμοσμένο τμήμα}"
+   },
+   "option_filename_format_title": {
+      "message": "{Τίτλος συνομιλίας}"
+   },
+   "option_filename_format_title_custom": {
+      "message": "{Τίτλος συνομιλίας}-{Προσαρμοσμένο τμήμα}"
+   },
+   "option_filename_format_title_custom_time": {
+      "message": "{Τίτλος συνομιλίας}-{Προσαρμοσμένο τμήμα}-{Χρονοσήμανση}"
+   },
+   "option_filename_format_title_time": {
+      "message": "{Τίτλος συνομιλίας}-{Χρονοσήμανση}"
+   },
+   "option_filename_format_title_time_custom": {
+      "message": "{Τίτλος συνομιλίας}-{Χρονοσήμανση}-{Προσαρμοσμένο τμήμα}"
+   },
+   "recent_updates_got_it": {
+      "message": "Κατάλαβα"
+   },
+   "recent_updates_item_1": {
+      "message": "Βελτιωμένη εξαγωγή προσωρινών συνομιλιών"
+   },
+   "recent_updates_item_2": {
+      "message": "Προσαρμόσιμο όνομα αρχείου εξαγωγής, προαιρετικά με χρονική σήμανση"
+   },
+   "recent_updates_item_3": {
+      "message": "Ορίστε τη γλώσσα του PDF ώστε το κείμενο να εμφανίζεται με τη σωστή γραμματοσειρά"
+   },
+   "recent_updates_item_4": {
+      "message": "Περισσότερες επιλογές προσαρμογής για τον πίνακα περιεχομένων του PDF"
+   },
+   "recent_updates_title": {
+      "message": "Πρόσφατες ενημερώσεις"
+   },
+   "recent_updates_v6_13_2_item_1": {
+      "message": "Υποστήριξη της έξυπνης διεπαφής του ChatGPT σε PDF"
+   },
+   "recent_updates_v6_13_2_item_2": {
+      "message": "Διόρθωση περιστασιακών προβλημάτων εξαγωγής κοινόχρηστων συνομιλιών"
+   },
+   "recent_updates_v6_13_2_item_3": {
+      "message": "Απόδοση διαγραμμάτων ροής Mermaid σε PDF"
+   },
+   "solo_dev_charge_fee": {
+      "message": "Ως ανεξάρτητος προγραμματιστής, χρεώνω ένα μικρό τέλος για να βοηθήσω στην κάλυψη του κόστους συντήρησης της υπηρεσίας. Πραγματικά εκτιμώ την κατανόηση και την υποστήριξή σας."
+   },
+   "thanks": {
+      "message": "Φτιαγμένο με ❤️. Ευχαριστώ για τη χρήση."
+   },
+   "tip_auto_close_sidebar": {
+      "message": "Αυτόματο κλείσιμο αυτού του πλαισίου μετά την εξαγωγή — ενεργοποιήστε το στις Ρυθμίσεις"
+   },
+   "tip_choose_export_format": {
+      "message": "Κάντε κλικ εδώ για να επιλέξετε μορφή εξαγωγής"
+   },
+   "tip_copy_to_clipboard": {
+      "message": "Για μορφές εκτός PDF, μπορείτε να αντιγράψετε απευθείας στο πρόχειρο αντί να αποθηκεύσετε αρχείο — ενεργοποιήστε το στις Ρυθμίσεις"
+   },
+   "tip_dock_toggle": {
+      "message": "Κάντε κλικ στο εικονίδιο στην επάνω αριστερή γωνία του επιλογέα για αλλαγή πλευράς"
+   },
+   "tip_filename_format": {
+      "message": "Επιλέξτε πώς συντίθεται το όνομα του εξαγόμενου αρχείου — ορίστε τη μορφή στις Ρυθμίσεις"
+   },
+   "tip_hover_preview": {
+      "message": "Τοποθετήστε τον κέρσορα πάνω σε οποιοδήποτε στοιχείο για προεπισκόπηση του πλήρους περιεχομένου"
+   },
+   "tip_resizable_expandable": {
+      "message": "Σύρετε την εσωτερική άκρη για αλλαγή μεγέθους, κάντε κλικ σε ένα μήνυμα για ανάπτυξη/σύμπτυξη της προεπισκόπησης"
+   },
+   "tip_shift_click_range": {
+      "message": "Shift+Κλικ για επιλογή/αποεπιλογή ενός εύρους πλαισίων ελέγχου ταυτόχρονα"
+   },
+   "tip_support_temp_shared": {
+      "message": "Υποστηρίζει πλέον εξαγωγή προσωρινών και κοινόχρηστων συνομιλιών"
+   },
+   "tooltip_auto_show_thinking": {
+      "message": "Όταν επεκτείνετε μια διαδικασία σκέψης, θα συμπεριληφθεί στην εξαγωγή σας. Μπορείτε να επεκτείνετε ή να συμπτύξετε κάθε διαδικασία σκέψης για να ελέγξετε τι εξάγεται."
+   },
+   "tooltip_copy_to_clipboard": {
+      "message": "Αντιγραφή περιεχομένου στο πρόχειρο αντί για λήψη ως αρχείο."
+   },
+   "tooltip_dock_left": {
+      "message": "Αγκύρωση αριστερά"
+   },
+   "tooltip_dock_right": {
+      "message": "Αγκύρωση δεξιά"
+   },
+   "tooltip_download_location": {
+      "message": "Αλλάξτε πού αποθηκεύονται τα αρχεία ή επιλέξτε να σας ρωτάνε κάθε φορά στις Ρυθμίσεις Chrome."
+   },
+   "tooltip_file_name_format": {
+      "message": "Επιλέξτε πώς θα συντίθεται το όνομα του εξαγόμενου αρχείου: π.χ. «ChatGPT-MyChat», «ChatGPT-MyChat-20260808-1430» ή «20260808-1430-MyChat-ChatGPT»."
+   },
+   "tooltip_file_name_hint": {
+      "message": "Θέλετε διαφορετικό μοτίβο ονομασίας; Αλλάξτε τη μορφή ονόματος αρχείου στις κοινές ρυθμίσεις."
+   },
+   "tooltip_main_checkbox": {
+      "message": "Επιλέξτε ή αποεπιλέξτε γρήγορα όλα τα μηνύματα."
+   },
+   "tooltip_mute_export": {
+      "message": "Μην εμφανίζετε το παράθυρο διαλόγου επιτυχούς εξαγωγής."
+   },
+   "tooltip_order_newest_first": {
+      "message": "Εμφάνιση νεότερων πρώτα"
+   },
+   "tooltip_order_oldest_first": {
+      "message": "Εμφάνιση παλαιότερων πρώτα"
+   },
+   "tooltip_page_break_per_prompt": {
+      "message": "Όταν είναι ενεργοποιημένο, κάθε ερώτηση χρήστη θα ξεκινά σε νέα σελίδα."
+   },
+   "tooltip_pdf_language": {
+      "message": "Επιλέξτε τη γλώσσα του περιεχομένου της συνομιλίας για να αποφύγετε παραμορφωμένες ή δυσανάγνωστες γραμματοσειρές στο PDF που δημιουργείται."
+   },
+   "tooltip_pro_plan_feature": {
+      "message": "Λειτουργία Pro σχεδίου"
+   },
+   "tooltip_remove_branding": {
+      "message": "Αφαιρέστε την επωνυμία ChatGPT Exporter, συμπεριλαμβανομένου του εικονιδίου και του συνδέσμου."
+   },
+   "tooltip_remove_icons": {
+      "message": "Αφαιρέστε τα εικονίδια χρήστη και ChatGPT στο PDF"
+   },
+   "tooltip_scroll_to_bottom": {
+      "message": "Κύλιση στο τέλος"
+   },
+   "tooltip_toc_style": {
+      "message": "Προσαρμόστε το πρόθεμα και τα χρώματα των καταχωρίσεων του πίνακα περιεχομένων για να διακρίνετε τον χρήστη από τον βοηθό"
+   },
+   "turn_selector_title": {
+      "message": "Επιλογή μηνυμάτων"
+   }
+}

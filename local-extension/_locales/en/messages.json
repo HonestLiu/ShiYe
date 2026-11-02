@@ -1,0 +1,392 @@
+{
+  "btn_checkout_plans": {
+    "message": "Check out the plans"
+  },
+  "btn_collapse": {
+    "message": "Collapse"
+  },
+  "btn_expand": {
+    "message": "Expand"
+  },
+  "btn_export": {
+    "message": "EXPORT"
+  },
+  "error_dialog_title": {
+    "message": "Export Failed"
+  },
+  "error_no_messages": {
+    "message": "No messages found. Open an existing conversation, or send at least one message before exporting."
+  },
+  "export_settings_not_pdf_tagline": {
+    "message": "Settings for non-PDF export types."
+  },
+  "export_settings_tagline": {
+    "message": "Common settings."
+  },
+  "export_settings_title": {
+    "message": "Export Settings"
+  },
+  "ext_description": {
+    "message": "Download ChatGPT convos as PDF, Markdown, Text, etc. Download Chat GPT results to PDF. Easily convert ChatGPT to beautiful PDF."
+  },
+  "ext_fulltitle": {
+    "message": "ChatGPT Exporter - ChatGPT to PDF, MD, and more"
+  },
+  "feedback": {
+    "message": "Feedback"
+  },
+  "feedback_btn_cancel": {
+    "message": "Cancel"
+  },
+  "feedback_btn_choose_file": {
+    "message": "Choose File"
+  },
+  "feedback_btn_close": {
+    "message": "Close"
+  },
+  "feedback_btn_report": {
+    "message": "Feedback"
+  },
+  "feedback_btn_submit": {
+    "message": "Submit"
+  },
+  "feedback_description_required": {
+    "message": "Description is required"
+  },
+  "feedback_dialog_title": {
+    "message": "Feedback"
+  },
+  "feedback_hint_paste": {
+    "message": "or Ctrl+V to paste"
+  },
+  "feedback_label_description": {
+    "message": "Description"
+  },
+  "feedback_label_email": {
+    "message": "Email (optional)"
+  },
+  "feedback_label_screenshots": {
+    "message": "Screenshots (optional, paste with Ctrl+V)"
+  },
+  "feedback_label_type": {
+    "message": "Type"
+  },
+  "feedback_submit_failed": {
+    "message": "Failed to submit feedback. Please try again."
+  },
+  "feedback_submit_success": {
+    "message": "Thank you! Your feedback has been submitted."
+  },
+  "label_auto_close_selector": {
+    "message": "Auto-close Selector After Export"
+  },
+  "label_auto_show_thinking": {
+    "message": "Auto Show Thought Process"
+  },
+  "label_content_title": {
+    "message": "Content Title"
+  },
+  "label_convo_link": {
+    "message": "Conversation Link"
+  },
+  "label_copy_to_clipboard": {
+    "message": "Copy to Clipboard"
+  },
+  "label_dark_mode": {
+    "message": "Dark Mode"
+  },
+  "label_date_and_time": {
+    "message": "Date & Time"
+  },
+  "label_display_btns": {
+    "message": "Show / Hide Export Buttons"
+  },
+  "label_download_location": {
+    "message": "Download Location"
+  },
+  "label_file_name": {
+    "message": "File Name"
+  },
+  "label_file_name_custom_part": {
+    "message": "Custom Part"
+  },
+  "label_file_name_format": {
+    "message": "Filename Format"
+  },
+  "label_font_family": {
+    "message": "Font"
+  },
+  "label_font_size": {
+    "message": "Font Size"
+  },
+  "label_include_deep_research_references": {
+    "message": "Deep Research References"
+  },
+  "label_include_model_name": {
+    "message": "Model name"
+  },
+  "label_include_per_msg_time": {
+    "message": "Message Timestamps"
+  },
+  "label_include_thought_process": {
+    "message": "Thought Process"
+  },
+  "label_include_web_search_sources": {
+    "message": "Web Search Sources"
+  },
+  "label_mute_export": {
+    "message": "Mute Export"
+  },
+  "label_page_break_per_prompt": {
+    "message": "Page Break Per Prompt"
+  },
+  "label_page_format": {
+    "message": "Page Format"
+  },
+  "label_page_margin": {
+    "message": "Page Margin"
+  },
+  "label_pdf_language": {
+    "message": "Language"
+  },
+  "label_remove_branding": {
+    "message": "Remove Branding"
+  },
+  "label_remove_icons": {
+    "message": "Remove Icons"
+  },
+  "label_remove_page_number": {
+    "message": "Remove Page Number"
+  },
+  "label_role_assistant": {
+    "message": "Assistant"
+  },
+  "label_role_labels": {
+    "message": "Role labels"
+  },
+  "label_role_user": {
+    "message": "User"
+  },
+  "label_table_of_contents": {
+    "message": "Table of Contents"
+  },
+  "label_toc_background": {
+    "message": "Background"
+  },
+  "label_toc_prefix": {
+    "message": "Prefix"
+  },
+  "label_toc_style": {
+    "message": "TOC Style"
+  },
+  "label_toc_text": {
+    "message": "Text"
+  },
+  "label_user_info": {
+    "message": "User Info"
+  },
+  "language": {
+    "message": "English"
+  },
+  "link_contact_support": {
+    "message": "Local service & feedback"
+  },
+  "link_feature_request": {
+    "message": "Feature Request"
+  },
+  "link_my_account": {
+    "message": "Local account"
+  },
+  "link_open_chatgpt": {
+    "message": "Open ChatGPT Website"
+  },
+  "link_settings_download": {
+    "message": "Open Settings"
+  },
+  "msg_bad": {
+    "message": "Bad"
+  },
+  "msg_export_success": {
+    "message": "Export Success!"
+  },
+  "msg_export_success_copy_to_clipboard": {
+    "message": "Copy to clipboard success!"
+  },
+  "msg_good": {
+    "message": "Good"
+  },
+  "msg_help_others_learn_about_us": {
+    "message": "This would help others learn more about the extension."
+  },
+  "msg_if_issue_or_idea": {
+    "message": "If you have any issues or ideas, feel free to reach out."
+  },
+  "msg_rate_or_review": {
+    "message": "Rate or Review on Chrome Web Store"
+  },
+  "msg_related_extension": {
+    "message": "Related Extension:"
+  },
+  "msg_thanks_for_support": {
+    "message": "Thanks for your support!"
+  },
+  "msg_usage": {
+    "message": "Usage"
+  },
+  "msg_usage_reach_daily_quota": {
+    "message": "usage has reach daily quota"
+  },
+  "msg_what_you_think": {
+    "message": "What do you think of this extension?"
+  },
+  "option_filename_format_custom_time_title": {
+    "message": "{Custom Part}-{Timestamp}-{Conversation Title}"
+  },
+  "option_filename_format_custom_title": {
+    "message": "{Custom Part}-{Conversation Title}"
+  },
+  "option_filename_format_custom_title_time": {
+    "message": "{Custom Part}-{Conversation Title}-{Timestamp}"
+  },
+  "option_filename_format_time_custom_title": {
+    "message": "{Timestamp}-{Custom Part}-{Conversation Title}"
+  },
+  "option_filename_format_time_title": {
+    "message": "{Timestamp}-{Conversation Title}"
+  },
+  "option_filename_format_time_title_custom": {
+    "message": "{Timestamp}-{Conversation Title}-{Custom Part}"
+  },
+  "option_filename_format_title": {
+    "message": "{Conversation Title}"
+  },
+  "option_filename_format_title_custom": {
+    "message": "{Conversation Title}-{Custom Part}"
+  },
+  "option_filename_format_title_custom_time": {
+    "message": "{Conversation Title}-{Custom Part}-{Timestamp}"
+  },
+  "option_filename_format_title_time": {
+    "message": "{Conversation Title}-{Timestamp}"
+  },
+  "option_filename_format_title_time_custom": {
+    "message": "{Conversation Title}-{Timestamp}-{Custom Part}"
+  },
+  "recent_updates_got_it": {
+    "message": "Got it"
+  },
+  "recent_updates_item_1": {
+    "message": "Improved export for temporary chats"
+  },
+  "recent_updates_item_2": {
+    "message": "Customize the exported file name, with an optional timestamp"
+  },
+  "recent_updates_item_3": {
+    "message": "Set the PDF language so text renders in the right font"
+  },
+  "recent_updates_item_4": {
+    "message": "More ways to customize the PDF table of contents"
+  },
+  "recent_updates_title": {
+    "message": "Recent Updates"
+  },
+  "recent_updates_v6_13_2_item_1": {
+    "message": "Support ChatGPT Intelligent UI in PDFs"
+  },
+  "recent_updates_v6_13_2_item_2": {
+    "message": "Fix occasional issues exporting shared chats"
+  },
+  "recent_updates_v6_13_2_item_3": {
+    "message": "Render Mermaid flowcharts in PDFs"
+  },
+  "solo_dev_charge_fee": {
+    "message": "As a solo developer, I charge a small fee to help cover the costs of maintaining the service. I truly appreciate your understanding and support."
+  },
+  "thanks": {
+    "message": "Build with ❤️. Thanks for using."
+  },
+  "tip_auto_close_sidebar": {
+    "message": "Auto-close this sidebar after export — enable it in Settings"
+  },
+  "tip_choose_export_format": {
+    "message": "Click here to choose your export format"
+  },
+  "tip_copy_to_clipboard": {
+    "message": "For non-PDF formats, you can copy directly to clipboard instead of saving a file — enable it in Settings"
+  },
+  "tip_dock_toggle": {
+    "message": "Click the icon at the selector's top-left corner to dock it on the other side"
+  },
+  "tip_filename_format": {
+    "message": "Choose how exported filenames are built — set the format in Settings"
+  },
+  "tip_hover_preview": {
+    "message": "Hover over any turn to preview its full content"
+  },
+  "tip_resizable_expandable": {
+    "message": "Drag the inner edge to resize the selector, click any message to expand/collapse its preview"
+  },
+  "tip_shift_click_range": {
+    "message": "Shift+Click to select/deselect a range of checkboxes at once"
+  },
+  "tip_support_temp_shared": {
+    "message": "Now supports exporting Temporary Chats and Shared Chats"
+  },
+  "tooltip_auto_show_thinking": {
+    "message": "When you expand a thought process, it will be included in your export. You can expand or collapse each thought process to control what gets exported."
+  },
+  "tooltip_copy_to_clipboard": {
+    "message": "Copy content to clipboard instead of downloading as a file."
+  },
+  "tooltip_dock_left": {
+    "message": "Dock to left"
+  },
+  "tooltip_dock_right": {
+    "message": "Dock to right"
+  },
+  "tooltip_download_location": {
+    "message": "Change where files are saved or choose to be asked each time in Chrome Settings."
+  },
+  "tooltip_file_name_format": {
+    "message": "Choose how the exported filename is assembled: e.g. \"ChatGPT-MyChat\", \"ChatGPT-MyChat-20260808-1430\", or \"20260808-1430-MyChat-ChatGPT\"."
+  },
+  "tooltip_file_name_hint": {
+    "message": "Want a different naming pattern? Change the filename format in Common Settings."
+  },
+  "tooltip_main_checkbox": {
+    "message": "Quickly select or deselect all messages at once."
+  },
+  "tooltip_mute_export": {
+    "message": "Do not display the Export Success dialog."
+  },
+  "tooltip_order_newest_first": {
+    "message": "Show newest first"
+  },
+  "tooltip_order_oldest_first": {
+    "message": "Show oldest first"
+  },
+  "tooltip_page_break_per_prompt": {
+    "message": "When enabled, each user prompt will start on a new page."
+  },
+  "tooltip_pdf_language": {
+    "message": "Choose the language of your conversation content to avoid garbled or malformed fonts in the generated PDF."
+  },
+  "tooltip_pro_plan_feature": {
+    "message": "Pro plan feature"
+  },
+  "tooltip_remove_branding": {
+    "message": "Remove ChatGPT Exporter branding, including icon and link."
+  },
+  "tooltip_remove_icons": {
+    "message": "Remove User & ChatGPT icons in the PDF"
+  },
+  "tooltip_scroll_to_bottom": {
+    "message": "Scroll to bottom"
+  },
+  "tooltip_toc_style": {
+    "message": "Customize table of contents entry prefix and colors to distinguish user and assistant turns"
+  },
+  "turn_selector_title": {
+    "message": "Select Messages"
+  }
+}
