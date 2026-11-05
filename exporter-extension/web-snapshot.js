@@ -59,12 +59,23 @@
     async function acquireAsset(){if(activeAssets<6){activeAssets++;return;}await new Promise(resolve=>assetWaiters.push(resolve));}
     function releaseAsset(){if(assetWaiters.length)assetWaiters.shift()();else activeAssets--;}
     const rules = new Map();
+    const usedFamilies=new Set();
+    const normalizeFamily=name=>name.trim().replace(/^["']|["']$/g,'').toLowerCase();
+    let finalizing=false,finalizeDeadline=Infinity,finishedAssets=0;
+    const remaining=()=>Math.max(0,finalizeDeadline-Date.now());
+    async function bounded(task,label,limit=10000){
+      const ms=Math.min(limit,remaining());if(ms<=0)throw Error('网页资源整理已达到时间上限');
+      let timer;
+      try{return await Promise.race([Promise.resolve().then(task),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+'超时')),ms);})]);}
+      finally{clearTimeout(timer);}
+    }
+    const resourceProgress=()=>{if(finalizing)ArchiveSnapshotAdapter.exportProgress?.(`正在处理网页字体和背景：${finishedAssets}/${resources.size} 项（最多等待20秒）`);};
     const getStyle = (node, pseudo) => node.ownerDocument.defaultView.getComputedStyle(node, pseudo);
     async function fetchAsset(address) {
-      try { const result = await fetch(address,{credentials:'omit',redirect:'error',signal:AbortSignal.timeout(20000)}); if (!result.ok) throw new Error('Resource HTTP '+result.status); return result; }
+      try { const result = await bounded(()=>fetch(address,{credentials:'omit',referrerPolicy:'no-referrer',redirect:'error',signal:AbortSignal.timeout(Math.max(1,Math.min(10000,remaining())))}),'资源请求'); if (!result.ok) throw new Error('Resource HTTP '+result.status); return result; }
       catch (error) {
         if (!['http:', 'https:'].includes(new URL(address).protocol)) throw error;
-        const response = await ArchiveCore.request({ action: 'snapshotResource', url: address });
+        const response = await bounded(()=>ArchiveCore.request({ action: 'snapshotResource', url: address }),'后台资源请求');
         return new Response(Uint8Array.from(atob(response.base64), char => char.charCodeAt(0)), { headers: { 'Content-Type': response.mime } });
       }
     }
@@ -76,13 +87,13 @@
         try{
         const response = await fetchAsset(url);
         if (!response.ok) throw new Error(`Resource HTTP ${response.status}`);
-        const blob = await response.blob();
+        const blob = await bounded(()=>response.blob(),'资源正文读取');
         if (blob.size > 16 * 1024 * 1024) throw new Error('Resource exceeds 16 MiB');
-        const bytes = new Uint8Array(await blob.arrayBuffer());
+        const bytes = new Uint8Array(await bounded(()=>blob.arrayBuffer(),'资源编码'));
         let binary = '';
         for (let offset = 0; offset < bytes.length; offset += 32768) binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
         return `data:${blob.type || 'application/octet-stream'};base64,${btoa(binary)}`;
-        }finally{releaseAsset();}
+        }finally{finishedAssets++;releaseAsset();resourceProgress();}
       })());
       return resources.get(url);
     };
@@ -103,6 +114,7 @@
       return value.replace(pattern, text => values.get(text) || text);
     }
     function styleClass(node, pseudo, computed = getStyle(node,pseudo)) {
+      for(const family of computed.getPropertyValue('font-family').split(','))if(family.trim())usedFamilies.add(normalizeFamily(family));
       const style = STYLE_PROPERTIES.map(key => {
         let value = computed.getPropertyValue(key);
         if (!value) return '';
@@ -117,12 +129,18 @@
       copy.setAttribute('data-local-pdf-expand','true');
       const originals = [source, ...source.querySelectorAll('*')];
       const copies = [copy, ...copy.querySelectorAll('*')];
+      // Mark the complete code viewport chain without changing the live page.
+      for(const pre of copy.querySelectorAll('pre')){
+        pre.setAttribute('data-local-pdf-code','true');
+        for(let box=pre;box&&copy.contains(box);box=box.parentElement)box.setAttribute('data-local-pdf-code-container','true');
+      }
       for(const image of source.querySelectorAll('img')){const address=image.currentSrc || image.getAttribute('src');if(address)cacheResource(address).catch(()=>{});}
       for (let index = 0; index < originals.length; index++) {
         const node = originals[index], clone = copies[index];
         if (node.matches(OMIT) || node.closest('button, .turn-action-controls, form')) { clone.remove(); continue; }
         const { name } = styleClass(node);
         clone.classList.add(name);
+        if(clone.hasAttribute('data-local-pdf-code-container')&&['inline-block','inline-flex','inline-grid'].includes(getStyle(node).display))clone.setAttribute('data-local-pdf-code-inline','true');
         if(node.scrollHeight>node.clientHeight+2 && /auto|scroll/.test(getStyle(node).getPropertyValue('overflow-y')))clone.setAttribute('data-local-pdf-expand','true');
         // Inline styles are replaced by resolved values; no app JS is carried.
         clone.removeAttribute('style');
@@ -278,32 +296,46 @@
     }
     if(fallbackCount){warnings.push(`${fallbackCount} 条消息不在当前网页节点中，已使用会话正文补全；补全部分重新排版，网页独有图表需要页面可读取。`);progress(`已收集 ${payload.messages.length} 条消息，其中 ${fallbackCount} 条使用会话内容补全，正在排版…`);}
     const width = Math.max(320, Math.min(1200, widths.reduce((max,value)=>Math.max(max,value||0),0) || 760));
+    finalizing=true;finalizeDeadline=Date.now()+20000;
+    progress('消息捕获完成，正在整理网页字体和背景（最多等待20秒）…');
     const fonts = new Set();
     const fontTasks=[];
     const visited = new Set();
+    function usesFont(rule){
+      const match=rule.cssText?.match(/font-family\s*:\s*([^;}]+)/i);
+      const family=rule.style?.getPropertyValue('font-family')||match?.[1]||'';
+      return usedFamilies.has(normalizeFamily(family));
+    }
     async function fontRules(items, base) {
       for (const rule of items) {
-        if (rule.type === 5) fontTasks.push(freezeUrls(rule.cssText, base).catch(()=>{warnings.push('部分网页字体可能使用系统字体替代。');return '';}));
+        if(remaining()<=0)return;
+        if (rule.type === 5 && usesFont(rule)) fontTasks.push(freezeUrls(rule.cssText, base).catch(()=>{warnings.push('部分网页字体可能使用系统字体替代。');return '';}));
         if (rule.styleSheet) await collectFonts(rule.styleSheet);
         if (rule.cssRules) await fontRules(rule.cssRules, base);
       }
     }
     async function collectFonts(sheet) {
-      if (visited.has(sheet)) return;
+      if (visited.has(sheet)||remaining()<=0) return;
       visited.add(sheet);
       try {
         await fontRules(sheet.cssRules, sheet.href || document.baseURI);
       } catch {
         if (!sheet.href) return;
         try {
-          const response = await fetchAsset(sheet.href);
-          if (!response.ok) throw new Error('Stylesheet unavailable');
-          for (const match of (await response.text()).matchAll(/@font-face\s*\{[^}]*\}/gi)) fontTasks.push(freezeUrls(match[0],sheet.href).catch(()=>{warnings.push('部分网页字体可能使用系统字体替代。');return '';}));
+          await acquireAsset();
+          let text;
+          try{
+            const response = await fetchAsset(sheet.href);
+            if (!response.ok) throw new Error('Stylesheet unavailable');
+            text=await bounded(()=>response.text(),'字体样式表读取');
+          }finally{releaseAsset();}
+          for (const match of text.matchAll(/@font-face\s*\{[^}]*\}/gi))if(usesFont({cssText:match[0]}))fontTasks.push(freezeUrls(match[0],sheet.href).catch(()=>{warnings.push('部分网页字体可能使用系统字体替代。');return '';}));
         } catch { warnings.push('部分网页字体可能使用系统字体替代。'); }
       }
     }
-    for (const sheet of document.styleSheets) await collectFonts(sheet);
+    await Promise.all([...document.styleSheets].map(collectFonts));
     for(const rule of await Promise.all(fontTasks))if(rule)fonts.add(rule);
+    progress('正在整理网页样式…');
     const css = [];
     for (const [style, name] of rules) css.push(`.${name}{${await freezeUrls(style)}}`);
     const bodyStyle = getStyle(document.body);
@@ -324,8 +356,15 @@
       .pdf-message [data-local-pdf-expand]{height:auto!important;max-height:none!important;overflow:visible!important}
       .pdf-message>[data-local-pdf-expand]{margin-left:0!important;margin-right:0!important;max-width:100%!important}
       .pdf-message pre,.pdf-message table,.pdf-message svg,.pdf-message img{break-inside:avoid}
+      .pdf-message [data-local-pdf-code-container]{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;min-width:0!important;max-width:100%!important}
+      .pdf-message [data-local-pdf-code]{display:block!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}
+      .pdf-message [data-local-pdf-code-inline]{display:block!important}
+      .pdf-message [data-local-pdf-code] code,.pdf-message [data-local-pdf-code] span{white-space:pre-wrap!important;overflow-wrap:anywhere!important}
       ${payload.options?.pageBreakPerPrompt ? '.pdf-message[data-role="user"]:not(:first-child){break-before:page}' : ''}
       </style></head><body><main class="pdf-document">${payload.messages.map((_,index)=>sections.get(index)).join('\n')}</main></body></html>`;
+    if(remaining()<=0)warnings.push('网页字体和背景收集已达到20秒上限，未能读取的资源可能使用系统字体或省略背景图片。');
+    finalizing=false;
+    progress('网页原貌捕获完成，正在提交内容…');
     return { html, css: '', width, theme, messageCount:payload.messages.length,domCount:payload.messages.length-fallbackCount,fallbackCount,warnings: [...new Set(warnings)] };
   }
   globalThis.ArchiveWebSnapshot = { capture, selectedRoots, STYLE_PROPERTIES };

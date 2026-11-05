@@ -1,0 +1,26 @@
+{
+  "name": "archive-reader",
+  "private": true,
+  "version": "0.1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "tauri": "tauri",
+    "desktop": "tauri dev",
+    "bundle": "tauri build --bundles app",
+    "check": "node scripts/check.mjs",
+    "package:mac": "node scripts/package-macos.mjs",
+    "check:native-pdf": "node scripts/check-native-pdf.mjs",
+    "check:transport": "node scripts/check-extension-transport.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.8.4",
+    "dompurify": "^3.3.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "vite": "^6.0.0"
+  }
+}

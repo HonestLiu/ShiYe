@@ -1,5 +1,12 @@
 (() => {
-  if (globalThis.__archiveOverlay) return;
+  const runtime=chrome.runtime,version=runtime.getManifest?.().version||'1.2.4';
+  if(globalThis.__archiveOverlay?.version===version&&globalThis.__archiveOverlay.alive?.())return;
+  globalThis.__archiveOverlay?.dispose?.();
+  const restored=globalThis.__archiveRestore;delete globalThis.__archiveRestore;
+  const lifetime=new AbortController();
+  const listen=(target,type,handler,options={})=>target.addEventListener(type,handler,{...options,signal:lifetime.signal});
+  let disconnected=false;
+  const alive=()=>{try{return !disconnected&&Boolean(runtime.id);}catch{return false;}};
   const C=ArchiveCore;
   const host=document.createElement('div');
   host.id='conversation-archive';
@@ -16,11 +23,11 @@
     <nav aria-label="批量选择"><button data-selection="all">全部</button><button data-selection="questions">提问</button><button data-selection="answers">回答</button><button data-selection="none">清空</button><button data-selection="invert">反选</button></nav>
     <p class="source" role="status"></p><div class="list" tabindex="-1"></div><button class="bottom icon" data-action="bottom" aria-label="滚动到底部" title="滚动到底部">↓</button>
     <footer><div class="summary"><input type="checkbox" aria-label="全选消息" id="archive-all"><span class="count">0/0</span><button data-action="expand">展开</button><button data-action="reverse" class="icon" aria-label="最新消息在前" title="最新消息在前" aria-pressed="false">⇅</button><button data-action="settings" class="icon settings" aria-label="导出设置" title="导出设置">⚙</button></div>
-    <div class="actions"><button data-action="close" class="cancel">取消</button><button data-action="format" aria-haspopup="menu">MD ▾</button><button data-action="export" class="primary" disabled>导出</button></div><p class="status" role="status" aria-live="polite"></p></footer>`;
+    <div class="actions"><button data-action="close" class="cancel">取消</button><button data-action="save-client" title="保存原貌到拾页客户端">存到拾页</button><button data-action="format" aria-haspopup="menu">MD ▾</button><button data-action="export" class="primary" disabled>导出</button></div><p class="status" role="status" aria-live="polite"></p></footer>`;
   root.append(panel);
-  const state={prefs:{...C.defaults},conversation:{messages:[]},selected:new Set(),expanded:new Set(),open:false,loading:false,busy:false,last:null,href:location.href,revision:0,dialog:null};
+  const state={active:true,prefs:{...C.defaults},conversation:{messages:[]},selected:new Set(),expanded:new Set(),open:false,loading:false,busy:false,last:null,href:location.href,revision:0,dialog:null};
   const find=s=>root.querySelector(s);
-  const persist=async patch=>{state.prefs={...state.prefs,...patch};await C.savePreferences(patch);};
+  const persist=async patch=>{state.prefs={...state.prefs,...patch};try{await C.savePreferences(patch);}catch(error){message(error.message);}};
   const selected=()=>state.conversation.messages.filter(m=>state.selected.has(m.id));
   const message=text=>{find('.status').textContent=text;};
 
@@ -36,7 +43,7 @@
     find('.count').textContent=`${n}/${total}`;
     const all=find('#archive-all');all.checked=total>0&&n===total;all.indeterminate=n>0&&n<total;
     for(const input of root.querySelectorAll('[data-message]'))input.checked=state.selected.has(input.dataset.message);
-    for(const button of root.querySelectorAll('[data-action=export],[data-action=export-menu]'))button.disabled=!state.open||!n||state.loading||state.busy;
+    for(const button of root.querySelectorAll('[data-action=export],[data-action=export-menu],[data-action=save-client]'))button.disabled=!state.open||!n||state.loading||state.busy||!alive();
     find('[data-action=format]').textContent=(state.prefs.format==='txt'?'TEXT':state.prefs.format.toUpperCase())+' ▾';
     find('.actions [data-action=export]').textContent=state.busy?'处理中…':state.prefs.format!=='pdf'&&state.prefs.copyToClipboard?'复制':'导出';
     find('.button-bar [data-action=export]').textContent=state.prefs.format!=='pdf'&&state.prefs.copyToClipboard?'COPY':'EXPORT';
@@ -115,16 +122,17 @@
   }
   function pdfDialog(){
     const node=dialog('导出为 PDF',`<form class="pdf-form" method="post">
-      <label>生成方式<select name="engine"><option value="chromium">网页原貌（推荐）</option><option value="pandoc">Pandoc 排版</option></select></label>
-      <label>文件名<input name="fileName" required autofocus></label><label>内容标题<input name="contentTitle" required></label>
+      <fieldset class="pdf-target"><legend>生成位置</legend><label><input type="radio" name="pdfTarget" value="client" checked>拾页客户端</label><label><input type="radio" name="pdfTarget" value="server">PDF 服务</label></fieldset><p class="client-pdf-hint hint">由拾页收藏所选内容并生成原貌 PDF，请在客户端选择保存位置。当前使用 A4 纵向，暂不支持目录页及 PDF 书签。</p><label>文件名<input name="fileName" required autofocus></label><label>内容标题<input name="contentTitle" required></label><div data-server-options><label>生成方式<select name="engine"><option value="chromium">网页原貌（推荐）</option><option value="pandoc">Pandoc 排版</option></select></label>
       <div class="pair"><label>页面格式<select name="pageSize"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></label><label>方向<select name="pageOrient"><option value="portrait">纵向</option><option value="landscape">横向</option></select></label></div>
       <div class="pair"><label>页面边距<select name="margin"><option value="normal">普通</option><option value="narrow">窄</option><option value="wide">宽</option></select></label><label>字体<select name="fontFamily"><option value="default">默认</option><option value="serif">衬线</option><option value="mono">等宽</option></select></label></div>
       <div class="pair"><label>字体大小（%）<input name="fontSize" type="number" min="50" max="200"></label><label>语言<select name="lang"><option value="zh-CN">简体中文</option><option value="en">English</option><option value="ja">日本語</option></select></label></div>
       <div class="checks">${[['darkMode','暗黑模式'],['outline','目录'],['toc','目录页'],['pageBreakPerPrompt','每个提问分页'],['removePageNumber','移除页码'],['includeConvoLink','对话链接'],['includeModelName','模型名称'],['includePerMsgTime','消息时间戳']].map(([key,text])=>`<label><input name="${key}" type="checkbox">${text}</label>`).join('')}</div>
-      <p class="hint">“目录”控制 PDF 侧栏书签，“目录页”在正文前插入可点击的目录页面。网页原貌会滚动收集所选消息的网页样式；仍无法读取的消息经确认后重新排版。字体和额外元信息使用 Pandoc 排版。</p><p class="pdf-status" role="status"></p><div class="dialog-actions"><button type="button" data-cancel>取消</button><button type="submit" class="primary">导出 PDF</button></div></form>`);
+      </div><p class="hint server-pdf-hint">“目录”控制 PDF 侧栏书签，“目录页”在正文前插入可点击的目录页面。网页原貌会滚动收集所选消息的网页样式；仍无法读取的消息经确认后重新排版。字体和额外元信息使用 Pandoc 排版。</p><p class="pdf-status" role="status"></p><div class="dialog-actions"><button type="button" data-cancel>取消</button><button type="submit" class="primary">导出 PDF</button></div></form>`);
     const form=node.querySelector('form');
     for(const [key,value] of Object.entries(state.prefs)){const input=form.elements.namedItem(key);if(input){if(input.type==='checkbox')input.checked=value===true;else input.value=value;}}
     form.elements.fileName.value=C.filename(C.selectionTitle(state.conversation,selected()),'pdf');form.elements.contentTitle.value=state.conversation.title;form.elements.lang.value=state.prefs.lang||'zh-CN';
+    const updateTarget=()=>{const client=form.elements.pdfTarget.value==='client';node.querySelector('[data-server-options]').hidden=client;node.querySelector('.server-pdf-hint').hidden=client;node.querySelector('.client-pdf-hint').hidden=!client;};
+    form.addEventListener('change',event=>{if(event.target.name==='pdfTarget')updateTarget();});updateTarget();
     ArchiveCustomSelect.enhance(node);
     node.querySelector('[data-cancel]').onclick=()=>node.close();
     form.onsubmit=async event=>{
@@ -137,6 +145,22 @@
       const progress=text=>{node.querySelector('.pdf-status').textContent=text;message(text);};
       try{
         await persist(prefs);
+        if(opt.pdfTarget==='client'){
+          progress('正在连接拾页客户端…');
+          const exportRequest={id:crypto.randomUUID(),filename:C.filename(C.selectionTitle(conversation,messages),'pdf',opt.fileName)};
+          const job=await C.saveClient(conversation,messages,{...opt,exportRequest},{progress});
+          if(!job.jobId)throw Error('客户端未创建 PDF 任务，请升级拾页后重试');
+          progress('请在拾页客户端选择 PDF 保存位置…');
+          const deadline=Date.now()+30*60*1000;
+          while(Date.now()<deadline){
+            const result=await C.request({action:'clientRequest',request:{action:'export_status',jobId:job.jobId}});
+            if(result.status==='done'){if(node.open)node.close();complete('导出成功','PDF 已保存至客户端选择的位置。');return;}
+            if(result.status==='cancelled')throw Error('已在客户端取消 PDF 保存');
+            if(result.status==='failed')throw Error(result.error||'客户端 PDF 生成失败');
+            await new Promise(resolve=>setTimeout(resolve,1500));
+          }
+          throw Error('等待客户端导出超时，请在拾页中查看收藏后重新导出');
+        }
         progress('正在捕获网页原貌…');const job=await C.createPdf(conversation,messages,opt,{progress,confirmFallback:info=>window.confirm(`已捕获 ${info.domCount}/${info.messageCount} 条消息的网页样式。仍有 ${info.fallbackCount} 条无法读取网页节点。\n\n是否使用会话正文重新排版补全？补全部分可能缺少网页独有图表。选择取消将停止导出。`)});
         progress('正在生成 PDF，可继续浏览；任务也可在设置中恢复。');
         const deadline=Date.now()+30*60*1000;
@@ -154,11 +178,19 @@
       finally{state.busy=false;button.disabled=false;update();}
     };
   }
+  async function saveToClient(){
+    if(state.busy||state.loading||!selected().length)return;
+    state.busy=true;update();message('正在连接拾页客户端…');
+    try{const result=await C.saveClient(state.conversation,selected(),state.prefs,{progress:message});complete(result.duplicate?'已在拾页收藏中':'已保存到拾页','可打开拾页客户端阅读和整理。');}
+    catch(error){message(error.message);}
+    finally{state.busy=false;update();}
+  }
   function complete(title,description){
     message(title);if(state.prefs.autoCloseSelector)close();
     if(!state.prefs.muteExport){const node=dialog(title,'<p class="success-description"></p><div class="dialog-actions"><button class="primary" autofocus>完成</button></div>');node.querySelector('p').textContent=title==='已复制到剪贴板'?'所选消息已复制。':description;node.querySelector('.dialog-actions button').onclick=()=>node.close();}
   }
-  root.addEventListener('click',event=>{
+  listen(root,'click',event=>{if(!alive()){event.preventDefault();event.stopImmediatePropagation();markDisconnected();}},{capture:true});
+  listen(root,'click',event=>{
     const button=event.target.closest('button');if(!button)return;
     if(button.dataset.selection){selection(button.dataset.selection);return;}
     const action=button.dataset.action;
@@ -174,6 +206,7 @@
     if(action==='selection-menu')menu(button,[['all','全部'],['questions','仅提问'],['answers','仅回答'],['none','不选择']],type=>{void persist({selectType:type});void open(type);});
     if(action==='format')menu(button,formats.map(([value,label])=>[value,label+(state.prefs.format===value?' ✓':'')]),format=>{void persist({format});update();});
     if(action==='export-menu')menu(button,formats.map(([value,label])=>[value,'导出为 '+label]),format=>void exportChosen(format));
+    if(action==='save-client')void saveToClient();
     if(action==='export')void exportChosen();
   });
   find('#archive-all').onchange=e=>selection(e.target.checked?'all':'none',false);
@@ -182,8 +215,10 @@
   resize.onpointermove=event=>{if(drag){state.prefs.width=Math.max(260,Math.min(800,state.prefs.side==='right'?innerWidth-event.clientX:event.clientX));layout();}};
   const endResize=()=>{if(drag){drag=null;void persist({width:state.prefs.width});}};resize.onpointerup=endResize;resize.onpointercancel=endResize;
   resize.onkeydown=event=>{if(['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();const delta=(event.key==='ArrowRight'?1:-1)*(state.prefs.side==='right'?-1:1)*20;void persist({width:Math.max(260,Math.min(800,state.prefs.width+delta))});layout();}};
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!state.dialog?.open&&!root.querySelector('.menu:popover-open')&&state.open)close();});
+  listen(document,'keydown',event=>{if(event.key==='Escape'&&!state.dialog?.open&&!root.querySelector('.menu:popover-open')&&state.open)close();});
   function mount(){
+    if(!state.active)return;
+    if(!alive()){markDisconnected();return;}
     // Follow the composer through ChatGPT's client-side navigations; float only when absent.
     const composer=document.querySelector('#prompt-textarea');
     const form=composer?.closest('form');const anchor=form?.parentElement;
@@ -199,11 +234,40 @@
   let scheduled=false;
   const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;mount();});});
   observer.observe(document.documentElement,{subtree:true,childList:true});
-  new MutationObserver(layout).observe(document.documentElement,{attributes:true,attributeFilter:['class','data-theme']});
-  window.addEventListener('resize',mount);
-  document.addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;mount();});}},{capture:true,passive:true});
-  chrome.runtime.onMessage.addListener((event,sender,respond)=>{if(sender.id!==chrome.runtime.id)return;if(event.action==='open-selector'){void open(event.selectType);respond({ok:true});}if(event.action==='export-selected'){void exportChosen(event.format);respond({ok:true});}});
-  chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes.preferences){state.prefs={...C.defaults,...changes.preferences.newValue};mount();update();}});
-  globalThis.__archiveOverlay={open,close};
-  void C.preferences().then(prefs=>{state.prefs=prefs;mount();update();});
+  const themeObserver=new MutationObserver(layout);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class','data-theme']});
+  listen(window,'resize',mount);
+  listen(document,'scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;mount();});}},{capture:true,passive:true});
+  const runtimeListener=(event,sender,respond)=>{
+    if(sender.id!==runtime.id)return;
+    if(event.action==='archive-health'){respond({version,alive:alive()});return;}
+    if(event.action==='open-selector'){void open(event.selectType);respond({ok:true});}
+    if(event.action==='export-selected'){void exportChosen(event.format);respond({ok:true});}
+  };
+  const storageListener=(changes,area)=>{if(area==='local'&&changes.preferences&&state.active){state.prefs={...C.defaults,...changes.preferences.newValue};mount();update();}};
+  runtime.onMessage.addListener(runtimeListener);
+  chrome.storage.onChanged.addListener(storageListener);
+  function markDisconnected(){
+    if(!state.active||disconnected)return;disconnected=true;
+    try{if(runtime.id)runtime.sendMessage({action:'ensurePage'}).catch(()=>{});}catch{}
+    for(const b of root.querySelectorAll('[data-action=export],[data-action=save-client]'))b.disabled=true;
+    message('扩展已更新，正在恢复连接。若未恢复，可从浏览器工具栏点击“选择消息”重新连接，无需检查客户端设置。');
+  }
+  function dispose(){
+    if(!state.active)return;state.active=false;state.revision++;
+    observer.disconnect();themeObserver.disconnect();lifetime.abort();
+    try{runtime.onMessage.removeListener?.(runtimeListener);}catch{}
+    try{chrome.storage.onChanged.removeListener?.(storageListener);}catch{}
+    state.dialog?.remove();host.remove();
+    if(globalThis.__archiveOverlay?.dispose===dispose)delete globalThis.__archiveOverlay;
+  }
+  globalThis.__archiveOverlay={open,close,dispose,alive,version,markDisconnected};
+  void C.preferences().then(async prefs=>{
+    if(!state.active)return;state.prefs=prefs;mount();update();
+    if(restored?.url===location.href){
+      await open('none');if(!state.active)return;
+      const ids=new Set(restored.selected);
+      state.selected=new Set(state.conversation.messages.filter(m=>ids.has(m.id)).map(m=>m.id));
+      update();message('扩展连接已恢复，请继续导出。');
+    }
+  }).catch(error=>{if(state.active)message(error.message);});
 })();

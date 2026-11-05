@@ -20,16 +20,24 @@ try{
  });
  await page.goto('https://chatgpt.com/c/fixture');
  await page.evaluate(()=>{
-  window.calls=[];window.stored={preferences:{}};window.changeListeners=[];window.failPdf=false;window.clipboardText='';window.pendingPdf=false;
+  window.calls=[];window.stored={preferences:{pdfTarget:'server'}};window.changeListeners=[];window.failPdf=false;window.clipboardText='';window.pendingPdf=false;
   Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.clipboardText=text;}}});
-  window.chrome={runtime:{id:'fixture',getURL:file=>'https://extension.fixture/'+file,onMessage:{addListener(){}},sendMessage:async message=>{
+  window.chrome={runtime:{id:'fixture',getURL:file=>'https://extension.fixture/'+file,getManifest:()=>({version:'1.2.4'}),onMessage:{addListener(){}},sendMessage:async message=>{
    calls.push(message);
+   if(message.action==='clientHello')return {data:{nativePdfJobs:true,name:'拾页'}};
+   if(message.action==='clientRequest'){
+    const request=message.request;
+    if(request.action==='begin'){window.nativeChunks=[];return {data:{upload:'fixture-upload'}};}
+    if(request.action==='chunk'){nativeChunks.push(request.data);return {data:{ok:true}};}
+    if(request.action==='commit'){const binary=nativeChunks.map(s=>atob(s)).join('');window.clientArchive=JSON.parse(new TextDecoder().decode(Uint8Array.from(binary,c=>c.charCodeAt(0))));return {data:{id:'saved-item',jobId:'client-job'}};}
+    if(request.action==='export_status')return {data:{status:window.clientStatus||'done',error:'模拟客户端生成失败'}};
+   }
    if(message.path==='/api/pdf/v1'){if(failPdf)return {error:'模拟服务离线'};return {data:{jobId:'a'.repeat(32),server:'http://127.0.0.1:8765'}};}
    if(message.path?.match(/\/api\/pdf\/v1\/[a-f0-9]{32}$/))return {data:{status:pendingPdf?'processing':'done'}};
    return {data:{ok:true}};
   }},storage:{local:{get:async key=>{if(typeof key==='string')return {[key]:stored[key]};return stored;},set:async patch=>{Object.assign(stored,patch);for(const [key,newValue] of Object.entries(patch))for(const fn of changeListeners)fn({[key]:{newValue}},'local');}},onChanged:{addListener:fn=>changeListeners.push(fn)}}};
  });
- for(const file of ['snapshot-adapter.js','capture.js','core.js','web-snapshot.js','role-icons.js','custom-select.js','content-ui.js'])await page.addScriptTag({content:await fs.readFile(path.join(root,file),'utf8')});
+ for(const file of ['bootstrap.js','snapshot-adapter.js','capture.js','core.js','web-snapshot.js','role-icons.js','custom-select.js','content-ui.js'])await page.addScriptTag({content:await fs.readFile(path.join(root,file),'utf8')});
  const bar=page.locator('#conversation-archive .button-bar');
  const panel=page.locator('#conversation-archive .selector');
  await bar.getByRole('button',{name:'SELECT',exact:true}).click();
@@ -90,6 +98,41 @@ try{
  dialog=page.getByRole('dialog');assert.match(await dialog.getByLabel('文件名',{exact:true}).inputValue(),/^测试对话_\d{8}-\d{6}\.pdf$/);await page.keyboard.press('Escape');
  await panel.getByRole('button',{name:'清空',exact:true}).click();await panel.locator('[data-message="m0"]').check();await panel.locator('.actions [data-action=export]').click();
  dialog=page.getByRole('dialog');assert.match(await dialog.getByLabel('文件名',{exact:true}).inputValue(),/^测试对话_\d{8}-\d{6}\.pdf$/);await page.keyboard.press('Escape');
+ await page.evaluate(async()=>ArchiveCore.savePreferences({pdfTarget:'client'}));
+ await panel.locator('.actions [data-action=export]').click();dialog=page.getByRole('dialog');
+ assert(await dialog.getByRole('radio',{name:'拾页客户端',exact:true}).isChecked());
+ assert(await dialog.locator('[data-server-options]').isHidden());
+ await dialog.getByLabel('文件名',{exact:true}).fill('客户端文档.pdf');
+ const serverCreates=await page.evaluate(()=>calls.filter(c=>c.path==='/api/pdf/v1').length);
+ await dialog.getByRole('button',{name:'导出 PDF',exact:true}).click();
+ await page.getByRole('heading',{name:'导出成功',exact:true}).waitFor();
+ assert.equal(await page.evaluate(()=>calls.filter(c=>c.path==='/api/pdf/v1').length),serverCreates,'Client PDF must not fetch the old HTTP backend');
+ assert.equal(await page.evaluate(()=>clientArchive.exportRequest.filename),'客户端文档.pdf');
+ assert.equal(await page.evaluate(()=>clientArchive.messages.length),1);
+ assert(await page.getByText('PDF 已保存至客户端选择的位置。',{exact:true}).isVisible());
+ await page.getByRole('button',{name:'完成',exact:true}).click();
+ for(const [clientStatus,expected] of [['cancelled','已在客户端取消 PDF 保存'],['failed','模拟客户端生成失败']]){
+  await page.evaluate(value=>{window.clientStatus=value;},clientStatus);
+  await panel.locator('.actions [data-action=export]').click();dialog=page.getByRole('dialog');
+  await dialog.getByRole('button',{name:'导出 PDF',exact:true}).click();
+  await dialog.locator('.pdf-status').filter({hasText:expected}).waitFor();
+  assert.equal(await page.getByRole('heading',{name:'导出成功',exact:true}).count(),0);
+  await dialog.getByRole('button',{name:'取消',exact:true}).click();
+ }
+ // Simulate a reload on an already-open page. Retain exactly the selected IDs.
+ const selectedBefore=await panel.locator('[data-message]:checked').evaluateAll(nodes=>nodes.map(n=>n.dataset.message));
+ await page.evaluate(()=>{window.oldDisposed=false;const old=__archiveOverlay.dispose;__archiveOverlay.dispose=()=>{oldDisposed=true;old();};__archiveOverlay.version='1.2.3';});
+ for(const file of ['bootstrap.js','snapshot-adapter.js','capture.js','core.js','web-snapshot.js','role-icons.js','custom-select.js','content-ui.js'])await page.addScriptTag({content:await fs.readFile(path.join(root,file),'utf8')});
+ await page.waitForFunction(()=>document.querySelector('#conversation-archive')?.shadowRoot.querySelector('.status').textContent.includes('连接已恢复'));
+ assert(await page.evaluate(()=>oldDisposed));assert.equal(await page.locator('#conversation-archive').count(),1);
+ assert.deepEqual(await panel.locator('[data-message]:checked').evaluateAll(nodes=>nodes.map(n=>n.dataset.message)),selectedBefore);
+ // Earlier releases have no dispose hook: retire their visible host safely.
+ await page.evaluate(()=>{delete __archiveOverlay.dispose;__archiveOverlay.version='1.2.3';});
+ for(const file of ['bootstrap.js','snapshot-adapter.js','capture.js','core.js','web-snapshot.js','role-icons.js','custom-select.js','content-ui.js'])await page.addScriptTag({content:await fs.readFile(path.join(root,file),'utf8')});
+ await page.waitForFunction(()=>document.querySelector('#conversation-archive')?.shadowRoot.querySelector('.status').textContent.includes('连接已恢复'));
+ assert.equal(await page.locator('#conversation-archive').count(),1);
+ assert.equal(await page.locator('[id^="conversation-archive-retired-"]:visible').count(),0);
+ assert.deepEqual(await panel.locator('[data-message]:checked').evaluateAll(nodes=>nodes.map(n=>n.dataset.message)),selectedBefore);
  assert.deepEqual(errors,[]);
  console.log('PASS real Chromium fixture: page selector, range/invert/filter selection, expansion, reverse order, dock/resize, format menu, text/clipboard, native PDF modal + Esc, create/poll/auto-download, auto-close, dark/mobile, SPA reset, single-answer highest-heading filename and multi-message/user fallbacks. Service and ChatGPT data are mocked.');
 }finally{await browser.close();}

@@ -1,10 +1,27 @@
 // Shared by the page overlay and extension pages. No commercial runtime code.
 globalThis.ArchiveCore = (() => {
-  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
+  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,pdfTarget:'client',engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
   const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  async function request(message) { const result=await chrome.runtime.sendMessage(message); if(!result)throw Error('扩展已重新加载，请刷新 ChatGPT 页面');if(result.error)throw Error(result.error);return result.data; }
-  async function preferences(){const {preferences={}}=await chrome.storage.local.get('preferences');return {...defaults,...preferences};}
-  async function savePreferences(patch){const current=await preferences();const next={...current,...patch};await chrome.storage.local.set({preferences:next});return next;}
+  function connectionError(error){
+    if(/context invalidated/i.test(error?.message||'')){
+      globalThis.__archiveOverlay?.markDisconnected?.();
+      return Error(globalThis.location?.protocol==='chrome-extension:'?'此扩展页面已失效，请关闭后重新打开，客户端无需重新配对':'扩展已更新，正在恢复网页连接。若按钮未恢复，请从浏览器工具栏点击“选择消息”重新连接，无需检查客户端设置');
+    }
+    return error;
+  }
+  async function request(message) {
+    let result;
+    try{result=await chrome.runtime.sendMessage(message);}
+    catch(error){
+      throw connectionError(error);
+    }
+    if(!result)throw Error('扩展后台未返回响应。请在扩展管理页重新加载扩展，并关闭后重新打开此设置页');
+    if(result.error)throw Error(result.error);
+    if(!Object.prototype.hasOwnProperty.call(result,'data'))throw Error('扩展后台返回了无效响应，请确认加载的是 exporter-extension 目录');
+    return result.data;
+  }
+  async function preferences(){try{const {preferences={}}=await chrome.storage.local.get('preferences');return {...defaults,...preferences};}catch(error){throw connectionError(error);}}
+  async function savePreferences(patch){try{const current=await preferences();const next={...current,...patch};await chrome.storage.local.set({preferences:next});return next;}catch(error){throw connectionError(error);}}
   function filename(title,format,custom){
     const now=new Date(),pad=value=>String(value).padStart(2,'0');
     const stamp=String(now.getFullYear())+pad(now.getMonth()+1)+pad(now.getDate())+'-'+pad(now.getHours())+pad(now.getMinutes())+pad(now.getSeconds());
@@ -81,5 +98,35 @@ globalThis.ArchiveCore = (() => {
     progress?.('正在提交 PDF…');
     return request({path:'/api/pdf/v1',body:{cmd:'create',payload:value},filename:exportFilename});
   }
-  return {defaults,request,preferences,savePreferences,escapeHTML,filename,selectionTitle,markdown,serialize,payload,exportText,createPdf};
+  async function saveClient(conversation,messages,opt,{progress}={}){
+    if(!messages.length)throw Error('请至少选择一条消息');
+    progress?.('正在检测并唤起拾页客户端…');
+    const hello=await request({action:'clientHello'});
+    if(opt.exportRequest&&!hello.nativePdfJobs)throw Error('请将拾页客户端升级至0.1.1或以上，以支持网页直接导出PDF');
+    if(location.href!==conversation.url)throw Error('对话页面已切换，请重新选择消息');
+    const title=opt.exportRequest?(opt.contentTitle||selectionTitle(conversation,messages)):selectionTitle(conversation,messages),previous=ArchiveSnapshotAdapter.exportProgress;
+    ArchiveSnapshotAdapter.exportProgress=progress;
+    let snapshot;
+    try{snapshot=await ArchiveWebSnapshot.capture({title,options:opt,messages:messages.map(m=>({...m,turnId:m.turnId||m.id,messageIds:[...new Set([m.id,...(m.messageIds||[])])]}))});}
+    finally{ArchiveSnapshotAdapter.exportProgress=previous;}
+    if(location.href!==conversation.url)throw Error('捕获过程中对话页面已切换，请重新选择消息');
+    if(snapshot.fallbackCount)throw Error('部分消息未能读取完整网页。请让这些消息在网页中加载后重试，以保证客户端原貌完整。');
+    progress?.('正在保存到拾页…');
+    const archive={version:1,title,url:conversation.url,source:'chatgpt',capturedAt:new Date().toISOString(),snapshot,messages:messages.map(({html,...message})=>message)};
+    if(opt.exportRequest)archive.exportRequest=opt.exportRequest;
+    const bytes=new TextEncoder().encode(JSON.stringify(archive));
+    if(bytes.length>256*1024*1024)throw Error('收藏内容超过256MiB');
+    const sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+    const native=value=>request({action:'clientRequest',request:value});
+    const {upload}=await native({action:'begin',size:bytes.length,sha256});
+    // Chunk before crossing either extension messaging or native messaging.
+    for(let offset=0;offset<bytes.length;offset+=384*1024){
+      const chunk=bytes.subarray(offset,offset+384*1024);let binary='';
+      for(let i=0;i<chunk.length;i+=32768)binary+=String.fromCharCode(...chunk.subarray(i,i+32768));
+      await native({action:'chunk',upload,offset,data:btoa(binary)});
+      progress?.('正在保存到拾页… '+Math.round(Math.min(bytes.length,offset+chunk.length)/bytes.length*100)+'%');
+    }
+    return native({action:'commit',upload});
+  }
+  return {defaults,request,preferences,savePreferences,escapeHTML,filename,selectionTitle,markdown,serialize,payload,exportText,createPdf,saveClient};
 })();

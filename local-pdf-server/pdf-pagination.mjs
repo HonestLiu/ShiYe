@@ -1,12 +1,36 @@
 // Runs inside the frozen document. Reflow layout boxes, not mathematical/graphic geometry.
-export function preparePagination({pageHeight}) {
+export function preparePagination({pageHeight,document:documentOverride}) {
+  const document=documentOverride||globalThis.document;
+  const getComputedStyle=node=>node.ownerDocument.defaultView.getComputedStyle(node);
   const roots=[...document.querySelectorAll('.pdf-message, main>section[data-role]')];
-  const stats={reflowed:0,splitBlocks:0,resizedMedia:0};
+  const stats={reflowed:0,splitBlocks:0,resizedMedia:0,keptFigures:0,scaledFigures:0};
   const nodes=[...new Set(roots.flatMap(root=>[root,...root.querySelectorAll('*')]))];
+  const nodeSet=new Set(nodes);
+  // A code viewer is an interactive viewport on the site, but must be a flow
+  // box in a PDF. Include inline-block viewers and their clipping ancestors.
+  for(const pre of nodes.filter(node=>node.matches('pre'))){
+    if(!pre.textContent.trim())continue;
+    pre.setAttribute('data-local-pdf-code','true');
+    for(let box=pre;box&&nodeSet.has(box);box=box.parentElement){
+      if(['inline-block','inline-flex','inline-grid'].includes(getComputedStyle(box).display))box.style.setProperty('display','block','important');
+      for(const [key,value] of Object.entries({height:'auto','min-height':'0','max-height':'none','overflow':'visible','overflow-x':'visible','overflow-y':'visible','min-width':'0','max-width':'100%',contain:'none'}))box.style.setProperty(key,value,'important');
+    }
+    pre.style.setProperty('display','block','important');
+    for(const node of [pre,...pre.querySelectorAll('code,span')]){
+      node.style.setProperty('white-space','pre-wrap','important');
+      node.style.setProperty('overflow-wrap','anywhere','important');
+    }
+  }
   // DIL address/timeline diagrams use a definite row height with proportional
   // flex children. Their geometry is content, not a virtual transcript spacer.
-  const graphicRows=nodes.filter(node=>node.matches('[data-d-component="row"][data-d-has-height]')&&node.getBoundingClientRect().height>0&&node.getBoundingClientRect().height<=pageHeight);
-  const graphicGeometry=new Set(graphicRows.flatMap(node=>[node,...node.querySelectorAll('*')]));
+  const graphicRows=nodes.filter(node=>node.matches('[data-d-component="row"][data-d-has-height]')&&node.getBoundingClientRect().height>0);
+  const candidates=new Set(graphicRows.map(row=>{
+    const box=row.closest('[data-d-component="box"][data-d-has-border]')||row.closest('[data-d-component="box"]');
+    return box&&nodeSet.has(box)&&!box.querySelector('pre,table')?box:row;
+  }));
+  for(const figure of nodes.filter(node=>node.matches('figure')&&node.querySelector('svg,img,canvas')&&!node.querySelector('pre,table')))candidates.add(figure);
+  const figures=[...candidates].filter(node=>![...candidates].some(other=>other!==node&&other.contains(node)));
+  const graphicGeometry=new Set([...figures,...graphicRows].flatMap(node=>[node,...node.querySelectorAll('*')]));
   const protectedNode=node=>node.namespaceURI!=='http://www.w3.org/1999/xhtml'||node.closest('.katex,math,svg')||graphicGeometry.has(node);
   const replaced='img,canvas,video,iframe,object,embed';
   // Decide protection before modifying any styles: charts can rely on absolute children.
@@ -36,6 +60,26 @@ export function preparePagination({pageHeight}) {
     if(source&&!protectedNode(source)&&!anchored.has(source)){
       for(const [key,value] of Object.entries({position:'relative',top:'auto',right:'auto',bottom:'auto',left:'auto',transform:'none','margin-left':'0','margin-right':'0'}))source.style.setProperty(key,value,'important');
     }
+  }
+  // Put the whole graphic (including its labels) in an atomic print box. The
+  // browser moves that box to the next page instead of fragmenting its flex
+  // geometry. Zoom affects layout size as well as paint, unlike transform.
+  for(const figure of figures){
+    const rect=figure.getBoundingClientRect();
+    if(!rect.width||!rect.height)continue;
+    const wrapper=document.createElement('div');
+    wrapper.setAttribute('data-local-pdf-figure','true');
+    wrapper.style.cssText='display:inline-block;vertical-align:top;width:100%;min-width:0;break-inside:avoid!important;page-break-inside:avoid!important;';
+    figure.before(wrapper);wrapper.append(figure);
+    const height=figure.getBoundingClientRect().height;
+    if(height>pageHeight*.96){
+      const currentZoom=parseFloat(getComputedStyle(figure).zoom)||1;
+      figure.style.setProperty('box-sizing','border-box','important');
+      figure.style.setProperty('width',String(figure.getBoundingClientRect().width/currentZoom)+'px','important');
+      figure.style.setProperty('zoom',String(currentZoom*pageHeight*.96/height),'important');
+      stats.scaledFigures++;
+    }
+    stats.keptFigures++;
   }
   // Keep small tables/code together; permit fragmentation only when taller than a page.
   for(const node of nodes){

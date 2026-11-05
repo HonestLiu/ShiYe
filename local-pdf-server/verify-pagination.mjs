@@ -27,6 +27,24 @@ const long=await check('long',wrapper('<section class="pdf-message"><div style="
 assert(long.report.pages>2&&long.report.pages<15);assert(long.report.texts.every(text=>text.trim()),'Code/table must not leave blank pages');
 const text=long.report.texts.join('').replace(/\s+/g,'');for(let i=0;i<160;i++)assert(text.includes('CODE_LINE_'+String(i).padStart(3,'0')));for(let i=0;i<90;i++)assert(text.includes('TABLE_ROW_'+String(i).padStart(3,'0')));
 const deliberate=await check('deliberate',wrapper('<section class="pdf-message" data-role="user"><p>PROMPT_ONE</p></section><section class="pdf-message" data-role="user" style="break-before:page"><p>PROMPT_TWO</p></section>'));
+const diagram=(rows,height)=>'<div data-d-component="box" data-d-has-border style="display:flex;flex-direction:column;border:1px solid #888;padding:12px;gap:8px"><p>FIGURE_BEGIN</p>'+Array.from({length:rows},(_,i)=>'<div data-d-component="row" data-d-has-height style="display:flex;height:'+height+'px;flex-shrink:0"><div style="flex:20 1 0%;background:#dbeafe;display:flex;align-items:center">SEGMENT_'+i+'_LEFT</div><div style="flex:6 1 0%;background:#d1fae5">SEGMENT_'+i+'_RIGHT</div></div>').join('')+'<p>FIGURE_END</p></div>';
+const diagramAtBottom=await check('diagram-page-boundary',wrapper('<section class="pdf-message">'+Array.from({length:16},(_,i)=>'<p>LEAD_'+i+'</p>').join('')+diagram(4,130)+'<p>AFTER_COMPLETE_FIGURE</p></section>'));
+const figurePage=diagramAtBottom.report.texts.findIndex(text=>text.includes('FIGURE_BEGIN'));
+assert(figurePage>0,'Figure should move past the first page');
+assert(diagramAtBottom.report.texts[figurePage].includes('FIGURE_END'),'Figure must remain on one PDF page');
+assert(diagramAtBottom.report.texts[figurePage].includes('SEGMENT_3_RIGHT'));
+assert(diagramAtBottom.report.texts.every(text=>text.trim()),'Figure pagination must not insert entire blank pages');
+assert.equal(diagramAtBottom.result.pagination.keptFigures,1);
+const oversizedDiagram=await check('diagram-oversized',wrapper('<section class="pdf-message">'+diagram(8,220)+'<p>AFTER_SCALED_FIGURE</p></section>'));
+assert.equal(oversizedDiagram.result.pagination.scaledFigures,1);
+const scaledPage=oversizedDiagram.report.texts.find(text=>text.includes('FIGURE_BEGIN'));
+assert(scaledPage.includes('FIGURE_END'));assert(scaledPage.includes('SEGMENT_7_RIGHT'));
+assert(oversizedDiagram.report.texts.join('').includes('AFTER_SCALED_FIGURE'));
+const viewportCode=await check('code-viewport',wrapper('<section class="pdf-message"><div style="display:inline-block;height:120px;max-height:120px;overflow:hidden;width:700px"><pre style="display:inline-block;height:80px;max-height:80px;overflow:auto;white-space:pre;width:700px"><code>'+Array.from({length:120},(_,i)=>'VIEWER_LINE_'+String(i).padStart(3,'0')).join('\n')+'\nLONG_LINE_START '+Array.from({length:50},(_,i)=>'word'+i).join(' ')+' LONG_LINE_END</code></pre></div><p>AFTER_CODE_VIEWER</p></section>'));
+const viewerText=viewportCode.report.texts.join('');
+for(let i=0;i<120;i++)assert(viewerText.includes('VIEWER_LINE_'+String(i).padStart(3,'0')));
+assert(viewerText.includes('LONG_LINE_END'));assert(viewerText.includes('AFTER_CODE_VIEWER'));
+assert(viewportCode.report.pages>1);assert(viewportCode.report.texts.every(text=>text.trim()),'Expanded code must paginate without blank pages');
 assert.equal(deliberate.report.pages,2);assert(deliberate.report.texts[0].includes('PROMPT_ONE'));assert(deliberate.report.texts[1].includes('PROMPT_TWO'));
 // A raster-only page legitimately has no extractable text and must not be deleted.
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#18805d"/><circle cx="200" cy="150" r="80" fill="#d9edb3"/></svg>';

@@ -5,3 +5,7 @@
 **/__pycache__/
 *.pyc
 .DS_Store
+desktop-client/dist/
+desktop-client/src-tauri/target/
+desktop-client/releases/
+desktop-client/src-tauri/resources/pdf-split

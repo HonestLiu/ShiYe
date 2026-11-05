@@ -1,0 +1,1 @@
+{"main":{"identifier":"main","description":"应用界面，归档阅读文档没有本机权限","local":true,"windows":["main"],"permissions":["core:default","dialog:allow-open","dialog:allow-save"]}}

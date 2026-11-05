@@ -1,5 +1,7 @@
 # ChatGPT Exporter 本地 / 自部署服务版
 
+桌面版：新扩展 `exporter-extension` 1.2.4 可配合[拾页客户端 0.1.1](desktop-client/README.md)导出 PDF，无需启动下面的 Python 服务。PDF 弹窗选择“拾页客户端”会由应用选择保存位置；选择“PDF 服务”才使用本机/远程 HTTP 服务。以下为原服务版的部署说明。
+
 将 ChatGPT 对话导出为 PDF、Markdown、TXT、CSV、JSON，或复制到剪贴板。PDF 渲染、图片处理、设置备份与导出记录由本机或自行部署的服务器完成，无需原开发商的服务器、账号或订阅。
 
 项目基于原扩展 `6.13.2` 构建独立副本，当前版本标记为 **Service 4.1.2（Long webpage capture）**。支持 macOS 本机运行，以及 Linux 独立服务器部署。

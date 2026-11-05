@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import vm from 'node:vm';
+const id='a'.repeat(32),source=await fs.readFile(new URL('./background.js',import.meta.url),'utf8');
+function setup(script){let listener,calls=0,failure=null;
+ const context={URL,chrome:{runtime:{id,onMessage:{addListener(fn){listener=fn;}},async sendNativeMessage(host,req){calls++;if(failure)throw Error(failure);assert.equal(host,'io.local.archive_reader');assert.equal(req.action,'hello');return {data:{name:'拾页',version:1}};}}}};
+ vm.runInNewContext(script,context);
+ const send=(sender,message={action:'clientHello'})=>new Promise(resolve=>{const keep=listener(message,sender,resolve);if(keep!==true)resolve(undefined);});
+ return {context,send,calls:()=>calls,fail:value=>failure=value};
+}
+const settings={id,url:`chrome-extension://${id}/settings.html`,tab:{id:7,url:`chrome-extension://${id}/settings.html`}};
+const oldPolicy="function trusted(sender){if(sender.id!==chrome.runtime.id)return false;if(!sender.tab)return true;try{return ['https://chatgpt.com','https://chat.openai.com'].includes(new URL(sender.url).origin);}catch{return false;}}\n";
+const old=setup(source.replace(/function trusted\(sender\)\s*\{[\s\S]*?\n\}\n(?=function safeFilename)/,oldPolicy).replace(/  if \(!trusted\(sender\)\) \{[\s\S]*?\n  \}/,"  if(!trusted(sender))return;"));
+assert.equal(await old.send(settings),undefined,'Old policy must reproduce a settings tab with no response');
+const current=setup(source);
+for(const sender of [settings,{id,url:`chrome-extension://${id}/popup.html`},{id,url:'https://chatgpt.com/c/test',tab:{id:8}},{id,url:'https://chat.openai.com/c/test',tab:{id:9}}])assert.equal((await current.send(sender)).data.name,'拾页');
+const before=current.calls();
+for(const url of ['https://chatgpt.com.attacker.example/','http://chatgpt.com/','data:text/html,test',`chrome-extension://${'b'.repeat(32)}/settings.html`])assert.equal(await current.send({id,url,tab:{id:1}}),undefined);
+assert.equal(await current.send({id:'b'.repeat(32),url:settings.url,tab:{id:1}}),undefined);assert.equal(current.calls(),before);
+current.fail('Specified native messaging host not found.');assert.match((await current.send(settings)).error,/客户端.*配对/);
+const coreContext={URL,chrome:{runtime:{sendMessage:async()=>undefined}}};vm.runInNewContext(await fs.readFile(new URL('./core.js',import.meta.url),'utf8'),coreContext);
+await assert.rejects(coreContext.ArchiveCore.request({action:'clientHello'}),/扩展后台未返回响应/);
+console.log('PASS reproduced old settings-tab rejection; own extension tabs + ChatGPT senders now respond, hostile origins rejected, native failure and missing background response distinguished. Native messaging is mocked.');
+
+let fetchCalled=false;
+current.context.AbortSignal=AbortSignal;
+current.context.chrome.storage={local:{get:async()=>({connection:{url:'http://127.0.0.1:8765',token:''}})}};
+current.context.fetch=async()=>{fetchCalled=true;throw TypeError('Failed to fetch');};
+const unavailable=await current.send(settings,{path:'/health'});
+assert(fetchCalled);assert.match(unavailable.error,/无法连接 PDF 服务 http:\/\/127\.0\.0\.1:8765/);assert(!unavailable.error.includes('Failed to fetch'));
+console.log('PASS unavailable legacy HTTP service produces an actionable target-specific error.');
