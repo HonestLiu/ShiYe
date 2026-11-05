@@ -5,9 +5,10 @@ async function captureConversation() {
   for(const [index,node] of roots.entries()) {
     const identity=ArchiveSnapshotAdapter.domTurnIdentity(node,index),role=identity.role;
     if(!['user','assistant'].includes(role)) continue;
-    const body=node.querySelector('.markdown')||node;
+    const sourceBody=node.querySelector('.markdown')||node;
+    const body=cleanMessageBody(sourceBody);
     const id=identity.turnId,messageIds=ArchiveSnapshotAdapter.idsIn(node);
-    const entry={id,turnId:id,messageIds,role,markdown:toMarkdown(body),text:body.innerText};
+    const entry={id,turnId:id,messageIds,role,markdown:toMarkdown(body),markdownFromDom:true,text:previewText(body),filenameHeading:highestHeading(sourceBody)};
     dom.set(id,entry);for(const alias of new Set([id,...messageIds]))aliases.set(alias,entry);
   }
   let title=document.title.replace(/\s*[-|]\s*ChatGPT$/,'');
@@ -24,7 +25,7 @@ async function captureConversation() {
       seen.add(current); const item=data.mapping[current],m=item.message;
       if(m && ['user','assistant'].includes(m.author?.role) && !m.metadata?.is_visually_hidden_from_conversation) {
         const markdown=(m.content?.parts||[]).filter(p=>typeof p==='string').join('\n\n')||m.content?.text||'';
-        if(markdown){const visible=aliases.get(m.id)||aliases.get(current)||aliases.get(item.id);messages.unshift({id:m.id,turnId:current,messageIds:[...new Set([m.id,current,item.id,...(visible?.messageIds||[])].filter(Boolean))],role:m.author.role,markdown,text:visible?.text||markdown,createTime:m.create_time,model:m.metadata?.model_slug});}
+        if(markdown){const visible=aliases.get(m.id)||aliases.get(current)||aliases.get(item.id);messages.unshift({id:m.id,turnId:current,messageIds:[...new Set([m.id,current,item.id,...(visible?.messageIds||[])].filter(Boolean))],role:m.author.role,markdown,text:visible?.text||markdown,filenameHeading:visible?.filenameHeading,createTime:m.create_time,model:m.metadata?.model_slug});}
       }
       current=item.parent;
     }
@@ -32,6 +33,38 @@ async function captureConversation() {
   } catch { /* visible page remains available when internal APIs change */ }
   if(!messages.length) messages=[...dom.values()];
   return {title,url:location.href,messages,source,capturedAt:new Date().toISOString()};
+
+  function highestHeading(body){
+    let best=null;
+    for(const node of body.querySelectorAll('h1,h2,h3,h4,h5,h6,[role="heading"],[data-d-component="title"]')){
+      if(node.closest('pre,code,button,.sr-only,[hidden],[aria-hidden="true"]'))continue;
+      let hidden=false;
+      for(let ancestor=node;ancestor;ancestor=ancestor.parentElement){const style=getComputedStyle(ancestor);if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0){hidden=true;break;}}
+      if(hidden)continue;
+      const level=Number(node.tagName.match(/^H([1-6])$/)?.[1]||node.getAttribute('aria-level')||({xl:1,lg:2,md:3,sm:4,xs:5}[node.dataset.dSize])||2);
+      if(!Number.isInteger(level)||level<1||level>6)continue;
+      const copy=node.cloneNode(true);copy.querySelectorAll('.katex-mathml,script,style,button').forEach(child=>child.remove());
+      const text=copy.textContent.replace(/\s+/g,' ').trim();
+      if(text&&(!best||level<best.level))best={level,text};
+    }
+    return best;
+  }
+
+  function cleanMessageBody(source){
+    const copy=source.cloneNode(true);
+    copy.querySelectorAll('.sr-only,[hidden],[data-message-role-label],[data-role-label],button,script,style,nav').forEach(node=>node.remove());
+    // Remove page-owned speaker headings, without stripping phrases from actual prose.
+    for(const node of copy.querySelectorAll('h5,h6,[data-testid="message-role"]')){
+      if(!node.closest('.markdown')&&/^(?:ChatGPT|助手|用户|你)\s*(?:说|說|said|says)?\s*[:：]$/i.test(node.textContent.trim()))node.remove();
+    }
+    return copy;
+  }
+  function previewText(body){
+    const copy=body.cloneNode(true);
+    copy.querySelectorAll('.katex-mathml').forEach(node=>node.remove());
+    copy.querySelectorAll('p,div,li,h1,h2,h3,h4,h5,h6,pre,blockquote,tr').forEach(node=>node.append('\n'));
+    return copy.textContent.replace(/\n{3,}/g,'\n\n').trim();
+  }
 
   function toMarkdown(node){
     if(node.nodeType===Node.TEXT_NODE) return node.textContent;

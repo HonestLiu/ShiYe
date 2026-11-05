@@ -33,14 +33,15 @@ try {
   assert.equal(await page.locator('[data-pdf-toc]').count(),0,'Default must not insert a catalogue page');
 }finally{await browser.close()}
 try {
-  for(const toc of [undefined,true,false]) {
-    const output=path.join(temporary,toc?'with-toc.pdf':'bookmarks-only.pdf');
-    const result=await render({input,output,width:760,theme:'light',options:{toc,margin:'normal',removePageNumber:false},executable},chromium);
+  for(const options of [{},{outline:true,toc:false},{outline:false,toc:false},{outline:true,toc:true},{outline:false,toc:true}]) {
+    const {toc}=options,outline=options.outline!==false;
+    const output=path.join(temporary,`outline-${outline}-toc-${Boolean(toc)}.pdf`);
+    const result=await render({input,output,width:760,theme:'light',options:{...options,margin:'normal',removePageNumber:false},executable},chromium);
     assert.equal(result.headings,6);assert.equal(result.tocEntries,toc?6:0);
     const report=JSON.parse(execFileSync('/usr/bin/swift',['-module-cache-path','/tmp/local-pdf-swift-cache',path.join(here,'tests/inspect-navigation.swift'),output],{encoding:'utf8',env:{...process.env,CLANG_MODULE_CACHE_PATH:'/tmp/local-pdf-clang-cache'}}));
     if(process.env.DEBUG_PDF_NAV) console.log(JSON.stringify(report));
-    assert.deepEqual(report.outline.map(item=>item.title),titles,'PDF bookmark titles must match visible response headings');
-    assert(report.outline[3].depth>report.outline[2].depth,'Third-level heading must nest below second-level heading');
+    assert.deepEqual(report.outline.map(item=>item.title),outline?titles:[],'PDF bookmark titles must match visible response headings');
+    if(outline)assert(report.outline[3].depth>report.outline[2].depth,'Third-level heading must nest below second-level heading');
     assert.equal(report.links.length,toc?6:0,'The printed catalogue must contain actual PDF links');
     if(toc) {
       for(let index=0;index<titles.length;index++) {
@@ -50,6 +51,6 @@ try {
       }
       assert.notEqual(report.links[1].target,report.links[4].target,'Duplicate heading names need distinct destinations');
     }
-    console.log(`PASS real PDF toc=${toc}: 6 hierarchical bookmarks; ${report.links.length} internal links with valid body destinations; hidden/user/code headings excluded; duplicate titles isolated`);
+    console.log(`PASS real PDF outline=${outline}, toc=${Boolean(toc)}: ${report.outline.length} hierarchical bookmarks; ${report.links.length} internal links with valid body destinations; hidden/user/code headings excluded; duplicate titles isolated`);
   }
 }finally{await fs.rm(temporary,{recursive:true,force:true})}

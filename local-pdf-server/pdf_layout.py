@@ -116,6 +116,7 @@ def apply_pagebreaks(ast, payload):
             heading = escape(str(style.get("prefix", "")) + text(message.get("heading", message.get("role", "Message"))))
             label = "local-message-" + str(index)
             lines.append(r"\noindent\hyperref[" + label + r"]{\colorbox[HTML]{" + background + r"}{\textcolor[HTML]{" + foreground + "}{" + heading + r"}}}\hfill\pageref{" + label + r"}\par\smallskip")
+        lines.append(r"\clearpage")
         ast["blocks"] = [{"t": "RawBlock", "c": ["latex", "\n".join(lines)]}] + ast["blocks"]
     return ast
 
@@ -154,6 +155,11 @@ def arguments(options, directory, header):
         # STHeiti supplies CJK glyphs; LetterSpace gives the local mono variant
         # a wider text rhythm without relying on unavailable CJK TeX packages.
         additional.append("\\setmainfont[Path=/System/Library/Fonts/,LetterSpace=4]{STHeiti Light.ttc}" if sys.platform == "darwin" else "\\setmainfont{Noto Sans Mono CJK SC}")
+    if options.get("outline") is False:
+        additional.append(r"\PassOptionsToPackage{bookmarks=false}{hyperref}")
+        additional.append(r"\AtBeginDocument{\ifdefined\bookmarksetup\bookmarksetup{depth=-2}\fi}")
+    if options.get("toc"):
+        additional.append(r"\AtBeginDocument{\let\archiveOriginalToc\tableofcontents\renewcommand{\tableofcontents}{\archiveOriginalToc\clearpage}}")
     if options.get("removePageNumber"):
         additional.append("\\AtBeginDocument{\\pagestyle{empty}}")
     if options.get("darkMode"):

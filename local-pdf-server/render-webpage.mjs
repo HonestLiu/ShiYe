@@ -17,7 +17,7 @@ export function pdfOptions(options = {}, width = 1000) {
   if (scale < 0.1) throw new Error('Captured webpage is too wide for the selected paper/margins');
   return { format, landscape, scale,
     margin: { top: margin, bottom: margin, left: margin, right: margin },
-    printBackground: true, preferCSSPageSize: false, tagged: true, outline: true,
+    printBackground: true, preferCSSPageSize: false, tagged: true, outline: options.outline !== false,
     displayHeaderFooter: !options.removePageNumber, headerTemplate: '<span></span>',
     footerTemplate: '<div style="width:100%;text-align:center;font-size:9px;color:#666"><span class="pageNumber"></span></div>' };
 }

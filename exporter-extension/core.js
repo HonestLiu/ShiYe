@@ -1,11 +1,40 @@
 // Shared by the page overlay and extension pages. No commercial runtime code.
 globalThis.ArchiveCore = (() => {
-  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
+  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
   const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   async function request(message) { const result=await chrome.runtime.sendMessage(message); if(!result)throw Error('扩展已重新加载，请刷新 ChatGPT 页面');if(result.error)throw Error(result.error);return result.data; }
   async function preferences(){const {preferences={}}=await chrome.storage.local.get('preferences');return {...defaults,...preferences};}
   async function savePreferences(patch){const current=await preferences();const next={...current,...patch};await chrome.storage.local.set({preferences:next});return next;}
-  function filename(title,format,custom){return String(custom||title||'chat').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,120).replace(new RegExp('\\.'+format+'$','i'),'')+'.'+format;}
+  function filename(title,format,custom){
+    const now=new Date(),pad=value=>String(value).padStart(2,'0');
+    const stamp=String(now.getFullYear())+pad(now.getMonth()+1)+pad(now.getDate())+'-'+pad(now.getHours())+pad(now.getMinutes())+pad(now.getSeconds());
+    const name=custom||String(title||'chat').slice(0,80)+'_'+stamp;
+    return String(name).replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,140).replace(new RegExp('\\.'+format+'$','i'),'')+'.'+format;
+  }
+  function markdownHeading(markdown){
+    const lines=String(markdown||'').replace(/<!--[\s\S]*?(?:-->|$)/g,'').split(/\r?\n/);let fence=null,best=null;
+    const add=(level,text)=>{
+      text=text.replace(/!\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/<[^>]*>/g,'').replace(/(\*\*|__|~~)(.*?)\1/g,'$2').replace(/(^|[\s(])([*_])(\S(?:.*?\S)?)\2(?=$|[\s).,!?:;])/g,'$1$3').replace(/`+([^`]+)`+/g,'$1').replace(/\\([\\`*_{}[\]()#+\-.!])/g,'$1').replace(/\s+/g,' ').trim();
+      if(text&&(!best||level<best.level))best={level,text};
+    };
+    for(let i=0;i<lines.length;i++){
+      const line=lines[i],marker=line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+      if(fence){if(marker&&marker[1][0]===fence.char&&marker[1].length>=fence.length&&!marker[2].trim())fence=null;continue;}
+      if(marker){fence={char:marker[1][0],length:marker[1].length};continue;}
+      if(/^(?: {4}|\t)/.test(line))continue;
+      const atx=line.match(/^ {0,3}(#{1,6})(?:[ \t]+|$)(.*)$/);
+      if(atx){add(atx[1].length,atx[2].replace(/[ \t]+#+[ \t]*$/,''));continue;}
+      const underline=lines[i+1]?.match(/^ {0,3}(=+|-+)[ \t]*$/);
+      if(underline&&line.trim()&&!/^\s*(?:>|[-+*]\s|\d+[.)]\s|#{1,6}\s)/.test(line)){add(underline[1][0]==='='?1:2,line);i++;}
+    }
+    return best;
+  }
+  function selectionTitle(conversation,messages){
+    if(messages.length!==1||messages[0].role!=='assistant')return conversation.title;
+    const message=messages[0],source=message.markdownFromDom?null:markdownHeading(message.markdown),visible=message.filenameHeading;
+    const heading=visible?.text&&(!source||visible.level<=source.level)?visible:source;
+    return heading?.text||conversation.title;
+  }
   function markdown(conversation,messages,opt){return '# '+(opt.contentTitle||conversation.title)+'\n\n'+(opt.includeConvoLink?conversation.url+'\n\n':'')+messages.map(m=>'## '+(m.role==='user'?'用户':'助手')+'\n\n'+m.markdown.trim()).join('\n\n---\n\n');}
   function serialize(conversation,messages,opt){
     if(opt.format==='json')return JSON.stringify({...conversation,messages:messages.map(({html,...m})=>m)},null,2);
@@ -26,12 +55,13 @@ globalThis.ArchiveCore = (() => {
     if(!messages.length)throw Error('请至少选择一条消息');
     const text=serialize(conversation,messages,opt);
     if(opt.copyToClipboard)await navigator.clipboard.writeText(text);
-    else await request({action:'downloadText',format:opt.format,text,filename:filename(conversation.title,opt.format,opt.fileName),saveAs:opt.saveAs});
+    else await request({action:'downloadText',format:opt.format,text,filename:filename(selectionTitle(conversation,messages),opt.format,opt.fileName),saveAs:opt.saveAs});
     try{await request({path:'/api/usage',body:{cmd:'record',payload:{format:opt.format}}});}catch{ /* offline text export remains successful */ }
   }
   async function createPdf(conversation,messages,opt,{progress,confirmFallback}={}){
     if(!messages.length)throw Error('请至少选择一条消息');
-    const value=payload(conversation,messages,opt);
+    const exportFilename=filename(selectionTitle(conversation,messages),'pdf',opt.fileName);
+    const value=payload(conversation,messages,{...opt,fileName:exportFilename});
     if(opt.engine==='chromium'){
       if(!globalThis.ArchiveWebSnapshot)throw Error('请重新加载扩展并刷新 ChatGPT 页面，以启用网页原貌捕获');
       const originalUrl=location.href;
@@ -49,7 +79,7 @@ globalThis.ArchiveCore = (() => {
       }
     }
     progress?.('正在提交 PDF…');
-    return request({path:'/api/pdf/v1',body:{cmd:'create',payload:value},filename:filename(conversation.title,'pdf',opt.fileName)});
+    return request({path:'/api/pdf/v1',body:{cmd:'create',payload:value},filename:exportFilename});
   }
-  return {defaults,request,preferences,savePreferences,escapeHTML,filename,markdown,serialize,payload,exportText,createPdf};
+  return {defaults,request,preferences,savePreferences,escapeHTML,filename,selectionTitle,markdown,serialize,payload,exportText,createPdf};
 })();

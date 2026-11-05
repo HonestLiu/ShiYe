@@ -28,3 +28,26 @@ assert.match((await request({action:'snapshotResource',url:'http://cdn.oaistatic
 assert.match((await request({action:'snapshotResource',url:'https://user:secret@cdn.oaistatic.com/pixel'})).error,/不支持/);
 const resource=await request({action:'snapshotResource',url:'https://cdn.oaistatic.com/pixel'});assert.equal(resource.data.mime,'image/png');assert.equal(calls.at(-1).options.credentials,'omit');assert.equal(calls.at(-1).options.redirect,'error');assert.equal(calls.at(-1).options.referrerPolicy,'no-referrer');assert.equal(calls.at(-1).options.headers,undefined,'Service token must never be sent to OpenAI assets');
 console.log('Manifest icons and service request boundaries passed. This does not verify the live ChatGPT UI or PDF rendering.');
+
+const coreContext={};vm.runInNewContext(fs.readFileSync(new URL('core.js',root),'utf8'),coreContext);
+for(const format of ['pdf','md','txt','json','csv'])assert.match(coreContext.ArchiveCore.filename('导出标题',format),new RegExp('^导出标题_\\d{8}-\\d{6}\\.'+format+'$'));
+assert.equal(coreContext.ArchiveCore.filename('标题','pdf','手动文件名.pdf'),'手动文件名.pdf');
+console.log('Default filenames include a local timestamp; manually edited PDF filenames remain exact.');
+
+assert(coreContext.ArchiveCore.filename("a".repeat(200),"pdf").length<=100);
+const title=coreContext.ArchiveCore.selectionTitle,conversation={title:'原会话标题'};
+const answer=markdown=>({role:'assistant',markdown});
+assert.equal(title(conversation,[answer('## 小标题\n\n# **最大标题**\n\n# 同级第二个')]),'最大标题');
+assert.equal(title(conversation,[answer('~~~md\n# 代码中的伪标题\n~~~\n\n### 实际标题')]),'实际标题');
+assert.equal(title(conversation,[answer('    # 缩进代码\n\n正文\n\n二级标题\n---\n\n一级标题\n===')]),'一级标题');
+assert.equal(title(conversation,[answer('<!--\n# 隐藏标题\n-->\n\n## `Cache_Tag` 的 [说明](https://example.com)')]),'Cache_Tag 的 说明');
+assert.equal(title(conversation,[answer('没有标题的正文')]),'原会话标题');
+assert.equal(title(conversation,[{role:'user',markdown:'# 用户提问标题'}]),'原会话标题');
+assert.equal(title(conversation,[answer('# 回答一'),answer('# 回答二')]),'原会话标题');
+assert.equal(title(conversation,[{role:'user',markdown:'问题'},answer('# 回答')]),'原会话标题');
+assert.equal(title(conversation,[{...answer('无 Markdown 标题'),filenameHeading:{level:2,text:'网页语义标题'}}]),'网页语义标题');
+assert.equal(title(conversation,[{...answer('# 全文一级标题'),filenameHeading:{level:3,text:'已加载局部三级标题'}}]),'全文一级标题');
+assert.equal(title(conversation,[{...answer('# 隐藏节点文字'),markdownFromDom:true,filenameHeading:{level:2,text:'实际可见标题'}}]),'实际可见标题');
+assert.equal(title(conversation,[{...answer('# 隐藏节点文字'),markdownFromDom:true,filenameHeading:null}]),'原会话标题');
+assert.match(coreContext.ArchiveCore.filename(title(conversation,[answer('# 文件标题')]),'pdf'),/^文件标题_\d{8}-\d{6}\.pdf$/);
+console.log('Single-answer filenames use the highest heading; code/comments are excluded, ties use first, multi-message/user/no-heading fallbacks preserved.');

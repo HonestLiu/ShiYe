@@ -4,6 +4,7 @@
   const host=document.createElement('div');
   host.id='conversation-archive';
   const root=host.attachShadow({mode:'open'});
+  const roleIcon=ArchiveRoleIcons.install(root);
   const style=document.createElement('link');style.rel='stylesheet';style.href=chrome.runtime.getURL('content.css');root.append(style);
   const toolbar=document.createElement('div');toolbar.className='button-bar';
   toolbar.innerHTML='<div class="split"><button data-action="select">SELECT</button><button data-action="selection-menu" aria-label="选择范围" aria-haspopup="menu">▾</button></div><div class="split"><button data-action="export" disabled>EXPORT</button><button data-action="export-menu" disabled aria-label="选择导出格式" aria-haspopup="menu">▾</button></div>';
@@ -50,7 +51,7 @@
       const label=document.createElement('label');label.className='row-check';label.title=m.role==='user'?'用户':'助手';
       const input=document.createElement('input');input.type='checkbox';input.dataset.message=m.id;input.ariaLabel=`选择${m.role==='user'?'提问':'回答'}：${(m.text||m.markdown).slice(0,60)}`;
       input.onclick=event=>toggle(m.id,event.shiftKey);
-      const icon=document.createElement('span');icon.textContent=m.role==='user'?'◉':'✳';icon.setAttribute('aria-hidden','true');label.append(input,icon);
+      label.append(input,roleIcon(m.role));
       const preview=document.createElement('button');preview.className='preview';preview.textContent=m.text||m.markdown||'…';preview.title=preview.textContent;
       preview.ariaLabel=`预览${m.role==='user'?'提问':'回答'}：${preview.textContent.slice(0,60)}`;
       const expand=()=>{const open=state.expanded.has(m.id);preview.ariaExpanded=String(open);preview.classList.toggle('expanded',open);};
@@ -119,11 +120,12 @@
       <div class="pair"><label>页面格式<select name="pageSize"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></label><label>方向<select name="pageOrient"><option value="portrait">纵向</option><option value="landscape">横向</option></select></label></div>
       <div class="pair"><label>页面边距<select name="margin"><option value="normal">普通</option><option value="narrow">窄</option><option value="wide">宽</option></select></label><label>字体<select name="fontFamily"><option value="default">默认</option><option value="serif">衬线</option><option value="mono">等宽</option></select></label></div>
       <div class="pair"><label>字体大小（%）<input name="fontSize" type="number" min="50" max="200"></label><label>语言<select name="lang"><option value="zh-CN">简体中文</option><option value="en">English</option><option value="ja">日本語</option></select></label></div>
-      <div class="checks">${[['darkMode','暗黑模式'],['toc','目录'],['pageBreakPerPrompt','每个提问分页'],['removePageNumber','移除页码'],['includeConvoLink','对话链接'],['includeModelName','模型名称'],['includePerMsgTime','消息时间戳']].map(([key,text])=>`<label><input name="${key}" type="checkbox">${text}</label>`).join('')}</div>
-      <p class="hint">网页原貌会滚动收集所选消息的网页样式；仍无法读取的消息经确认后重新排版。字体和额外元信息使用 Pandoc 排版。</p><p class="pdf-status" role="status"></p><div class="dialog-actions"><button type="button" data-cancel>取消</button><button type="submit" class="primary">导出 PDF</button></div></form>`);
+      <div class="checks">${[['darkMode','暗黑模式'],['outline','目录'],['toc','目录页'],['pageBreakPerPrompt','每个提问分页'],['removePageNumber','移除页码'],['includeConvoLink','对话链接'],['includeModelName','模型名称'],['includePerMsgTime','消息时间戳']].map(([key,text])=>`<label><input name="${key}" type="checkbox">${text}</label>`).join('')}</div>
+      <p class="hint">“目录”控制 PDF 侧栏书签，“目录页”在正文前插入可点击的目录页面。网页原貌会滚动收集所选消息的网页样式；仍无法读取的消息经确认后重新排版。字体和额外元信息使用 Pandoc 排版。</p><p class="pdf-status" role="status"></p><div class="dialog-actions"><button type="button" data-cancel>取消</button><button type="submit" class="primary">导出 PDF</button></div></form>`);
     const form=node.querySelector('form');
     for(const [key,value] of Object.entries(state.prefs)){const input=form.elements.namedItem(key);if(input){if(input.type==='checkbox')input.checked=value===true;else input.value=value;}}
-    form.elements.fileName.value=C.filename(state.conversation.title,'pdf');form.elements.contentTitle.value=state.conversation.title;form.elements.lang.value=state.prefs.lang||'zh-CN';
+    form.elements.fileName.value=C.filename(C.selectionTitle(state.conversation,selected()),'pdf');form.elements.contentTitle.value=state.conversation.title;form.elements.lang.value=state.prefs.lang||'zh-CN';
+    ArchiveCustomSelect.enhance(node);
     node.querySelector('[data-cancel]').onclick=()=>node.close();
     form.onsubmit=async event=>{
       event.preventDefault();if(state.busy)return;

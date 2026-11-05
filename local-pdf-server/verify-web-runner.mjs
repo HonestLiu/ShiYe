@@ -42,6 +42,8 @@ try {
   assert.equal(aborted, 'blockedbyclient');
   assert.equal(printed.printBackground, true);
   assert.equal(printed.outline,true);
+  assert.equal(pdfOptions({outline:false,toc:true},760).outline,false);
+  assert.equal(pdfOptions({outline:true,toc:false},760).outline,true);
   assert.equal(printed.tagged,true);
   assert.equal(result.headings,3);
   assert.equal(result.tocEntries,0);

@@ -3,7 +3,11 @@ export function preparePagination({pageHeight}) {
   const roots=[...document.querySelectorAll('.pdf-message, main>section[data-role]')];
   const stats={reflowed:0,splitBlocks:0,resizedMedia:0};
   const nodes=[...new Set(roots.flatMap(root=>[root,...root.querySelectorAll('*')]))];
-  const protectedNode=node=>node.namespaceURI!=='http://www.w3.org/1999/xhtml'||node.closest('.katex,math,svg');
+  // DIL address/timeline diagrams use a definite row height with proportional
+  // flex children. Their geometry is content, not a virtual transcript spacer.
+  const graphicRows=nodes.filter(node=>node.matches('[data-d-component="row"][data-d-has-height]')&&node.getBoundingClientRect().height>0&&node.getBoundingClientRect().height<=pageHeight);
+  const graphicGeometry=new Set(graphicRows.flatMap(node=>[node,...node.querySelectorAll('*')]));
+  const protectedNode=node=>node.namespaceURI!=='http://www.w3.org/1999/xhtml'||node.closest('.katex,math,svg')||graphicGeometry.has(node);
   const replaced='img,canvas,video,iframe,object,embed';
   // Decide protection before modifying any styles: charts can rely on absolute children.
   const anchored=new Set(nodes.filter(node=>{
@@ -19,11 +23,9 @@ export function preparePagination({pageHeight}) {
     if(computed.display==='none'||! /^(block|flow-root|flex|grid|list-item|table|table-row|table-row-group|table-header-group|table-footer-group|table-cell)$/.test(computed.display))continue;
     // Computed pixel heights from a continuous/virtualized page are not print heights.
     for(const [key,value] of Object.entries({height:'auto','min-height':'0','max-height':'none','overflow':'visible','overflow-x':'visible','overflow-y':'visible','content-visibility':'visible',contain:'none'}))node.style.setProperty(key,value,'important');
-    if(computed.display==='flex'){
-      node.style.setProperty('flex-grow','0','important');
-      if(computed.flexDirection.startsWith('column'))node.style.setProperty('justify-content','flex-start','important');
-    }
-    if(computed.display==='grid'){
+    // Preserve flex sizing and centering on both axes. Clearing a child's grow
+    // collapses horizontal diagrams whose basis is 0%, even with a frozen width.
+    if(computed.display==='grid'&&node.getBoundingClientRect().height>pageHeight){
       node.style.setProperty('grid-template-rows','none','important');
       node.style.setProperty('grid-auto-rows','auto','important');
     }
