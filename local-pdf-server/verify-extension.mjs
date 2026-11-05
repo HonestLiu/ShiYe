@@ -5,10 +5,10 @@ import vm from 'node:vm';
 const root = new URL('../local-extension/', import.meta.url);
 const read = name => fs.readFileSync(new URL(name, root), 'utf8');
 const manifest = JSON.parse(read('manifest.json'));
-assert.deepEqual(manifest.host_permissions, ['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*']);
+assert.deepEqual(manifest.host_permissions, ['http://*/*', 'https://*/*']);
 assert.deepEqual(manifest.optional_host_permissions,['http://*/*','https://*/*']);
 assert.equal(manifest.externally_connectable, undefined);
-assert.deepEqual(manifest.content_scripts[0].js, ['bridge.js', 'web-snapshot.js', 'content.js']);
+assert.deepEqual(manifest.content_scripts[0].js, ['bridge.js', 'web-snapshot.js', 'success-dialog.js','content.js']);
 assert.equal(manifest.content_scripts.length, 1);
 for (const name of ['content.js', 'popup.js', 'options.js']) {
   const source = read(name);
@@ -22,6 +22,9 @@ assert(read('content.js').includes('type:"exppdf"')); // settings dialog restore
 assert(read('content.js').includes('!e.isComposing'));
 assert(!read('background.js').includes('chatgptexporter.com'));
 new vm.Script(read('web-snapshot.js'));
+new vm.Script(read('success-dialog.js'));
+assert(read('content.js').includes('LocalSuccessDialog.component(s)'));
+assert(!read('content.js').includes('Export Success'));
 
 const messages = [], actualFetch = [], beacons = [], xhrCalls = [];
 const svgDecodes = [], canvasDraws = [];
@@ -54,7 +57,7 @@ class FakeXHR extends EventTarget {
   setRequestHeader() {}
 }
 const context = vm.createContext({
-  console, URL, Request, Response, Blob, FormData, Uint8Array, Event, EventTarget,
+  console, URL, Request, Response, Blob, FormData, Uint8Array, TextEncoder,Event, EventTarget,
   atob, btoa, queueMicrotask, setTimeout, clearTimeout,
   DOMParser: TestDOMParser, XMLSerializer: TestXMLSerializer, Image: TestImage,
   document: { createElement: type => {
@@ -64,16 +67,18 @@ const context = vm.createContext({
   location: { href: 'https://chatgpt.com/c/example' },
   navigator: { sendBeacon: (...args) => { beacons.push(args); return true; } },
   XMLHttpRequest: FakeXHR,
-  fetch: async (url) => { actualFetch.push(String(url)); return String(url).startsWith('data:') ? fetch(url) : new Response(new Blob(['png'], { type: 'image/png' })); },
+  fetch: async (url) => { if(String(url).startsWith('https://external.example/'))throw new TypeError('CORS'); actualFetch.push(String(url)); return String(url).startsWith('data:') ? fetch(url) : new Response(new Blob(['png'], { type: 'image/png' })); },
   chrome: { storage: { local: { get: async () => ({pdfOptions:bridgePrefs}), set: async value => { bridgePrefs=value.pdfOptions;bridgePreferenceWrites.push(value); } } }, runtime: { sendMessage: async message => {
     messages.push(message);
+    if (message.cmd === 'snapshot_resource') return {base64:png.toString('base64'),mime:'image/png'};
     if (message.cmd === 'local_ready') return { errcode: 0 };
     if (message.cmd === 'pdf') return { errcode: 0, jobId: 'local-test' };
-    return { status: 200, mime: 'application/json', text: JSON.stringify(message.payload.upload ? { errcode: 0, url: 'http://127.0.0.1:8765/api/file/test.png' } : message.payload.path === '/health' ? { engines:{chromium:{available:true}} } : { selectors: {} }) };
+    return { status: 200, mime: 'application/json', text: JSON.stringify(message.payload.upload ? { errcode: 0, url: 'http://127.0.0.1:8765/api/file/test.png' } : message.payload.path === '/health' ? { engines:{chromium:{available:true}}, supportsMarkdownFallback:true } : { selectors: {} }) };
   } } }
 });
 vm.runInContext(read('bridge.js'), context);
 await context.LocalExporter.ready;
+assert.match(await context.LocalExporter.prepareFallback('![external](https://external.example/image.png)'), /api\/file\/test.png/);
 assert.equal(bridgePrefs.toc,false,'Upgrade must turn off the previously enabled TOC default once');
 assert.equal(bridgePrefs.renderer,'pandoc');
 assert.equal(bridgePrefs.localTocOptInVersion,1);
@@ -150,6 +155,20 @@ assert.equal(capturedWebPayload.title,'网页原貌');
 assert.equal(messages.at(-1).payload.payload.engine,'chromium');
 assert.equal(messages.at(-1).payload.payload.webDocument.html,'<p>original webpage</p>');
 
+// An incomplete original-appearance capture must never be submitted silently.
+context.LocalWebSnapshot.capture=async()=>({html:'<p>mixed</p>',messageCount:2,domCount:1,fallbackCount:1});
+let asked=0;
+context.confirm=text=>{asked++;assert(text.includes('1/2'));return false;};
+let submittedBefore=messages.filter(m=>m.cmd==='pdf').length;
+await assert.rejects(context.LocalExporter.createPdf({messages:[{markdown:'body'}],options:{renderer:'chromium'}}),/已取消导出/);
+assert.equal(asked,1);
+assert.equal(messages.filter(m=>m.cmd==='pdf').length,submittedBefore);
+context.confirm=()=>true;
+await context.LocalExporter.createPdf({messages:[{markdown:'body'}],options:{renderer:'chromium'}});
+assert.equal(messages.filter(m=>m.cmd==='pdf').length,submittedBefore+1);
+assert.equal(messages.at(-1).payload.payload.engine,'chromium');
+console.log('PASS incomplete original capture: explicit consent required, cancellation submits no PDF, acceptance preserves Chromium');
+
 // Exercise the actual service worker with local HTTP responses and storage.
 const stored = { commonOptions: { removeBrand: true } };
 const requests = [];
@@ -164,7 +183,7 @@ const background = vm.createContext({
   AbortSignal, setTimeout, clearTimeout,
   fetch: async (url, options) => {
     if (offline) throw new Error('test service offline');
-    assert(['http://127.0.0.1:8765/','https://export.example.test/','https://cdn.openai.com/'].some(origin=>String(url).startsWith(origin)));
+    assert(['http://127.0.0.1:8765/','https://export.example.test/','https://cdn.openai.com/','https://example.org/'].some(origin=>String(url).startsWith(origin)));
     requests.push([url, options]);
     if (String(url).endsWith('/api/account')) return Response.json({ errcode: 0, local: true, isPro: true, name: '本地用户', email: '' });
     if (String(url).endsWith('/api/settings')) {
@@ -196,7 +215,13 @@ assert.equal((await vm.runInContext('dispatch({cmd:"usage",payload:{cmd:"get"}})
 await vm.runInContext('dispatch({cmd:"pdf",payload:{cmd:"create",payload:{markdown:"test"}}})', background);
 await assert.rejects(vm.runInContext('dispatch({cmd:"local_request",payload:{path:"//example.com",method:"GET"}})', background));
 await assert.rejects(vm.runInContext('dispatch({cmd:"local_request",payload:{path:"/api/../secret",method:"GET"}})', background));
-await assert.rejects(vm.runInContext('dispatch({cmd:"snapshot_resource",url:"https://example.org/image.png"})', background));
+await vm.runInContext('dispatch({cmd:"snapshot_resource",url:"https://example.org/image.png"})', background);
+assert.equal(requests.findLast(([url])=>url==='https://example.org/image.png')[1].credentials,'omit');
+assert.equal(requests.findLast(([url])=>url==='https://example.org/image.png')[1].referrerPolicy,'no-referrer');
+assert.equal(requests.findLast(([url])=>url==='https://example.org/image.png')[1].redirect,'follow');
+for (const url of ['file:///etc/passwd','data:text/plain,test','https://user:secret@example.org/image.png']) {
+  await assert.rejects(vm.runInContext('dispatch('+JSON.stringify({cmd:'snapshot_resource',url})+')',background));
+}
 assert(requests.length > 3);
 offline = true;
 stored.localSettingsDirty = true;
@@ -277,4 +302,21 @@ await element('#connection-form').handlers.submit({preventDefault(){},currentTar
 const connectionSave=connectionMessages.findLast(message=>message.cmd==='server_config_set');
 assert.equal(connectionSave.payload.url,'https://export.example.test');
 assert.equal(connectionSave.payload.token,'test-service-token');
+const transferChunks=[];
+let transferSize=0;
+context.chrome.runtime.sendMessage=async message=>{
+  const {path,body,expectedBaseUrl}=message.payload;
+  assert.equal(expectedBaseUrl,'http://127.0.0.1:8765');
+  assert(JSON.stringify(message).length<900000,'Every IPC packet must stay below 1 MiB');
+  let data;
+  if(path==='/api/pdf/uploads'){transferSize=body.size;data={uploadId:'f'.repeat(32)};}
+  else if(path.endsWith('/chunk')){assert.equal(body.index,transferChunks.length);transferChunks.push(Buffer.from(body.data,'base64'));data={};}
+  else {assert(path.endsWith('/commit'));data={errcode:0,jobId:'chunked-job'};}
+  return {status:200,text:JSON.stringify(data)};
+};
+const largePayload={engine:'chromium',text:'汉字📚'.repeat(600000)};
+assert.equal((await context.LocalExporter.submitPdf(largePayload)).jobId,'chunked-job');
+const restored=Buffer.concat(transferChunks);
+assert.equal(restored.length,transferSize);
+assert.equal(JSON.parse(restored.toString()).text,largePayload.text,'UTF-8 and surrogate boundaries must survive chunking');
 console.log('PASS: package syntax, restored PDF dialog, local relay/images, UTF-8 and base64 SVG data URLs rasterized/uploaded with viewBox dimensions, selected Markdown, telemetry fence, identity/preferences, offline recovery and dirty sync, invalid import preserves settings, API commands and path rejection.');

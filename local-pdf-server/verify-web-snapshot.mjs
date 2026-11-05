@@ -74,5 +74,7 @@ assert(!snapshot.html.includes('onclick') && !snapshot.html.includes('<script') 
 assert(!snapshot.html.includes('unselected content') && !snapshot.html.includes('blob:https:'));
 assert(!snapshot.html.includes('https://cdn.oaistatic.com/font.woff2'));
 assert.equal(fetched.length, 2);
-await assert.rejects(context.LocalWebSnapshot.capture({messages:[{turnId:'not-loaded'}],options:{}}), /尚未在网页中加载/);
+await assert.rejects(context.LocalWebSnapshot.capture({messages:[{turnId:'not-loaded'}],options:{}}), /无法从网页或会话内容读取/);
+const recovered=await context.LocalWebSnapshot.capture({messages:[{turnId:'not-loaded',role:'Response',markdown:'# 完整会话标题\n\n补全正文'}],options:{}});
+assert.equal(recovered.fallbackCount,1);assert(recovered.html.includes('补全正文'));
 console.log('PASS: selected DOM only, original image position, resolved/deduplicated typography/colors, embedded blob images and nested webfonts, stripped controls/scripts/events, missing-rendered-message error. Browser startup is tested separately.');

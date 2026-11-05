@@ -46,6 +46,8 @@ async function loadJobs() {
     const time = document.createElement('time');
     time.dateTime = new Date(job.created * 1000).toISOString();time.textContent = new Date(job.created * 1000).toLocaleString('zh-CN');date.append(time);
     const state = document.createElement('td');state.textContent=statuses[job.status] || job.status;
+    if(job.messageCount){const detail=document.createElement('p');detail.className='job-engine';detail.textContent=`${job.messageCount} 条消息 · 网页 ${job.domCount || 0} · 会话补全 ${job.fallbackCount || 0}`;state.append(detail);}
+    if(Array.isArray(job.warnings) && job.warnings.length){const detail=document.createElement('details'),summary=document.createElement('summary'),text=document.createElement('p');summary.textContent='导出说明';text.className='job-error';text.textContent=job.warnings.join('\n');detail.append(summary,text);state.append(detail);}
     if (job.errmsg) { const detail=document.createElement('details');const summary=document.createElement('summary');summary.textContent='查看错误';const error=document.createElement('p');error.className='job-error';error.textContent=job.errmsg;detail.append(summary,error);state.append(detail); }
     const actions = document.createElement('td');
     for (const [field, label, suffix] of [['downloadUrl','下载 PDF','download'],['htmlUrl','下载快照','html']]) {

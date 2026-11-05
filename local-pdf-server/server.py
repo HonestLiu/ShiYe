@@ -26,6 +26,7 @@ import local_state
 import pdf_layout
 import chromium_renderer
 import server_security
+import pdf_transfers
 
 ROOT = Path(__file__).resolve().parent
 JOBS = {}
@@ -41,11 +42,11 @@ def command(args, cwd, stdin=None):
                                stderr=subprocess.PIPE, text=True, cwd=cwd, env=env,
                                start_new_session=True)
     try:
-        stdout, stderr = process.communicate(stdin, timeout=150)
+        stdout, stderr = process.communicate(stdin, timeout=int(os.environ.get('LOCAL_EXPORT_RENDER_TIMEOUT_SECONDS','600')))
     except subprocess.TimeoutExpired:
         os.killpg(process.pid, signal.SIGKILL)
         process.communicate()
-        raise RuntimeError("PDF conversion timed out (150 seconds)")
+        raise RuntimeError("PDF conversion timed out; increase LOCAL_EXPORT_RENDER_TIMEOUT_SECONDS for unusually large documents")
     if process.returncode:
         raise RuntimeError(stderr[-5000:] or "Conversion failed")
     return stdout
@@ -116,6 +117,15 @@ def find_job(job_id):
         return dict(stored)
 
 
+def cleanup_job_files(directory):
+    for item in directory.iterdir():
+        if item.name not in ('document.pdf','original.html'):
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink(missing_ok=True)
+
+
 def generate(job_id, payload, prepared=None):
     with LOCK:
         job = JOBS[job_id]
@@ -129,6 +139,8 @@ def generate(job_id, payload, prepared=None):
             # Retain a safe static snapshot even if the browser cannot launch.
             (directory / "original.html").write_text(prepared["html"], encoding="utf-8")
             result = chromium_renderer.render(payload, directory, prepared)
+            with LOCK:
+                job['renderStats'] = result
             local_state.put("chromium:last-render", {"ok": True, "at": time.time(), "result": result})
         else:
             markdown = markdown_from_payload(payload)
@@ -141,10 +153,11 @@ def generate(job_id, payload, prepared=None):
             options["_customToc"] = bool(payload.get("messages") and isinstance(options.get("tocStyle"), dict))
             args = pdf_layout.arguments(options, directory, ROOT / "header.tex")
             command(args, directory)
+        cleanup_job_files(directory)
+        local_state.usage({"cmd": "report", "payload": {"format": "pdf"}})
         with LOCK:
             job.update(status="done", engine=engine, filename=pdf_layout.safe_filename(payload), fileSizeMB=round((directory / "document.pdf").stat().st_size / 1048576, 3))
             save_job(job_id)
-        local_state.usage({"cmd": "report", "payload": {"format": "pdf"}})
     except Exception as error:
         if job.get("engine") == "chromium":
             local_state.put("chromium:last-render", {"ok": False, "at": time.time(), "error": str(error)})
@@ -153,9 +166,7 @@ def generate(job_id, payload, prepared=None):
             save_job(job_id)
     finally:
         # Keep a self-contained, script-free HTML alternative for webpage jobs.
-        for item in job["directory"].iterdir():
-            if item.name not in ("document.pdf", "original.html"):
-                item.unlink(missing_ok=True)
+        cleanup_job_files(job['directory'])
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -254,6 +265,16 @@ class Handler(BaseHTTPRequestHandler):
                 if self.public_origin().startswith("https:"):
                     cookie += "; Secure"
                 return self.reply({"errcode": 0}, extra_headers={"Set-Cookie": cookie})
+            if self.path == "/api/pdf/uploads":
+                return self.reply(pdf_transfers.begin(request.get("size")))
+            transfer = re.fullmatch(r"/api/pdf/uploads/([a-f0-9]{32})/(chunk|commit|cancel)", self.path)
+            if transfer:
+                identifier, action = transfer.groups()
+                if action == "chunk":
+                    return self.reply(pdf_transfers.append(identifier, request.get("index"), request.get("data")))
+                if action == "cancel":
+                    return self.reply(pdf_transfers.cancel(identifier))
+                return self.create_pdf(pdf_transfers.finish(identifier))
             routes = {"/api/account": local_state.account, "/api/usage": local_state.usage,
                       "/api/config/v3": local_state.config, "/api/feedback/v1": local_state.feedback,
                       "/api/settings": local_state.settings}
@@ -263,35 +284,38 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply({"errcode": -1, "errmsg": "Not found"}, 404)
             if request.get("cmd", "create") != "create":
                 raise ValueError("Unsupported command")
-            payload = request.get("payload", request)
-            engine = selected_engine(payload)
-            prepared = chromium_renderer.prepare_document(payload) if engine == "chromium" else None
-            if engine == "pandoc":
-                markdown_from_payload(payload)
-            job_id = uuid.uuid4().hex
-            with LOCK:
-                # Retain at most 50 jobs in the active queue. Completed PDF data
-                # remains local for download across service restarts.
-                for key, job in list(JOBS.items()):
-                    if job["status"] in ("done", "failed") and len(JOBS) >= 50:
-                        del JOBS[key]
-                if len(JOBS) >= 50:
-                    return self.reply({"errcode": -1, "errmsg": "Queue full"}, 429)
-                directory = local_state.data_dir() / "jobs" / job_id
-                directory.mkdir(parents=True)
-                JOBS[job_id] = {"status": "queued", "engine": engine, "filename": pdf_layout.safe_filename(payload), "directory": directory, "created": time.time()}
-                if prepared:
-                    (directory / "original.html").write_text(prepared["html"], encoding="utf-8")
-                save_job(job_id)
-            POOL.submit(generate, job_id, payload, prepared)
-            result = {"errcode": 0, "jobId": job_id, "status": "queued", "engine": engine}
-            if prepared:
-                result["htmlUrl"] = self.resource_url(f"/api/pdf/v1/{job_id}/html")
-            self.reply(result)
+            return self.create_pdf(request.get("payload", request))
         except (ValueError, TypeError, AttributeError) as error:
             self.reply({"errcode": -1, "errmsg": str(error)}, 400)
         except (OSError, subprocess.SubprocessError) as error:
             self.reply({"errcode": -2, "errmsg": str(error)}, 500)
+
+    def create_pdf(self, payload):
+        engine = selected_engine(payload)
+        prepared = chromium_renderer.prepare_document(payload) if engine == "chromium" else None
+        if engine == "pandoc":
+            markdown_from_payload(payload)
+        job_id = uuid.uuid4().hex
+        with LOCK:
+            # Retain at most 50 jobs in the active queue. Completed PDF data
+            # remains local for download across service restarts.
+            for key, job in list(JOBS.items()):
+                if job["status"] in ("done", "failed") and len(JOBS) >= 50:
+                    del JOBS[key]
+            if len(JOBS) >= 50:
+                return self.reply({"errcode": -1, "errmsg": "Queue full"}, 429)
+            directory = local_state.data_dir() / "jobs" / job_id
+            directory.mkdir(parents=True)
+            JOBS[job_id] = {"status": "queued", "engine": engine, "filename": pdf_layout.safe_filename(payload), "directory": directory, "created": time.time()}
+            if prepared:
+                (directory / "original.html").write_text(prepared["html"], encoding="utf-8")
+                JOBS[job_id].update({key: prepared[key] for key in ('messageCount','domCount','fallbackCount','warnings')})
+            save_job(job_id)
+        POOL.submit(generate, job_id, payload, prepared)
+        result = {"errcode": 0, "jobId": job_id, "status": "queued", "engine": engine}
+        if prepared:
+            result["htmlUrl"] = self.resource_url(f"/api/pdf/v1/{job_id}/html")
+        self.reply(result)
 
     def upload(self, data):
         content_type = self.headers.get("Content-Type", "")
@@ -342,7 +366,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply({"errcode": 0, "items": jobs[:100], "total": len(jobs)})
         if path == "/health":
             engines = engine_health()
-            return self.reply({"ok": any(item["available"] for item in engines.values()), "engine": "chromium / pandoc + xelatex", "engines": engines, "dependencies": engines["pandoc"]["dependencies"], "supportsWebDocument": True, "remoteImageFetch": False, "local": not bool(getattr(self.server, 'api_token', '')), "authenticationRequired": bool(getattr(self.server, 'api_token', '')), "version": 4})
+            return self.reply({"ok": any(item["available"] for item in engines.values()), "engine": "chromium / pandoc + xelatex", "engines": engines, "dependencies": engines["pandoc"]["dependencies"], "supportsWebDocument": True, "supportsMarkdownFallback": True,"supportsChunkedPdf":True,"maxPayloadMB":int(os.environ.get('LOCAL_EXPORT_MAX_PAYLOAD_MB','256')),"remoteImageFetch": False, "local": not bool(getattr(self.server, 'api_token', '')), "authenticationRequired": bool(getattr(self.server, 'api_token', '')), "version": 4})
         routes = {"/api/account": local_state.account, "/api/usage": local_state.usage,
                   "/api/config/v3": local_state.config, "/api/feedback/v1": local_state.feedback_list,
                   "/api/settings": local_state.settings}
@@ -352,7 +376,7 @@ class Handler(BaseHTTPRequestHandler):
             image = local_images.owned_path(path.removeprefix("/api/file/"))
             if image is None:
                 return self.reply({"errcode": -1, "errmsg": "Unknown image"}, 404)
-            return self.binary(image.read_bytes(), "image/png" if image.suffix == ".png" else "image/jpeg")
+            return self.serve_file(image, "image/png" if image.suffix == ".png" else "image/jpeg")
         match = re.fullmatch(r"/api/pdf/v1/([a-f0-9]{32})(/(?:download|html))?", path)
         if not match:
             return self.reply({"errcode": -1, "errmsg": "Not found"}, 404)
@@ -364,15 +388,14 @@ class Handler(BaseHTTPRequestHandler):
             snapshot = job["directory"] / "original.html"
             if not snapshot.is_file():
                 return self.reply({"errcode": -1, "errmsg": "No webpage snapshot exists for this job"}, 404)
-            return self.binary(snapshot.read_bytes(), "text/html; charset=utf-8", "original.html")
+            return self.serve_file(snapshot, "text/html; charset=utf-8", "original.html")
         if action == "/download":
             if job["status"] != "done":
                 return self.reply({"errcode": -1, "errmsg": "PDF not ready"}, 409)
-            try:
-                data = (job["directory"] / "document.pdf").read_bytes()
-            except FileNotFoundError:
+            output = job["directory"] / "document.pdf"
+            if not output.is_file():
                 return self.reply({"errcode": -1, "errmsg": "Expired"}, 404)
-            return self.binary(data, "application/pdf", job.get("filename", "chat.pdf"))
+            return self.serve_file(output, "application/pdf", job.get("filename", "chat.pdf"))
         result = {key: value for key, value in job.items() if key not in ("directory", "created")}
         result.update(errcode=0, jobId=job_id)
         if job["status"] == "done":
@@ -380,6 +403,17 @@ class Handler(BaseHTTPRequestHandler):
         if (job["directory"] / "original.html").is_file():
             result["htmlUrl"] = self.resource_url(f"/api/pdf/v1/{job_id}/html")
         self.reply(result)
+
+    def serve_file(self, path, mime, filename=None):
+        with path.open('rb') as stream:
+            self.headers_for(200, mime)
+            if filename:
+                fallback = "original.html" if mime.startswith("text/html") else "chat.pdf"
+                self.send_header("Content-Disposition", f"attachment; filename=\"{fallback}\"; filename*=UTF-8''" + quote(filename))
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Length", str(os.fstat(stream.fileno()).st_size))
+            self.end_headers()
+            shutil.copyfileobj(stream, self.wfile, length=1024*1024)
 
     def binary(self, data, mime, filename=None):
         self.headers_for(200, mime)

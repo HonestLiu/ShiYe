@@ -2,6 +2,8 @@
 
 > 当前版本已支持 Linux、Docker 和独立服务器。安装入口见[根目录 README](../README.md)，远程部署及访问令牌配置见 [Linux / Docker 指南](../deploy/README.md)。本文件同时保留较早版本的实现与修复记录。
 
+4.1 新增长对话支持：优先捕获网页节点，自动滚动收集虚拟列表；确实未挂载的消息使用会话正文补全并由 Chromium 排版。大载荷分块上传，默认总量 256 MiB，渲染时限 600 秒。升级需安装 `package-lock.json` 中新增的 Markdown/KaTeX 依赖，再重启服务、重新加载扩展和刷新聊天页。详见根目录“长对话导出”。
+
 在原版 `6.13.2_0` 的基础上构建独立副本 `local-extension`，原版文件保持不变。PDF、图片、账号状态、用量、配置、设置备份与反馈均使用本机服务；Markdown、TXT、CSV、JSON 和剪贴板继续由浏览器生成。无需原开发商的服务器、登录或订阅。
 
 网页原貌模式使用本机 Python 3、Node.js、现有 Chrome/Chromium 和 playwright-core。当前机器已找到 Node、Google Chrome 和已有的 playwright-core 1.58.2，无需重新下载浏览器。Pandoc 模式使用 Pandoc 3.13、XeLaTeX 和 macOS 系统字体。
@@ -43,7 +45,7 @@ Chromium 使用 screen 媒体、打印背景并等待字体和图片就绪；按
 node local-pdf-server/verify-heading-navigation.mjs
 ```
 
-仅捕获已经在页面中渲染的已选消息。若消息未加载，明确提示滚动加载或切换 Pandoc，不会静默丢掉消息或改用另一种引擎。为保留页面字体/图片，扩展额外允许读取 OpenAI 的 oaistatic.com、oaiusercontent.com 和 cdn.openai.com 静态资源；后台补取资源不携带登录凭据。原开发商服务和遥测仍不使用。
+4.1 优先捕获已选消息的网页节点，对虚拟列表滚动收集，剩余消息使用会话正文补全，并记录补全数量；不切换 PDF 引擎。为保留页面字体/图片，扩展额外允许读取 OpenAI 的 oaistatic.com、oaiusercontent.com 和 cdn.openai.com 静态资源；后台补取资源不携带登录凭据。原开发商服务和遥测仍不使用。
 
 ### 升级步骤
 
@@ -191,3 +193,12 @@ node local-pdf-server/verify-extension.mjs
 样例位于 `output/pdf/local-export-demo.pdf` 与 `output/pdf/local-layout-demo.pdf`，排版示例已逐页检查。
 
 Web 后台已经使用真实 HTTP 服务和 Chromium 验证表单、PDF/快照下载及重启恢复。验证脚本输出区分 mock 边界检查与真实渲染；通过这些检查不代表覆盖所有 ChatGPT 页面、交互组件和浏览器环境。
+
+
+### 网页原貌多余空白页修复
+
+Chromium 输出前会清理消息内部冻结的网页容器高度、最小高度、滚动裁剪和网格行高，并允许超过一页的代码块/表格跨页。公式内部的定位、绝对定位图示以及用户主动设置的分页保留；超高图片按页内高度约束。修复作用于服务端收到的网页快照，新旧扩展都可受益，不通过删除“无文字页”处理，避免误删图片页。
+
+运行 `node local-pdf-server/verify-pagination.mjs` 可复现 14 页中有 12 张空白的冻结尺寸问题，并验证修复后缩为 1 页、160 行代码和 90 行表格完整保留、主动分页与图片页保留。该检查使用实际 Chromium 和 macOS PDFKit。
+
+源码运行的服务每次任务会启动新的 Node 渲染进程，后续任务即可使用更新后的渲染模块；Docker/远程部署需要更新服务端文件或重建镜像。已有 PDF 需要重新导出。

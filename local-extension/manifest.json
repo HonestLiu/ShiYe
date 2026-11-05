@@ -17,6 +17,7 @@
       "js": [
         "bridge.js",
         "web-snapshot.js",
+        "success-dialog.js",
         "content.js"
       ],
       "matches": [
@@ -29,10 +30,8 @@
   "default_locale": "en",
   "description": "Export conversations using your local or self-hosted PDF service.",
   "host_permissions": [
-    "http://127.0.0.1:8765/*",
-    "https://*.oaistatic.com/*",
-    "https://*.oaiusercontent.com/*",
-    "https://cdn.openai.com/*"
+    "http://*/*",
+    "https://*/*"
   ],
   "icons": {
     "128": "assets/icon128.png",
@@ -59,7 +58,7 @@
       ]
     }
   ],
-  "version_name": "6.13.2 Service 4.0 (Linux / Docker)",
+  "version_name": "6.13.2 Service 4.1.2 (Long webpage capture)",
   "optional_host_permissions": [
     "http://*/*",
     "https://*/*"

@@ -1,9 +1,11 @@
 {
   "name": "chatgpt-exporter-local-renderer",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "description": "Local Chromium renderer; uses the existing Chrome installation",
   "dependencies": {
+    "katex": "0.19.1",
+    "markdown-it": "15.0.3",
     "playwright-core": "1.58.2"
   },
   "scripts": {
@@ -11,6 +13,8 @@
     "verify:browser": "node verify-divider-browser.mjs",
     "verify:headings": "node verify-heading-navigation.mjs",
     "verify:admin": "node verify-web-admin.mjs",
-    "verify:deployment": "python3 verify-deployment.py"
+    "verify:deployment": "python3 verify-deployment.py",
+    "verify:long": "node verify-long-conversation.mjs",
+    "verify:transfers": "python3 verify-transfers.py"
   }
 }

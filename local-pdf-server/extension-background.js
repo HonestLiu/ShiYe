@@ -26,9 +26,10 @@ function validPath(path, base) {
     new URL(path, base).origin === base && !path.includes("..");
 }
 
-async function api(path, { method = "GET", body, upload, timeout = 180000, expectedConnection } = {}) {
+async function api(path, { method = "GET", body, upload, timeout = 180000, expectedConnection,expectedBaseUrl } = {}) {
   const service = await connection();
   if(expectedConnection && !sameConnection(service,expectedConnection))throw new Error('服务器连接已更改，请重试同步');
+  if(expectedBaseUrl && service.url!==expectedBaseUrl)throw new Error('上传过程中服务器地址已更改，请重新导出');
   if (!validPath(path, service.url) || !["GET", "POST"].includes(method)) throw new Error("Unsupported service API request");
   const headers = {};
   if (service.token) headers.Authorization = 'Bearer ' + service.token;
@@ -63,9 +64,8 @@ async function jsonApi(path, options) {
 
 async function snapshotResource(address) {
   const url = new URL(address);
-  if (url.protocol !== 'https:' || url.username || url.password ||
-      !(/(^|\.)(oaistatic\.com|oaiusercontent\.com)$/i.test(url.hostname) || url.hostname === 'cdn.openai.com')) throw new Error('Unsupported page resource origin');
-  const response = await fetch(url.href, { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(20000) });
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error('Unsupported page resource origin');
+  const response = await fetch(url.href, { credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'follow', signal: AbortSignal.timeout(20000) });
   if (!response.ok) throw new Error(`Page resource HTTP ${response.status}`);
   if (Number(response.headers.get('content-length')) > 16 * 1024 * 1024) throw new Error('Page resource exceeds 16 MiB');
   const bytes = new Uint8Array(await response.arrayBuffer());

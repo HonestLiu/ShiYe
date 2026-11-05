@@ -22,8 +22,8 @@
       if (!picker.isConnected) { pickers.delete(picker); continue; }
       for (const input of picker.querySelectorAll('input')) input.checked = input.value === renderer;
       picker.querySelector('p').textContent = renderer === 'chromium'
-        ? '保留网页样式。“目录”默认关闭，开启后在正文前增加可点击目录页；阅读器侧栏始终提供标题书签。'
-        : '使用 Pandoc 重新排版。适用于未在页面中加载的消息及偏好打印版式的情况。';
+        ? '优先保留网页样式，长对话自动收集并补全未挂载消息。“目录”默认关闭，侧栏标题书签保留。补全部分可能与网页排版不同。'
+        : '使用 Pandoc 重新排版，适合打印文档版式和 Markdown 内容。';
     }
   }
   if (chrome.storage?.onChanged) chrome.storage.onChanged.addListener((changes, area) => {
@@ -178,7 +178,15 @@
       if (replacements.has(address)) continue;
       try {
         if (blocked(new URL(address, location.href))) throw new Error("Original service image requests are disabled");
-        const response = await originalFetch(address);
+        let response;
+        try{response=await originalFetch(address,globalThis.AbortSignal?.timeout?{signal:AbortSignal.timeout(20000)}:{});if(!response.ok)throw new Error('Image HTTP '+response.status);}
+        catch(error){
+          const url=new URL(address,location.href);
+          if(!['http:','https:'].includes(url.protocol))throw error;
+          const asset=await chrome.runtime.sendMessage({cmd:'snapshot_resource',url:url.href});
+          if(asset.errcode)throw new Error(asset.errmsg);
+          response=new Response(Uint8Array.from(atob(asset.base64),character=>character.charCodeAt(0)),{headers:{'Content-Type':asset.mime}});
+        }
         if (!response.ok) throw new Error(`Image HTTP ${response.status}`);
         replacements.set(address, await upload(await response.blob()));
       } catch (error) {
@@ -211,19 +219,28 @@
 
   function messageRoots(selector = "div.group\\/turn-messages") {
     const existing = Array.from(document.querySelectorAll(selector));
-    if (existing.length) return existing;
-    // Current ChatGPT transcript DOM no longer has group/turn-messages or
-    // section[data-turn-id]. Search units contain stable message IDs instead.
     const current = "[data-chatgpt-search-unit-key][data-chatgpt-search-message-ids]";
-    return Array.from(document.querySelectorAll(current)).filter(node => !node.parentElement?.closest(current));
+    const modern = Array.from(document.querySelectorAll(current)).filter(node => !node.parentElement?.closest(current));
+    const combined=[...new Set([...existing,...modern])],known=new Set(combined),outer=new Set();
+    for(const node of combined)for(let parent=node.parentElement;parent;parent=parent.parentElement)if(known.has(parent))outer.add(parent);
+    const canonical=combined.filter(node=>!outer.has(node));
+    const canonicalSet=new Set(canonical),ancestors=new Set();
+    for(const node of canonical)for(let parent=node.parentElement;parent;parent=parent.parentElement)ancestors.add(parent);
+    const extras = Array.from(document.querySelectorAll('[data-message-id][data-message-author-role]'))
+      .filter(node=>{
+        if(ancestors.has(node))return false;
+        for(let parent=node;parent;parent=parent.parentElement)if(canonicalSet.has(parent))return false;
+        return true;
+      });
+    return [...canonical,...extras].sort((a,b)=>a.compareDocumentPosition ? (a.compareDocumentPosition(b)&2 ? 1 : -1) : 0);
   }
 
   function domTurnIdentity(node, index) {
-    const section = node.closest("section[data-turn-id]");
+    const section = node.closest("[data-turn-id]");
     const key = node.getAttribute("data-chatgpt-search-unit-key") || "";
     const role = node.getAttribute("data-message-author-role") || section?.getAttribute("data-turn") ||
       (key.endsWith(":user") ? "user" : key.endsWith(":assistant") ? "assistant" : index % 2 === 0 ? "user" : "assistant");
-    const id = section?.getAttribute("data-turn-id") || (node.getAttribute("data-chatgpt-search-message-ids") || "").trim().split(/\s+/)[0];
+    const id = section?.getAttribute("data-turn-id") || node.getAttribute('data-message-id') || (node.getAttribute("data-chatgpt-search-message-ids") || "").split(/[\s,\[\]"]+/).filter(Boolean)[0];
     return { turnId: id || `dom-turn-${index}`, role: role === "user" ? "user" : "assistant" };
   }
 
@@ -342,7 +359,15 @@
       if(!response.ok)throw new Error(health.errmsg || '无法连接导出服务，请检查服务器地址和访问令牌。');
       if (!health.engines?.chromium) throw new Error('所连接的服务版本过旧，请更新服务器后重试。');
       const webDocument = await LocalWebSnapshot.capture(payload);
-      const result = await chrome.runtime.sendMessage({ cmd: 'pdf', payload: { cmd: 'create', payload: { ...payload, engine, webDocument } } });
+      if(webDocument.fallbackCount){
+        const accepted=typeof globalThis.confirm==='function' && globalThis.confirm(
+          `网页原貌已捕获 ${webDocument.domCount}/${webDocument.messageCount} 条消息。仍有 ${webDocument.fallbackCount} 条无法读取网页样式。\n\n是否使用会话正文补全这些消息？补全部分会重新排版，可能缺少网页独有图表。\n\n选择“取消”将停止导出。`
+        );
+        if(!accepted)throw new Error('已取消导出：网页原貌采集不完整，未使用重新排版补全。');
+      }
+      if(webDocument.fallbackCount && !health.supportsMarkdownFallback)throw new Error('请将服务端更新到 4.1 或更新版本，以支持长对话内容补全。');
+      const metadata=payload.messages.map(({markdown,...message})=>message);
+      const result = await submitPdf({ ...payload, messages:metadata,engine, webDocument });
       if (result.jobId && chrome.storage?.local) await chrome.storage.local.set({ lastWebPdfJob: { jobId: result.jobId, htmlUrl: result.htmlUrl, createdAt: Date.now() } });
       return result;
     }
@@ -357,10 +382,42 @@
       messages.push({ ...message, markdown: await localize(markdown) });
     }
     const localMarkdown = (payload.title ? `# ${payload.title}\n\n` : "") + messages.map(message => `## ${message.heading || message.role}\n\n${message.markdown}`).join("\n\n");
-    return chrome.runtime.sendMessage({ cmd: "pdf", payload: { cmd: "create", payload: { ...payload, messages, localMarkdown } } });
+    return submitPdf({ ...payload, messages, localMarkdown });
   }
 
-  globalThis.LocalExporter = { ready, createPdf, upload, inlineSvgImages, messageRoots, domTurnIdentity, messageIds, renderedDiagrams, insertDiagram, mountEnginePicker,
+  async function submitPdf(payload) {
+    const json=JSON.stringify(payload);
+    if(json.length<2*1024*1024)return chrome.runtime.sendMessage({cmd:'pdf',payload:{cmd:'create',payload}});
+    const bytes=new TextEncoder().encode(json),base=BASE;
+    const request=async(path,body)=>{
+      const response=await chrome.runtime.sendMessage({cmd:'local_request',payload:{path,method:'POST',body,expectedBaseUrl:base}});
+      if(response.errcode)throw new Error(response.errmsg);
+      const data=JSON.parse(response.text);
+      if(response.status>=400 || data.errcode)throw new Error(data.errmsg || '大文件上传失败');
+      return data;
+    };
+    const transfer=await request('/api/pdf/uploads',{size:bytes.length});
+    try {
+      for(let offset=0,index=0;offset<bytes.length;offset+=512*1024,index++){
+        const chunk=bytes.subarray(offset,offset+512*1024);
+        let binary='';for(let part=0;part<chunk.length;part+=32768)binary+=String.fromCharCode(...chunk.subarray(part,part+32768));
+        await request('/api/pdf/uploads/'+transfer.uploadId+'/chunk',{index,data:btoa(binary)});
+        exportProgress(`正在上传长对话：${Math.min(100,Math.round((offset+chunk.length)/bytes.length*100))}%`);
+      }
+      return await request('/api/pdf/uploads/'+transfer.uploadId+'/commit',{});
+    }catch(error){
+      request('/api/pdf/uploads/'+transfer.uploadId+'/cancel',{}).catch(()=>{});throw error;
+    }
+  }
+
+  function exportProgress(text) {
+    if(!document.body?.append)return;
+    let panel=document.getElementById?.('local-export-progress');
+    if(!panel){panel=document.createElement('div');panel.id='local-export-progress';panel.setAttribute('role','status');panel.setAttribute('aria-live','polite');panel.style.cssText='position:fixed;right:24px;bottom:24px;z-index:2147483647;max-width:420px;padding:12px 16px;border-radius:8px;background:#164e63;color:white;font:14px/1.6 system-ui;box-shadow:0 4px 20px #0003';document.body.append(panel);}
+    panel.textContent=text;clearTimeout(panel.dismissTimer);panel.dismissTimer=setTimeout(()=>panel.remove(),12000);
+  }
+
+  globalThis.LocalExporter = { ready, createPdf, upload, submitPdf, prepareFallback:localize, exportProgress, inlineSvgImages, messageRoots, domTurnIdentity, messageIds, renderedDiagrams, insertDiagram, mountEnginePicker,
     usesWebRenderer: () => renderer === 'chromium',
     lastRenderedTurnId: () => { const roots = messageRoots(); return roots.length ? domTurnIdentity(roots.at(-1), roots.length - 1).turnId : null; } };
 })();

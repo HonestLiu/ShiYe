@@ -9,6 +9,7 @@ import re
 import shutil
 import signal
 import subprocess
+import local_state
 
 ROOT = Path(__file__).resolve().parent
 LOCAL_MODULE = ROOT / "node_modules/playwright-core"
@@ -157,7 +158,9 @@ def prepare_document(payload):
     body_attributes = parser.wrapper_attrs.get("body", "")
     css = "\n".join([*parser.styles, css])
     wrapper = f'<!doctype html><html {root_attributes}><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="{html.escape(CSP, quote=True)}"><meta name="viewport" content="width={int(width)}"><title>{html.escape(str(title))}</title><style>html,body{{margin:0;padding:0}}*,*::before,*::after{{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}\n{css}</style></head><body {body_attributes}>{"".join(parser.parts)}</body></html>'
-    return {"html": wrapper, "width": int(width), "theme": theme, "options": options}
+    return {"html": wrapper, "width": int(width), "theme": theme, "options": options,
+            "messageCount": document.get("messageCount"), "domCount": document.get("domCount"),
+            "fallbackCount": document.get("fallbackCount", 0), "warnings": document.get("warnings", [])}
 
 
 def render(payload, directory, prepared=None):
@@ -169,21 +172,23 @@ def render(payload, directory, prepared=None):
     spec = {"input": str((directory / "original.html").resolve()),
             "output": str((directory / "document.pdf").resolve()),
             "width": snapshot["width"], "theme": snapshot["theme"], "options": snapshot["options"],
-            "executable": info["executable"], "playwrightModule": info["playwrightModule"]}
+            "executable": info["executable"], "playwrightModule": info["playwrightModule"],
+            "timeoutMs": int(os.environ.get("LOCAL_EXPORT_RENDER_TIMEOUT_SECONDS", "600")) * 1000,
+            "dataDir": str(local_state.data_dir()), "publicOrigin": os.environ.get("LOCAL_EXPORT_PUBLIC_URL", "")}
     spec_path = directory / "chromium-job.json"
     spec_path.write_text(json.dumps(spec), encoding="utf-8")
     process = subprocess.Popen([info["node"], str(ROOT / "render-webpage.mjs"), str(spec_path.resolve())],
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=directory,
                                start_new_session=True)
     try:
-        stdout, stderr = process.communicate(timeout=150)
+        stdout, stderr = process.communicate(timeout=spec["timeoutMs"] / 1000 + 30)
     except subprocess.TimeoutExpired:
         os.killpg(process.pid, signal.SIGKILL)
         process.communicate()
-        raise RuntimeError("Chromium rendering timed out (150 seconds); no Pandoc fallback was used")
+        raise RuntimeError("Chromium rendering timed out; increase LOCAL_EXPORT_RENDER_TIMEOUT_SECONDS for unusually large documents")
     if process.returncode:
         raise RuntimeError("Chromium PDF rendering failed: " + (stderr.strip() or stdout.strip() or "browser exited unexpectedly")[-6000:])
     output = directory / "document.pdf"
-    if not output.exists() or not output.read_bytes().startswith(b"%PDF-"):
+    if not output.exists() or output.open('rb').read(5) != b'%PDF-':
         raise RuntimeError("Chromium did not produce a valid PDF; no Pandoc fallback was used")
     return json.loads(stdout.strip().splitlines()[-1]) if stdout.strip() else {"engine": "chromium"}

@@ -31,7 +31,12 @@ def main():
     if TARGET.exists() and not args.update:
         parser.error('local-extension exists; use --update to regenerate')
     content = shared((SOURCE / 'content.js').read_text())
+    success_start = content.index('function ME(e){var t=e.open,n=e.info,o=e.onClose,a=e.onFeedback,')
+    success_end = content.index('var LE=new Set([502,503,504])', success_start)
+    content = content[:success_start] + 'function ME(e){return s.createElement(LocalSuccessDialog.component(s),e)}' + content[success_end:]
     content = replace_once(content, 'D=p((0,s.useState)(!0),2),j=D[0],F=D[1]', 'D=p((0,s.useState)(!1),2),j=D[0],F=D[1]')
+    content = replace_once(content, 'c=void 0===l?6e5:l', 'c=void 0===l?18e5:l')
+    content = replace_once(content, 'PDF generation timed out (10min). Try fewer messages.', 'PDF generation timed out (30min). Check the task in the service dashboard.')
     content = replace_once(content, 't.setAttribute("src","data:,")', 't.setAttribute("src",o.url)')
     content = replace_once(content, 'case 18:return e.next=20,Promise.all(Array.from(o.querySelectorAll("img"))',
         'case 18:return LocalExporter.inlineSvgImages(o.body),e.next=20,Promise.all(Array.from(o.querySelectorAll("img"))')
@@ -57,7 +62,7 @@ def main():
     if stage.exists():
         shutil.rmtree(stage)
     shutil.copytree(SOURCE, stage, ignore=shutil.ignore_patterns('_metadata'))
-    for target, source in [('background.js', 'extension-background.js'), ('bridge.js', 'extension-bridge.js'), ('web-snapshot.js', 'web-snapshot.js'), ('local.html', 'local.html'), ('local.js', 'local.js'), ('local.css', 'local.css')]:
+    for target, source in [('background.js', 'extension-background.js'), ('bridge.js', 'extension-bridge.js'), ('web-snapshot.js', 'web-snapshot.js'), ('success-dialog.js','success-dialog.js'), ('local.html', 'local.html'), ('local.js', 'local.js'), ('local.css', 'local.css')]:
         shutil.copy2(ASSETS / source, stage / target)
     (stage / 'content.js').write_text(content)
     for name, script in [('popup', popup), ('options', options)]:
@@ -68,9 +73,9 @@ def main():
             raise RuntimeError('Unable to insert bridge into ' + name)
         path.write_text(html)
     manifest = json.loads((stage / 'manifest.json').read_text())
-    manifest.update(name='ChatGPT Exporter - Self-hosted', description='Export conversations using your local or self-hosted PDF service.', version_name='6.13.2 Service 4.0 (Linux / Docker)', host_permissions=['http://127.0.0.1:8765/*', 'https://*.oaistatic.com/*', 'https://*.oaiusercontent.com/*', 'https://cdn.openai.com/*'], optional_host_permissions=['http://*/*','https://*/*'])
+    manifest.update(name='ChatGPT Exporter - Self-hosted', description='Export conversations using your local or self-hosted PDF service.', version_name='6.13.2 Service 4.1.2 (Long webpage capture)', host_permissions=['http://*/*', 'https://*/*'], optional_host_permissions=['http://*/*','https://*/*'])
     manifest['content_scripts'] = [item for item in manifest['content_scripts'] if 'content.js' in item['js']]
-    manifest['content_scripts'][0]['js'] = ['bridge.js', 'web-snapshot.js', 'content.js']
+    manifest['content_scripts'][0]['js'] = ['bridge.js', 'web-snapshot.js', 'success-dialog.js', 'content.js']
     for key in ['externally_connectable', 'key', 'update_url']:
         manifest.pop(key, None)
     if TARGET.exists():

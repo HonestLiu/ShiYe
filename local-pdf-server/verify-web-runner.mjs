@@ -11,9 +11,11 @@ try {
   const spec = { input, output: join(directory, 'document.pdf'), executable: '/mock/chromium', width: 760, theme: 'dark', options: { format: 'a4', margin: 'normal', removePageNumber: true } };
   let launch, contextOptions, media, printed, interceptor, closed = false;
   const page = {
+    content: async () => '<!doctype html><p>网页原样测试</p>',
     emulateMedia: async options => { media = options; },
     setContent: async (html, options) => { assert(html.includes('网页原样测试')); assert.equal(options.waitUntil, 'load'); },
     evaluate: async (callback, options) => {
+      if (String(callback).includes('const stats={reflowed:')) { assert(options.pageHeight>0); return {reflowed:0,splitBlocks:0,resizedMedia:0}; }
       if (String(callback).includes('data-pdf-toc')) {
         assert.equal(options.toc, spec.options.toc === true);
         return {headings:3,tocEntries:options.toc ? 3 : 0};

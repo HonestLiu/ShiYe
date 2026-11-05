@@ -1,0 +1,289 @@
+<!doctype html><html lang="zh-CN" class="light"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src &#x27;none&#x27;; script-src &#x27;none&#x27;; connect-src &#x27;none&#x27;; img-src data:; style-src &#x27;unsafe-inline&#x27; data:; font-src data:; media-src data:; object-src &#x27;none&#x27;; frame-src &#x27;none&#x27;; form-action &#x27;none&#x27;; base-uri &#x27;none&#x27;"><meta name="viewport" content="width=900"><title>凸函数割线判断</title><style>html,body{margin:0;padding:0}*,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{font:16px/1.7 system-ui;background:#fff;color:#172323}main{padding:24px}section{margin:32px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}img,svg{max-width:100%;height:auto}table{border-collapse:collapse}td,th{border:1px solid #888;padding:6px}</style></head><body ><main><h1>凸函数割线判断</h1><section data-role="assistant"><h2>助手</h2><pre>这道题选 **A**。
+
+这道题表面上考的是二元函数的最值，实际上考查的是一个非常重要的结论：**调和函数的最大值原理与最小值原理。**
+
+不过，考虑到你现在主要在准备考研数学，我建议你先掌握一种更容易理解、也更方便考试使用的方法：**利用二元函数极值的二阶必要条件判断。**
+
+## 一、题目条件分析
+
+已知函数 \(u(x,y)\)：
+
+1. 在有界闭区域 \(D\) 上连续。
+2. 在 \(D\) 内部具有二阶连续偏导数。
+3. 满足：
+
+\[
+\boxed{u_{xy}\ne 0}
+\]
+
+以及：
+
+\[
+\boxed{u_{xx}+u_{yy}=0}
+\]
+
+题目要求判断最大值、最小值的位置。
+
+由于 \(D\) 是有界闭区域，且 \(u(x,y)\) 连续，因此根据**最值定理**：
+
+\[
+\boxed{\text{最大值和最小值一定存在}}
+\]
+
+接下来需要判断它们能否在内部取得。
+
+## 二、核心解题思路：判断内部能否取得极值
+
+### 1. 二元函数极值的二阶判别法
+
+对于二元函数 \(u(x,y)\)，记：
+
+\[
+A=u_{xx},\qquad B=u_{xy},\qquad C=u_{yy}
+\]
+
+构造判别式：
+
+\[
+\boxed{\Delta=AC-B^2}
+\]
+
+在驻点处，通常有：
+
+| 判别式 | 极值情况 |
+|---|---|
+| \(\Delta&gt;0,\ A&gt;0\) | 极小值 |
+| \(\Delta&gt;0,\ A&lt;0\) | 极大值 |
+| \(\Delta&lt;0\) | 不是极值点（鞍点） |
+| \(\Delta=0\) | 无法判断 |
+
+本题不需要先求驻点，而是直接利用已知条件分析判别式。
+
+### 2. 利用题目条件化简
+
+因为：
+
+\[
+u_{xx}+u_{yy}=0
+\]
+
+所以：
+
+\[
+\boxed{u_{yy}=-u_{xx}}
+\]
+
+代入判别式：
+
+\[
+\Delta=u_{xx}u_{yy}-(u_{xy})^2
+\]
+
+得到：
+
+\[
+\Delta=u_{xx}(-u_{xx})-(u_{xy})^2
+\]
+
+即：
+
+\[
+\boxed{\Delta=-(u_{xx})^2-(u_{xy})^2}
+\]
+
+又因为：
+
+\[
+u_{xy}\ne0
+\]
+
+所以：
+
+\[
+(u_{xy})^2&gt;0
+\]
+
+因此：
+
+\[
+\boxed{\Delta&lt;0}
+\]
+
+这说明：**区域内部的任意驻点都不可能是极值点。**
+
+所以函数的最大值和最小值都不可能在内部取得。
+
+### 3. 得出结论
+
+既然：
+
+- 最大值、最小值一定存在；
+- 内部不可能取得极值；
+
+那么它们只能在边界上取得：
+
+\[
+\boxed{\text{最大值和最小值均在 }D\text{ 的边界上取得}}
+\]
+
+因此：
+
+\[
+\boxed{\text{答案：A}}
+\]
+
+---
+
+## 三、考研错题笔记：二元函数极值与边界最值
+
+### 题型一：判断二元函数是否存在极值
+
+对于驻点：
+
+\[
+f_x=0,\qquad f_y=0
+\]
+
+令：
+
+\[
+A=f_{xx},\quad B=f_{xy},\quad C=f_{yy}
+\]
+
+计算：
+
+\[
+\boxed{\Delta=AC-B^2}
+\]
+
+**判断口诀：**
+
+- \(\Delta&gt;0\)：可能是极值，结合 \(A\) 判断极大还是极小。
+- \(\Delta&lt;0\)：不是极值。
+- \(\Delta=0\)：判别法失效，需要其他方法。
+
+注意：这里 \(\Delta&gt;0\) 时，还需要判断 \(A\) 的正负，才能确定极值类型。
+
+### 题型二：判断最值是否在边界取得
+
+如果题目给出：
+
+\[
+f_{xx}+f_{yy}=0
+\]
+
+可以立即想到：
+
+\[
+f_{yy}=-f_{xx}
+\]
+
+因此：
+
+\[
+\Delta=f_{xx}f_{yy}-f_{xy}^2
+\]
+
+\[
+\boxed{\Delta=-f_{xx}^2-f_{xy}^2\le0}
+\]
+
+如果还有：
+
+\[
+f_{xy}\ne0
+\]
+
+则：
+
+\[
+\boxed{\Delta&lt;0}
+\]
+
+说明内部驻点不可能是极值点。
+
+结合有界闭区域上的连续性，便可以断定最值只能在边界取得。
+
+---
+
+## 四、额外补充：拉普拉斯方程
+
+题目中的：
+
+\[
+\boxed{
+\frac{\partial^2u}{\partial x^2}
++
+\frac{\partial^2u}{\partial y^2}
+=0
+}
+\]
+
+叫作**二维拉普拉斯方程**。
+
+满足这个方程的二阶连续可微函数称为调和函数。
+
+调和函数有一个重要性质：
+
+&gt; 非常数调和函数不能在区域内部取得最大值或最小值。
+
+这就是调和函数的最值原理。
+
+事实上，本题的 \(u_{xy}\ne0\) 保证函数不可能是常数，所以也能直接利用这一结论选 A。
+
+但对你而言，我更推荐前面利用：
+
+\[
+\boxed{\Delta=AC-B^2}
+\]
+
+的方法，因为它可以直接复用你已经学过的二元函数极值知识。
+
+---
+
+## 五、最后背诵版
+
+**看到以下条件：**
+
+\[
+\boxed{
+\begin{cases}
+f_{xx}+f_{yy}=0\\
+f_{xy}\ne0
+\end{cases}
+}
+\]
+
+立即写出：
+
+\[
+f_{yy}=-f_{xx}
+\]
+
+\[
+\begin{aligned}
+\Delta
+&amp;=f_{xx}f_{yy}-f_{xy}^2\\
+&amp;=-f_{xx}^2-f_{xy}^2\\
+&amp;&lt;0
+\end{aligned}
+\]
+
+因此：
+
+\[
+\boxed{\text{内部无极值}}
+\]
+
+若函数在有界闭区域上连续：
+
+\[
+\boxed{\text{最大值、最小值均在边界上取得}}
+\]
+
+**一句话记忆：**
+
+**二阶偏导和为零，混合偏导不为零，判别式必小于零，内部无极值，最值在边界。**
+
+这道题属于典型的性质判断题。你只要能识别出 \(f_{xx}+f_{yy}=0\)，并想到二元函数极值判别式 \(\Delta=AC-B^2\)，基本就可以迅速完成。</pre></section><p>https://chatgpt.com/c/6aec2b09-ce64-83ec-8941-683856b4c8d5</p></main></body></html>
