@@ -1,5 +1,5 @@
 (() => {
-  const runtime=chrome.runtime,version=runtime.getManifest?.().version||'1.2.4';
+  const runtime=chrome.runtime,version=runtime.getManifest?.().version||'1.3.0';
   if(globalThis.__archiveOverlay?.version===version&&globalThis.__archiveOverlay.alive?.())return;
   globalThis.__archiveOverlay?.dispose?.();
   const restored=globalThis.__archiveRestore;delete globalThis.__archiveRestore;
@@ -122,7 +122,7 @@
   }
   function pdfDialog(){
     const node=dialog('导出为 PDF',`<form class="pdf-form" method="post">
-      <fieldset class="pdf-target"><legend>生成位置</legend><label><input type="radio" name="pdfTarget" value="client" checked>拾页客户端</label><label><input type="radio" name="pdfTarget" value="server">PDF 服务</label></fieldset><p class="client-pdf-hint hint">由拾页收藏所选内容并生成原貌 PDF，请在客户端选择保存位置。当前使用 A4 纵向，暂不支持目录页及 PDF 书签。</p><label>文件名<input name="fileName" required autofocus></label><label>内容标题<input name="contentTitle" required></label><div data-server-options><label>生成方式<select name="engine"><option value="chromium">网页原貌（推荐）</option><option value="pandoc">Pandoc 排版</option></select></label>
+      <fieldset class="pdf-target"><legend>生成位置</legend><label><input type="radio" name="pdfTarget" value="client" checked>拾页客户端</label><label><input type="radio" name="pdfTarget" value="server">PDF 服务</label></fieldset><p class="client-pdf-hint hint">由拾页收藏所选内容并生成原貌 PDF，请在客户端选择保存位置。支持下方全部原貌设置；“目录”生成 PDF 侧栏书签，“目录页”单独生成可点击目录。</p><label>文件名<input name="fileName" required autofocus></label><label>内容标题<input name="contentTitle" required></label><div data-pdf-options><label data-server-engine>生成方式<select name="engine"><option value="chromium">网页原貌（推荐）</option><option value="pandoc">Pandoc 排版</option></select></label>
       <div class="pair"><label>页面格式<select name="pageSize"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></label><label>方向<select name="pageOrient"><option value="portrait">纵向</option><option value="landscape">横向</option></select></label></div>
       <div class="pair"><label>页面边距<select name="margin"><option value="normal">普通</option><option value="narrow">窄</option><option value="wide">宽</option></select></label><label>字体<select name="fontFamily"><option value="default">默认</option><option value="serif">衬线</option><option value="mono">等宽</option></select></label></div>
       <div class="pair"><label>字体大小（%）<input name="fontSize" type="number" min="50" max="200"></label><label>语言<select name="lang"><option value="zh-CN">简体中文</option><option value="en">English</option><option value="ja">日本語</option></select></label></div>
@@ -131,7 +131,7 @@
     const form=node.querySelector('form');
     for(const [key,value] of Object.entries(state.prefs)){const input=form.elements.namedItem(key);if(input){if(input.type==='checkbox')input.checked=value===true;else input.value=value;}}
     form.elements.fileName.value=C.filename(C.selectionTitle(state.conversation,selected()),'pdf');form.elements.contentTitle.value=state.conversation.title;form.elements.lang.value=state.prefs.lang||'zh-CN';
-    const updateTarget=()=>{const client=form.elements.pdfTarget.value==='client';node.querySelector('[data-server-options]').hidden=client;node.querySelector('.server-pdf-hint').hidden=client;node.querySelector('.client-pdf-hint').hidden=!client;};
+    const updateTarget=()=>{const client=form.elements.pdfTarget.value==='client';node.querySelector('[data-server-engine]').hidden=client;node.querySelector('.server-pdf-hint').hidden=client;node.querySelector('.client-pdf-hint').hidden=!client;};
     form.addEventListener('change',event=>{if(event.target.name==='pdfTarget')updateTarget();});updateTarget();
     ArchiveCustomSelect.enhance(node);
     node.querySelector('[data-cancel]').onclick=()=>node.close();
@@ -147,7 +147,7 @@
         await persist(prefs);
         if(opt.pdfTarget==='client'){
           progress('正在连接拾页客户端…');
-          const exportRequest={id:crypto.randomUUID(),filename:C.filename(C.selectionTitle(conversation,messages),'pdf',opt.fileName)};
+          const exportRequest={id:crypto.randomUUID(),filename:C.filename(C.selectionTitle(conversation,messages),'pdf',opt.fileName),options:Object.fromEntries(['pageSize','pageOrient','margin','fontFamily','fontSize','lang','darkMode','outline','toc','pageBreakPerPrompt','removePageNumber','includeConvoLink','includeModelName','includePerMsgTime','contentTitle'].map(key=>[key,opt[key]]))};
           const job=await C.saveClient(conversation,messages,{...opt,exportRequest},{progress});
           if(!job.jobId)throw Error('客户端未创建 PDF 任务，请升级拾页后重试');
           progress('请在拾页客户端选择 PDF 保存位置…');

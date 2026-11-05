@@ -22,9 +22,9 @@ try{
  await page.evaluate(()=>{
   window.calls=[];window.stored={preferences:{pdfTarget:'server'}};window.changeListeners=[];window.failPdf=false;window.clipboardText='';window.pendingPdf=false;
   Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.clipboardText=text;}}});
-  window.chrome={runtime:{id:'fixture',getURL:file=>'https://extension.fixture/'+file,getManifest:()=>({version:'1.2.4'}),onMessage:{addListener(){}},sendMessage:async message=>{
+  window.chrome={runtime:{id:'fixture',getURL:file=>'https://extension.fixture/'+file,getManifest:()=>({version:'1.3.0'}),onMessage:{addListener(){}},sendMessage:async message=>{
    calls.push(message);
-   if(message.action==='clientHello')return {data:{nativePdfJobs:true,name:'拾页'}};
+   if(message.action==='clientHello')return {data:{nativePdfJobs:true,pdfOptionsVersion:1,name:'拾页'}};
    if(message.action==='clientRequest'){
     const request=message.request;
     if(request.action==='begin'){window.nativeChunks=[];return {data:{upload:'fixture-upload'}};}
@@ -101,13 +101,15 @@ try{
  await page.evaluate(async()=>ArchiveCore.savePreferences({pdfTarget:'client'}));
  await panel.locator('.actions [data-action=export]').click();dialog=page.getByRole('dialog');
  assert(await dialog.getByRole('radio',{name:'拾页客户端',exact:true}).isChecked());
- assert(await dialog.locator('[data-server-options]').isHidden());
+ assert(await dialog.locator('[data-pdf-options]').isVisible());assert(await dialog.locator('[data-server-engine]').isHidden());
  await dialog.getByLabel('文件名',{exact:true}).fill('客户端文档.pdf');
  const serverCreates=await page.evaluate(()=>calls.filter(c=>c.path==='/api/pdf/v1').length);
  await dialog.getByRole('button',{name:'导出 PDF',exact:true}).click();
  await page.getByRole('heading',{name:'导出成功',exact:true}).waitFor();
  assert.equal(await page.evaluate(()=>calls.filter(c=>c.path==='/api/pdf/v1').length),serverCreates,'Client PDF must not fetch the old HTTP backend');
  assert.equal(await page.evaluate(()=>clientArchive.exportRequest.filename),'客户端文档.pdf');
+ assert.equal(typeof await page.evaluate(()=>clientArchive.exportRequest.options.outline),'boolean');
+ assert.equal(await page.evaluate(()=>clientArchive.exportRequest.options.pageSize),'a4');
  assert.equal(await page.evaluate(()=>clientArchive.messages.length),1);
  assert(await page.getByText('PDF 已保存至客户端选择的位置。',{exact:true}).isVisible());
  await page.getByRole('button',{name:'完成',exact:true}).click();

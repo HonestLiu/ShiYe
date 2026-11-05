@@ -100,7 +100,7 @@
         }
       };
       list.onkeydown = event => {
-        const index = options.indexOf(scope.activeElement);
+        const index = options.indexOf(select.getRootNode().activeElement || select.ownerDocument.activeElement);
         if (event.key === 'Escape') { event.preventDefault(); close(); return; }
         if (event.key === 'Tab') { close(false); return; }
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(index); return; }

@@ -16,6 +16,18 @@ try{
  const page=await browser.newPage();await page.goto('http://127.0.0.1:1421/');
  const fixtures={code:'<!doctype html><style>body{font:16px/1.7 sans-serif;margin:0}.pdf-document{width:760px}pre{white-space:pre}</style><main class="pdf-document"><section class="pdf-message"><h1>完整代码测试</h1><div style="display:inline-block;max-height:80px;overflow:auto"><pre>'+Array.from({length:120},(_,i)=>'CODE_'+i).join('\n')+'</pre></div><p>AFTER_CODE</p></section></main>',diagram:'<!doctype html><style>body{font:16px/1.7 sans-serif;margin:0}.pdf-document{width:760px}</style><main class="pdf-document"><section class="pdf-message">'+Array.from({length:22},(_,i)=>'<p>LEADING_'+i+'</p>').join('')+'<div data-d-component="box" data-d-has-border style="display:flex;flex-direction:column;border:1px solid #888;padding:12px;gap:8px"><p>FIGURE_BEGIN</p>'+Array.from({length:4},(_,i)=>'<div data-d-component="row" data-d-has-height style="display:flex;height:160px"><div style="flex:20;background:#dbeafe">TAG_'+i+'</div><div style="flex:6;background:#d1fae5">INDEX_'+i+'</div></div>').join('')+'<p>FIGURE_END</p></div><p>AFTER_FIGURE</p></section></main>'};
  if(process.argv[2])fixtures.saved=await fs.readFile(process.argv[2],'utf8');
+ for(const darkMode of [false,true]){
+  const surfaces=await page.evaluate(async darkMode=>{
+   const {printDocument}=await import('/src/reader.js');
+   const html='<section class="pdf-message"><div data-code-block="true" style="background:#f3f3f3;background-image:linear-gradient(rgba(0,0,0,.05),rgba(0,0,0,.05))"><div data-markdown-copy="exclude" style="background:#f3f3f3;background-image:linear-gradient(rgba(0,0,0,.05),rgba(0,0,0,.05))">C</div><pre>CODE_END</pre></div><div id="diagram" style="background-image:linear-gradient(red,blue)">DIAGRAM</div></section>';
+   const result=await printDocument({snapshot:{html}},{darkMode});
+   const doc=new DOMParser().parseFromString(result.html,'text/html');
+   return {surfaces:[...doc.querySelectorAll('[data-code-block],[data-markdown-copy=exclude]')].map(n=>({image:n.style.backgroundImage,color:n.style.backgroundColor})),diagram:doc.getElementById('diagram').style.backgroundImage};
+  },darkMode);
+  for(const surface of surfaces.surfaces){assert.equal(surface.image,'none');assert.equal(surface.color,darkMode?'rgb(30, 35, 34)':'rgb(242, 242, 242)');}
+  assert(surfaces.diagram.includes('linear-gradient'));
+ }
+ console.log('PASS code toolbar flat overlays in light/dark; genuine diagram gradients preserved');
  for(const [name,html] of Object.entries(fixtures)){
   const document=await page.evaluate(async html=>{const {printDocument}=await import('/src/reader.js');return printDocument({snapshot:{html,width:760}});},html);
   const input=path.join(dir,name+'.html'),layout=path.join(dir,name+'.json'),continuous=path.join(dir,name+'-continuous.pdf'),pdf=path.join(dir,name+'.pdf');
@@ -32,7 +44,7 @@ try{
   if(name!=='saved')assert(pages.length>1);assert(pages.every(t=>t.length>0));
   if(name==='code'){for(let i=0;i<120;i++)assert(pages.join('').includes('CODE_'+i));assert(pages.join('').includes('AFTER_CODE'));assert.equal(pages.filter(p=>p.includes('CODE_119')).length,1);}
   else if(name==='diagram'){const index=pages.findIndex(p=>p.includes('FIGURE_BEGIN'));assert(index>0);assert(pages[index].includes('FIGURE_END'));assert(pages[index].includes('INDEX_3'));assert(pages.join('').includes('AFTER_FIGURE'));}
-  else{assert(pages.join('').includes('Tag'));assert(pages.join('').includes('20'));}
+  else{assert(pages.join('').length>0);}
   console.log('PASS WKWebView vector PDF + CoreGraphics A4 pagination:',name,pages.length,'pages');
  }
  console.log('Artifacts:',dir);

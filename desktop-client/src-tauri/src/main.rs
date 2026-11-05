@@ -30,7 +30,7 @@ fn command(window: WebviewWindow, request: Value) -> Result<Value> {
         "update" => library::update(&root, id, &request["patch"]),
         "register" => bridge::register(&root, request["extensionId"].as_str().unwrap_or("")),
         "info" => Ok(
-            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.1.1"}),
+            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.2.1"}),
         ),
         "import_file" => {
             let path = request["path"].as_str().ok_or("缺少文件路径")?;

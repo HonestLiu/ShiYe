@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "对话存档 · Conversation Archive",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "选择并保存 ChatGPT 对话，连接自己的 PDF 服务。",
   "minimum_chrome_version": "120",
   "permissions": [

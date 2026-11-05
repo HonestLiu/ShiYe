@@ -64,6 +64,19 @@ pub fn init(root: &Path) -> Result<()> {
     let db = db(root)?;
     db.execute_batch("PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS items(id TEXT PRIMARY KEY, digest TEXT NOT NULL UNIQUE,title TEXT NOT NULL,url TEXT NOT NULL,saved_at INTEGER NOT NULL,summary TEXT NOT NULL,text TEXT NOT NULL,starred INTEGER NOT NULL DEFAULT 0,read INTEGER NOT NULL DEFAULT 0,trashed INTEGER NOT NULL DEFAULT 0,folder TEXT NOT NULL DEFAULT '',tags TEXT NOT NULL DEFAULT '',notes TEXT NOT NULL DEFAULT '',progress REAL NOT NULL DEFAULT 0);").map_err(err)?;
     db.execute_batch("CREATE TABLE IF NOT EXISTS exports(id TEXT PRIMARY KEY,item_id TEXT NOT NULL,filename TEXT NOT NULL,status TEXT NOT NULL,error TEXT NOT NULL DEFAULT '',path TEXT NOT NULL DEFAULT ''); UPDATE exports SET status='failed',error='客户端在导出完成前退出，请重新提交' WHERE status='processing';").map_err(err)?;
+    let has_options = {
+        let mut statement = db.prepare("PRAGMA table_info(exports)").map_err(err)?;
+        let columns = statement
+            .query_map([], |r| r.get::<_, String>(1))
+            .map_err(err)?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(err)?;
+        columns.iter().any(|name| name == "options")
+    };
+    if !has_options {
+        db.execute_batch("ALTER TABLE exports ADD COLUMN options TEXT NOT NULL DEFAULT '{}'")
+            .map_err(err)?;
+    }
     Ok(())
 }
 fn db(root: &Path) -> Result<Connection> {
@@ -230,14 +243,14 @@ pub fn queue_export(root: &Path, item_id: &str, request: &Value) -> Result<Value
     }
     let c = db(root)?;
     c.execute(
-        "INSERT OR IGNORE INTO exports(id,item_id,filename,status) VALUES(?1,?2,?3,'queued')",
-        params![id, item_id, filename],
+        "INSERT OR IGNORE INTO exports(id,item_id,filename,status,options) VALUES(?1,?2,?3,'queued',?4)",
+        params![id, item_id, filename,serde_json::to_string(request.get("options").unwrap_or(&json!({}))).map_err(err)?],
     )
     .map_err(err)?;
     export_status(root, id)
 }
 pub fn export_status(root: &Path, id: &str) -> Result<Value> {
-    db(root)?.query_row("SELECT id,item_id,filename,status,error,path FROM exports WHERE id=?1",[id],|r|Ok(json!({"jobId":r.get::<_,String>(0)?,"itemId":r.get::<_,String>(1)?,"filename":r.get::<_,String>(2)?,"status":r.get::<_,String>(3)?,"error":r.get::<_,String>(4)?,"path":r.get::<_,String>(5)?}))).map_err(err)
+    db(root)?.query_row("SELECT id,item_id,filename,status,error,path,options FROM exports WHERE id=?1",[id],|r|Ok(json!({"jobId":r.get::<_,String>(0)?,"itemId":r.get::<_,String>(1)?,"filename":r.get::<_,String>(2)?,"status":r.get::<_,String>(3)?,"error":r.get::<_,String>(4)?,"path":r.get::<_,String>(5)?,"options":serde_json::from_str::<Value>(&r.get::<_,String>(6)?).unwrap_or(json!({}))}))).map_err(err)
 }
 pub fn pending_exports(root: &Path) -> Result<Value> {
     let c = db(root)?;
@@ -286,7 +299,7 @@ pub fn dispatch(root: &Path, req: Value) -> Result<Value> {
     use base64::Engine;
     match req["action"].as_str().unwrap_or("") {
         "hello" => Ok(
-            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"appVersion":"0.1.1","platform":std::env::consts::OS}),
+            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"appVersion":"0.2.1","pdfOptionsVersion":1,"platform":std::env::consts::OS}),
         ),
         "export_status" => export_status(root, req["jobId"].as_str().ok_or("缺少任务ID")?),
         "begin" => {
@@ -436,11 +449,12 @@ mod tests {
         let item = import(&root, fixture()).unwrap();
         let item_id = item["id"].as_str().unwrap();
         let id = Uuid::new_v4().to_string();
-        let request = json!({"id":id,"filename":"网页_20261105.pdf"});
+        let request = json!({"id":id,"filename":"网页_20261105.pdf","options":{"pageSize":"a5","outline":false,"toc":true}});
         assert_eq!(
             queue_export(&root, item_id, &request).unwrap()["status"],
             "queued"
         );
+        assert_eq!(export_status(&root, &id).unwrap()["options"]["toc"], true);
         queue_export(&root, item_id, &request).unwrap();
         assert_eq!(pending_exports(&root).unwrap().as_array().unwrap().len(), 1);
         assert_eq!(claim_export(&root, &id).unwrap()["claimed"], true);

@@ -102,7 +102,8 @@ globalThis.ArchiveCore = (() => {
     if(!messages.length)throw Error('请至少选择一条消息');
     progress?.('正在检测并唤起拾页客户端…');
     const hello=await request({action:'clientHello'});
-    if(opt.exportRequest&&!hello.nativePdfJobs)throw Error('请将拾页客户端升级至0.1.1或以上，以支持网页直接导出PDF');
+    if(opt.exportRequest&&!hello.nativePdfJobs)throw Error('请将拾页客户端升级至0.2.0或以上，以支持网页直接导出PDF');
+    if(opt.exportRequest?.options&&hello.pdfOptionsVersion!==1)throw Error('请将拾页客户端升级至0.2.0或以上，以支持高级PDF设置');
     if(location.href!==conversation.url)throw Error('对话页面已切换，请重新选择消息');
     const title=opt.exportRequest?(opt.contentTitle||selectionTitle(conversation,messages)):selectionTitle(conversation,messages),previous=ArchiveSnapshotAdapter.exportProgress;
     ArchiveSnapshotAdapter.exportProgress=progress;

@@ -6,6 +6,19 @@ export function preparePagination({pageHeight,document:documentOverride}) {
   const stats={reflowed:0,splitBlocks:0,resizedMedia:0,keptFigures:0,scaledFigures:0};
   const nodes=[...new Set(roots.flatMap(root=>[root,...root.querySelectorAll('*')]))];
   const nodeSet=new Set(nodes);
+  // WebKit's PDF capture can paint the code action bar's translucent flat
+  // gradient as opaque black. Flatten only uniform code-surface overlays;
+  // preserve actual gradients in diagrams and syntax highlighting.
+  for(const node of nodes.filter(n=>n.matches('[data-code-block], [data-code-block] [data-markdown-copy="exclude"]'))){
+    const c=getComputedStyle(node),match=c.backgroundImage.match(/^linear-gradient\(\s*(rgba?\([^)]+\))\s*,\s*\1\s*\)$/);
+    if(!match)continue;
+    const overlay=match[1].match(/[\d.]+/g).map(Number),alpha=overlay[3]??1;
+    let base=c.backgroundColor.match(/[\d.]+/g)?.map(Number);
+    if(!base||base.length===4&&base[3]<1)continue;
+    const rgb=overlay.slice(0,3).map((channel,i)=>Math.round(channel*alpha+base[i]*(1-alpha)));
+    node.style.setProperty('background-image','none','important');
+    node.style.setProperty('background-color',`rgb(${rgb.join(',')})`,'important');
+  }
   // A code viewer is an interactive viewport on the site, but must be a flow
   // box in a PDF. Include inline-block viewers and their clipping ancestors.
   for(const pre of nodes.filter(node=>node.matches('pre'))){
