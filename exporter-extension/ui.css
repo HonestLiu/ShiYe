@@ -17,3 +17,4 @@
 
 .popup .custom-select-option,.settings-page .custom-select-option{margin:0}
 .popup .custom-select-trigger,.settings-page .custom-select-trigger{margin-top:0}
+.popup header small{display:block;font-size:10px;color:#7b887d;font-weight:400;margin-top:3px;letter-spacing:1px}.popup-kicker{font-size:10px;color:#7b887d;letter-spacing:1px;margin:0 0 8px}.popup #web-title{font-size:17px;line-height:1.7;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.popup #web-origin{font-size:11px;color:#7b887d;overflow-wrap:anywhere;margin:7px 0 18px}.popup .popup-hint{font-size:11px;color:#7b887d;line-height:1.8}.popup #web-page{padding-bottom:12px;border-bottom:1px solid #e4e9e2;margin-bottom:14px}#enabled-sites{font-size:12px;color:#667368}

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import vm from 'node:vm';
+const id='a'.repeat(32),jobId='11111111-1111-4111-8111-111111111111',bytes=Buffer.concat([Buffer.from('%PDF-1.7\n'),Buffer.alloc(950000,43)]);
+let listener,downloads=[],native=[],corrupt=false,delivery='browser';
+const context={URL,atob,chrome:{runtime:{id,onMessage:{addListener(fn){listener=fn;}},async sendNativeMessage(host,r){native.push(r);if(r.action==='export_status')return {data:{status:'done',delivery,filename:'native-name.pdf'}};const part=bytes.subarray(r.offset,r.offset+384*1024);return {data:{offset:r.offset,size:bytes.length,length:part.length,data:corrupt?'bad':part.toString('base64')}};}},downloads:{async download(r){downloads.push(r);return 7;}}}};
+vm.runInNewContext(await fs.readFile(new URL('background.js',import.meta.url),'utf8'),context);
+const send=m=>new Promise(resolve=>listener(m,{id,url:'https://chatgpt.com/c/test',tab:{id:1}},resolve));
+assert.equal((await send({action:'clientDownload',jobId})).data.downloadId,7);assert.equal(downloads[0].filename,'native-name.pdf');assert.deepEqual(Buffer.from(downloads[0].url.split(',')[1],'base64'),bytes);assert.equal(native.filter(r=>r.action==='export_chunk').length,3);
+corrupt=true;assert.match((await send({action:'clientDownload',jobId})).error,/分块/);assert.equal(downloads.length,1);
+corrupt=false;delivery='client';assert.match((await send({action:'clientDownload',jobId})).error,/尚未准备/);assert.equal(downloads.length,1);
+assert.match((await send({action:'clientRequest',request:{action:'export_chunk',jobId,offset:0}})).error,/无效的客户端操作/);
+console.log('PASS native PDF chunks → browser download, byte identity, source filename, malformed chunks and non-download jobs rejected');

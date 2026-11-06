@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
 import {webcrypto} from 'node:crypto';
-const id='a'.repeat(32),version='1.3.0';
+const id='a'.repeat(32),version='1.9.2';
 const manifest=JSON.parse(await fs.readFile(new URL('./manifest.json',import.meta.url),'utf8'));
 let listener,installed,startup,updated,tabs=[],appRunning=false,launches=0,storageBroken=false;
 const health=new Map(),injected=[],nativeActions=[];

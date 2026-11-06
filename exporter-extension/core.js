@@ -1,6 +1,6 @@
 // Shared by the page overlay and extension pages. No commercial runtime code.
 globalThis.ArchiveCore = (() => {
-  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,pdfTarget:'client',engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
+  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,pdfTarget:'client',saveToClient:true,engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
   const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function connectionError(error){
     if(/context invalidated/i.test(error?.message||'')){
@@ -104,6 +104,7 @@ globalThis.ArchiveCore = (() => {
     const hello=await request({action:'clientHello'});
     if(opt.exportRequest&&!hello.nativePdfJobs)throw Error('请将拾页客户端升级至0.2.0或以上，以支持网页直接导出PDF');
     if(opt.exportRequest?.options&&hello.pdfOptionsVersion!==1)throw Error('请将拾页客户端升级至0.2.0或以上，以支持高级PDF设置');
+    if(opt.exportRequest?.saveToLibrary===false&&!hello.pdfOnly)throw Error('仅导出PDF需要拾页0.3.1或以上版本，请升级客户端；本次未提交内容');
     if(location.href!==conversation.url)throw Error('对话页面已切换，请重新选择消息');
     const title=opt.exportRequest?(opt.contentTitle||selectionTitle(conversation,messages)):selectionTitle(conversation,messages),previous=ArchiveSnapshotAdapter.exportProgress;
     ArchiveSnapshotAdapter.exportProgress=progress;
@@ -112,22 +113,32 @@ globalThis.ArchiveCore = (() => {
     finally{ArchiveSnapshotAdapter.exportProgress=previous;}
     if(location.href!==conversation.url)throw Error('捕获过程中对话页面已切换，请重新选择消息');
     if(snapshot.fallbackCount)throw Error('部分消息未能读取完整网页。请让这些消息在网页中加载后重试，以保证客户端原貌完整。');
-    progress?.('正在保存到拾页…');
+    progress?.(opt.exportRequest?.saveToLibrary===false?'正在提交 PDF 导出任务…':'正在保存到拾页…');
     const archive={version:1,title,url:conversation.url,source:'chatgpt',capturedAt:new Date().toISOString(),snapshot,messages:messages.map(({html,...message})=>message)};
     if(opt.exportRequest)archive.exportRequest=opt.exportRequest;
+    return saveArchive(archive,{progress});
+  }
+  async function saveArchive(archive,{progress,cancelled=()=>false}={}){
     const bytes=new TextEncoder().encode(JSON.stringify(archive));
     if(bytes.length>256*1024*1024)throw Error('收藏内容超过256MiB');
     const sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
     const native=value=>request({action:'clientRequest',request:value});
+    if(cancelled())throw Error('已取消保存');
     const {upload}=await native({action:'begin',size:bytes.length,sha256});
+    try{
     // Chunk before crossing either extension messaging or native messaging.
     for(let offset=0;offset<bytes.length;offset+=384*1024){
+      if(cancelled())throw Error('已取消保存');
       const chunk=bytes.subarray(offset,offset+384*1024);let binary='';
       for(let i=0;i<chunk.length;i+=32768)binary+=String.fromCharCode(...chunk.subarray(i,i+32768));
       await native({action:'chunk',upload,offset,data:btoa(binary)});
-      progress?.('正在保存到拾页… '+Math.round(Math.min(bytes.length,offset+chunk.length)/bytes.length*100)+'%');
+      await progress?.('正在保存到拾页… '+Math.round(Math.min(bytes.length,offset+chunk.length)/bytes.length*100)+'%');
     }
-    return native({action:'commit',upload});
+    if(cancelled())throw Error('已取消保存');
+    await progress?.('正在完成保存…',{committing:true});
+    if(cancelled())throw Error('已取消保存');
+    return await native({action:'commit',upload});
+    }catch(e){try{await native({action:'abort',upload});}catch{}throw e;}
   }
-  return {defaults,request,preferences,savePreferences,escapeHTML,filename,selectionTitle,markdown,serialize,payload,exportText,createPdf,saveClient};
+  return {defaults,request,saveArchive,preferences,savePreferences,escapeHTML,filename,selectionTitle,markdown,serialize,payload,exportText,createPdf,saveClient};
 })();

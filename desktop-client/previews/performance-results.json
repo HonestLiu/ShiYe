@@ -1,0 +1,60 @@
+{
+  "fixture": "900 paragraphs, about 3600 DOM elements, unchanged non-collapsed selection, CSS animation",
+  "comparison": {
+    "before": {
+      "engine": "chromium",
+      "activeAnimations": 1,
+      "backgroundVisibilitySimulated": true,
+      "backgroundTimerCallbacks": 11,
+      "nodes": 3656,
+      "timings": {
+        "original": 117,
+        "article": 120,
+        "back": 91
+      },
+      "idleMs": 3000,
+      "idleTaskMs": 105,
+      "idleLayoutMs": 0,
+      "idleTimerCallbacks": 25,
+      "repeatedSelectionCaptures": 12,
+      "selectionEvents": 1
+    },
+    "after": {
+      "engine": "chromium",
+      "activeAnimations": 0,
+      "backgroundVisibilitySimulated": true,
+      "backgroundTimerCallbacks": 0,
+      "nodes": 3657,
+      "timings": {
+        "original": 123,
+        "article": 107,
+        "back": 76
+      },
+      "idleMs": 3000,
+      "idleTaskMs": 4,
+      "idleLayoutMs": 0,
+      "idleTimerCallbacks": 0,
+      "repeatedSelectionCaptures": 0,
+      "selectionEvents": 1
+    }
+  },
+  "webkitAfter": {
+    "engine": "webkit",
+    "activeAnimations": 0,
+    "backgroundVisibilitySimulated": true,
+    "backgroundTimerCallbacks": 0,
+    "nodes": 3657,
+    "timings": {
+      "original": 181,
+      "article": 180,
+      "back": 138
+    },
+    "idleMs": 3000,
+    "idleTaskMs": null,
+    "idleLayoutMs": null,
+    "idleTimerCallbacks": 12,
+    "repeatedSelectionCaptures": 0,
+    "selectionEvents": 0
+  },
+  "limits": "Browser fixture with mocked native commands, background visibility simulated. TaskDuration is renderer main-thread work, not hardware power or temperature. Native persistence/startup and PDF checked separately."
+}

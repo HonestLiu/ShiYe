@@ -16,7 +16,7 @@
     border-collapse border-spacing table-layout object-fit object-position
     fill fill-opacity fill-rule clip-rule stop-color stop-opacity stroke stroke-width stroke-opacity stroke-dasharray stroke-linecap stroke-linejoin
     text-anchor dominant-baseline paint-order`).split(/\s+/).filter(Boolean);
-  const OMIT = 'script, style, link, meta, base, iframe, object, embed, form, button, input, textarea, select, noscript, .chatgpt-exporter-checkbox, .turn-action-controls, #local-export-progress';
+  const OMIT = '.sr-only, [hidden], [data-message-role-label], [data-role-label], script, style, link, meta, base, iframe, object, embed, form, button, input, textarea, select, noscript, .chatgpt-exporter-checkbox, .turn-action-controls, #local-export-progress';
   const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 
   function idsIn(root) {
@@ -124,19 +124,47 @@
       if (!rules.has(style)) rules.set(style, `pdf-style-${rules.size}`);
       return { name: rules.get(style), computed };
     }
-    async function freezeRoot(source) {
+    async function freezeRoot(source,role) {
       const copy = source.cloneNode(true);
       copy.setAttribute('data-local-pdf-expand','true');
       const originals = [source, ...source.querySelectorAll('*')];
       const copies = [copy, ...copy.querySelectorAll('*')];
+      const gallery=document.createElement('div');gallery.className='pdf-user-images';
+      if(role==='user'){
+        const seen=new Set();
+        for(const image of source.querySelectorAll('img')){
+          if(image.closest('[data-testid*=avatar],.avatar'))continue;
+          // Thumbnail controls are presentation only. Remove the image-only
+          // wrapper from the clone, and put full-aspect images in their own flow.
+          let thumbnail=image;
+          while(thumbnail.parentElement&&thumbnail.parentElement!==source&&!thumbnail.parentElement.textContent.trim())thumbnail=thumbnail.parentElement;
+          copies[originals.indexOf(thumbnail)]?.remove();
+          let address=image.getAttribute('data-original-src')||image.getAttribute('data-full-size-src')||image.currentSrc||image.getAttribute('src');
+          const candidates=(image.getAttribute('srcset')||'').split(',').map(part=>part.trim().match(/^(\S+)\s+(\d+(?:\.\d+)?)(?:w|x)$/)).filter(Boolean).sort((a,b)=>Number(b[2])-Number(a[2]));
+          if(!image.hasAttribute('data-original-src')&&!image.hasAttribute('data-full-size-src')&&candidates.length)address=candidates[0][1];
+          if(!address||seen.has(address))continue;seen.add(address);
+          const figure=document.createElement('figure');figure.className='pdf-user-image';
+          const caption=document.createElement('figcaption');caption.textContent='图片 '+seen.size;figure.append(caption);
+          try{
+            const img=document.createElement('img');img.alt=image.alt||'上传的图片';img.src=await cacheResource(address);
+            await bounded(()=>img.decode(),'用户图片解码');
+            if(!img.naturalWidth||!img.naturalHeight)throw Error('图片尺寸不可用');
+            img.width=img.naturalWidth;img.height=img.naturalHeight;
+            img.style.cssText=`display:block;width:${Math.min(img.naturalWidth,1000)}px;max-width:100%;height:auto;aspect-ratio:${img.naturalWidth} / ${img.naturalHeight};object-fit:contain;margin:0 auto;border-radius:6px;`;
+            img.setAttribute('data-local-pdf-user-image','true');figure.prepend(img);
+          }catch{const text=document.createElement('p');text.textContent='图片读取失败，请在网页中加载后重试。';figure.prepend(text);warnings.push('部分用户图片读取失败，未能保留完整图片。');}
+          gallery.append(figure);
+        }
+      }
       // Mark the complete code viewport chain without changing the live page.
       for(const pre of copy.querySelectorAll('pre')){
         pre.setAttribute('data-local-pdf-code','true');
         for(let box=pre;box&&copy.contains(box);box=box.parentElement)box.setAttribute('data-local-pdf-code-container','true');
       }
-      for(const image of source.querySelectorAll('img')){const address=image.currentSrc || image.getAttribute('src');if(address)cacheResource(address).catch(()=>{});}
+      if(role!=='user')for(const image of source.querySelectorAll('img')){const address=image.currentSrc || image.getAttribute('src');if(address)cacheResource(address).catch(()=>{});}
       for (let index = 0; index < originals.length; index++) {
         const node = originals[index], clone = copies[index];
+        if(clone!==copy&&!copy.contains(clone))continue;
         if (node.matches(OMIT) || node.closest('button, .turn-action-controls, form')) { clone.remove(); continue; }
         const { name } = styleClass(node);
         clone.classList.add(name);
@@ -183,7 +211,7 @@
       // Native KaTeX visual output stays; its duplicate accessibility MathML
       // would otherwise interfere with PDF text extraction.
       copy.querySelectorAll('.katex-mathml').forEach(node => node.remove());
-      return copy.outerHTML;
+      return (role==='user'&&gallery.children.length&&!copy.textContent.trim()?'':copy.outerHTML)+(gallery.children.length?gallery.outerHTML:'');
     }
     const widths=[],sections=new Map();
     const progress=text=>ArchiveSnapshotAdapter.exportProgress?.(text);
@@ -209,7 +237,7 @@
               ancestor.style.setProperty('content-visibility','visible','important');
             }
           }
-          try{bodies.push(await freezeRoot(root));}finally{for(const [node,value,priority] of restores){if(value)node.style.setProperty('content-visibility',value,priority);else node.style.removeProperty('content-visibility');}}
+          try{bodies.push(await freezeRoot(root,available[index].message.role));}finally{for(const [node,value,priority] of restores){if(value)node.style.setProperty('content-visibility',value,priority);else node.style.removeProperty('content-visibility');}}
         }
         sections.set(index,`<section class="pdf-message" data-role="${escape(available[index].message.role)}">${bodies.join('\n')}</section>`);
         progress(`正在捕获对话：${sections.size}/${payload.messages.length} 条`);
@@ -355,6 +383,9 @@
       .pdf-message *{animation:none!important;transition:none!important;content-visibility:visible!important;contain:none!important}
       .pdf-message [data-local-pdf-expand]{height:auto!important;max-height:none!important;overflow:visible!important}
       .pdf-message>[data-local-pdf-expand]{margin-left:0!important;margin-right:0!important;max-width:100%!important}
+      .pdf-user-images{display:flex;flex-direction:column;gap:18px;margin:16px 0;max-width:100%}
+      .pdf-user-image{display:block;margin:0;padding:12px;border:1px solid #dce0dd;border-radius:12px;max-width:100%;break-inside:avoid}
+      .pdf-user-image figcaption{font:12px/1.6 system-ui;color:#737b78;text-align:center;margin-top:10px}
       .pdf-message pre,.pdf-message table,.pdf-message svg,.pdf-message img{break-inside:avoid}
       .pdf-message [data-local-pdf-code-container]{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;min-width:0!important;max-width:100%!important}
       .pdf-message [data-local-pdf-code]{display:block!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}

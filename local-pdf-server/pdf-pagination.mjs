@@ -4,6 +4,15 @@ export function preparePagination({pageHeight,document:documentOverride}) {
   const getComputedStyle=node=>node.ownerDocument.defaultView.getComputedStyle(node);
   const roots=[...document.querySelectorAll('.pdf-message, main>section[data-role]')];
   const stats={reflowed:0,splitBlocks:0,resizedMedia:0,keptFigures:0,scaledFigures:0};
+  // Frozen screen-reader labels can retain absolute coordinates from the full
+  // transcript. Expanding their overflow creates pages far beyond the message.
+  // Keep aria-hidden visual math/graphics: only remove explicitly nonvisual UI.
+  for(const root of roots)for(const node of root.querySelectorAll('.sr-only,[hidden],[data-message-role-label],[data-role-label]')){
+    const selector='defs,symbol,clipPath,mask,pattern,filter,linearGradient,radialGradient';
+    const definitions=[...(node.matches(selector)?[node]:[]),...node.querySelectorAll(selector)];
+    if(definitions.length){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('aria-hidden','true');svg.style.cssText='position:absolute!important;left:0!important;top:0!important;width:0!important;height:0!important;overflow:hidden!important';for(const def of definitions.filter(n=>!definitions.some(p=>p!==n&&p.contains(n))))svg.append(def.cloneNode(true));root.prepend(svg);}
+    node.remove();
+  }
   const nodes=[...new Set(roots.flatMap(root=>[root,...root.querySelectorAll('*')]))];
   const nodeSet=new Set(nodes);
   // WebKit's PDF capture can paint the code action bar's translucent flat
@@ -54,20 +63,14 @@ export function preparePagination({pageHeight,document:documentOverride}) {
     return children.some(child=>meaningful(child)&&['absolute','fixed'].includes(getComputedStyle(child).position))&&
       !children.some(child=>meaningful(child)&&!['absolute','fixed'].includes(getComputedStyle(child).position));
   }));
-  for(const node of nodes){
-    if(protectedNode(node)||node.matches(replaced)||anchored.has(node))continue;
-    const computed=getComputedStyle(node);
-    if(computed.display==='none'||! /^(block|flow-root|flex|grid|list-item|table|table-row|table-row-group|table-header-group|table-footer-group|table-cell)$/.test(computed.display))continue;
-    // Computed pixel heights from a continuous/virtualized page are not print heights.
-    for(const [key,value] of Object.entries({height:'auto','min-height':'0','max-height':'none','overflow':'visible','overflow-x':'visible','overflow-y':'visible','content-visibility':'visible',contain:'none'}))node.style.setProperty(key,value,'important');
-    // Preserve flex sizing and centering on both axes. Clearing a child's grow
-    // collapses horizontal diagrams whose basis is 0%, even with a frozen width.
-    if(computed.display==='grid'&&node.getBoundingClientRect().height>pageHeight){
-      node.style.setProperty('grid-template-rows','none','important');
-      node.style.setProperty('grid-auto-rows','auto','important');
-    }
+  // Read display values together before invalidating layout on each box.
+  const layoutNodes=nodes.filter(node=>!protectedNode(node)&&!node.matches(replaced)&&!anchored.has(node)).map(node=>({node,display:getComputedStyle(node).display})).filter(({display})=>/^(block|flow-root|flex|grid|list-item|table|table-row|table-row-group|table-header-group|table-footer-group|table-cell)$/.test(display));
+  for(const {node} of layoutNodes){
+    for(const [key,value] of Object.entries({height:'auto','min-height':'0','max-height':'none',overflow:'visible','overflow-x':'visible','overflow-y':'visible','content-visibility':'visible',contain:'none'}))node.style.setProperty(key,value,'important');
     stats.reflowed++;
   }
+  const tallGrids=layoutNodes.filter(({node,display})=>display==='grid'&&node.getBoundingClientRect().height>pageHeight);
+  for(const {node} of tallGrids){node.style.setProperty('grid-template-rows','none','important');node.style.setProperty('grid-auto-rows','auto','important');}
   for(const root of roots){
     const source=root.querySelector(':scope > [data-local-pdf-expand]');
     if(source&&!protectedNode(source)&&!anchored.has(source)){

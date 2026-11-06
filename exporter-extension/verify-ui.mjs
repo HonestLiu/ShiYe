@@ -22,15 +22,15 @@ try{
  await page.evaluate(()=>{
   window.calls=[];window.stored={preferences:{pdfTarget:'server'}};window.changeListeners=[];window.failPdf=false;window.clipboardText='';window.pendingPdf=false;
   Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.clipboardText=text;}}});
-  window.chrome={runtime:{id:'fixture',getURL:file=>'https://extension.fixture/'+file,getManifest:()=>({version:'1.3.0'}),onMessage:{addListener(){}},sendMessage:async message=>{
+  window.chrome={runtime:{id:'fixture',getURL:file=>'https://extension.fixture/'+file,getManifest:()=>({version:'1.9.2'}),onMessage:{addListener(){}},sendMessage:async message=>{
    calls.push(message);
-   if(message.action==='clientHello')return {data:{nativePdfJobs:true,pdfOptionsVersion:1,name:'拾页'}};
+   if(message.action==='clientHello')return {data:{nativePdfJobs:true,pdfOptionsVersion:1,pdfOnly:true,name:'拾页'}};
    if(message.action==='clientRequest'){
     const request=message.request;
     if(request.action==='begin'){window.nativeChunks=[];return {data:{upload:'fixture-upload'}};}
     if(request.action==='chunk'){nativeChunks.push(request.data);return {data:{ok:true}};}
     if(request.action==='commit'){const binary=nativeChunks.map(s=>atob(s)).join('');window.clientArchive=JSON.parse(new TextDecoder().decode(Uint8Array.from(binary,c=>c.charCodeAt(0))));return {data:{id:'saved-item',jobId:'client-job'}};}
-    if(request.action==='export_status')return {data:{status:window.clientStatus||'done',error:'模拟客户端生成失败'}};
+    if(request.action==='export_status')return {data:{status:window.clientStatus||'done',delivery:window.clientDelivery||'client',error:'模拟客户端生成失败'}};
    }
    if(message.path==='/api/pdf/v1'){if(failPdf)return {error:'模拟服务离线'};return {data:{jobId:'a'.repeat(32),server:'http://127.0.0.1:8765'}};}
    if(message.path?.match(/\/api\/pdf\/v1\/[a-f0-9]{32}$/))return {data:{status:pendingPdf?'processing':'done'}};
@@ -101,7 +101,7 @@ try{
  await page.evaluate(async()=>ArchiveCore.savePreferences({pdfTarget:'client'}));
  await panel.locator('.actions [data-action=export]').click();dialog=page.getByRole('dialog');
  assert(await dialog.getByRole('radio',{name:'拾页客户端',exact:true}).isChecked());
- assert(await dialog.locator('[data-pdf-options]').isVisible());assert(await dialog.locator('[data-server-engine]').isHidden());
+ assert(await dialog.getByLabel('同时保存到拾页',{exact:true}).isChecked());assert(await dialog.locator('[data-pdf-options]').isVisible());assert(await dialog.locator('[data-server-engine]').isHidden());
  await dialog.getByLabel('文件名',{exact:true}).fill('客户端文档.pdf');
  const serverCreates=await page.evaluate(()=>calls.filter(c=>c.path==='/api/pdf/v1').length);
  await dialog.getByRole('button',{name:'导出 PDF',exact:true}).click();
@@ -112,6 +112,13 @@ try{
  assert.equal(await page.evaluate(()=>clientArchive.exportRequest.options.pageSize),'a4');
  assert.equal(await page.evaluate(()=>clientArchive.messages.length),1);
  assert(await page.getByText('PDF 已保存至客户端选择的位置。',{exact:true}).isVisible());
+ await page.getByRole('button',{name:'完成',exact:true}).click();
+ await page.evaluate(()=>{window.clientDelivery='browser';});
+ await panel.locator('.actions [data-action=export]').click();dialog=page.getByRole('dialog');
+ await dialog.getByLabel('同时保存到拾页',{exact:true}).uncheck();
+ await dialog.getByRole('button',{name:'导出 PDF',exact:true}).click();await page.getByText('PDF 已交给浏览器下载。',{exact:true}).waitFor();
+ assert(await page.evaluate(()=>calls.some(c=>c.action==='clientDownload'&&c.jobId==='client-job')));
+ assert.equal(await page.evaluate(()=>clientArchive.exportRequest.browserDownload),true);assert.equal(await page.evaluate(()=>clientArchive.exportRequest.saveToLibrary),false);assert.equal(await page.evaluate(()=>stored.preferences.saveToClient),false);
  await page.getByRole('button',{name:'完成',exact:true}).click();
  for(const [clientStatus,expected] of [['cancelled','已在客户端取消 PDF 保存'],['failed','模拟客户端生成失败']]){
   await page.evaluate(value=>{window.clientStatus=value;},clientStatus);

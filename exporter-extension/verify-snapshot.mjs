@@ -20,7 +20,7 @@ try{
   const url=route.request().url();
   if(url.endsWith('/api/auth/session'))return route.fulfill({json:{accessToken:'fixture-only'}});
   if(url.endsWith('/backend-api/conversation/fixture'))return route.fulfill({json:{title:'原貌与补全回归',current_node:'node-c',mapping:{'node-a':{id:'node-a',parent:null,message:{id:'msg-a',author:{role:'user'},content:{parts:['请说明原貌导出']}}},'node-b':{id:'node-b',parent:'node-a',message:{id:'msg-b',author:{role:'assistant'},content:{parts:['## API 中的回答\n\n网页应优先使用已渲染内容。']}}},'node-c':{id:'node-c',parent:'node-b',message:{id:'msg-c',author:{role:'assistant'},content:{parts:[fallback]}}}}}});
-  if(url==='https://chatgpt.com/c/fixture')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>body{margin:0;font:16px/1.7 system-ui;background:#fff;color:#222}.group\\/turn-messages,.message{width:700px;margin:20px auto}h2{font-size:26px;color:#146b59}p{margin:12px 0}svg{width:160px;height:70px}</style></head><body><section data-turn-id="node-a" data-turn="user"><div class="group/turn-messages"><p>请说明原貌导出</p></div></section><article class="message" data-chatgpt-search-unit-key="answer:assistant" data-chatgpt-search-message-ids="[&quot;msg-b&quot;]"><h2>网页中的已渲染回答</h2><p><strong>保留网页样式</strong> DOM_RENDERED</p><svg viewBox="0 0 160 70"><rect x="2" y="2" width="150" height="60" rx="8" fill="#18805d"/><text x="20" y="40" fill="#fff">SVG 图示</text></svg></article></body></html>'});
+  if(url==='https://chatgpt.com/c/fixture')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>body{margin:0;font:16px/1.7 system-ui;background:#fff;color:#222}.group\\/turn-messages,.message{width:700px;margin:20px auto}h2{font-size:26px;color:#146b59}p{margin:12px 0}svg{width:160px;height:70px}</style></head><body><section data-turn-id="node-a" data-turn="user"><div class="group/turn-messages"><h4 class="sr-only" style="position:absolute;top:25000px;width:1px;height:1px;overflow:hidden">HIDDEN_ROLE_LABEL</h4><p>请说明原貌导出</p></div></section><article class="message" data-chatgpt-search-unit-key="answer:assistant" data-chatgpt-search-message-ids="[&quot;msg-b&quot;]"><h2>网页中的已渲染回答</h2><p><strong>保留网页样式</strong> DOM_RENDERED</p><svg viewBox="0 0 160 70"><rect x="2" y="2" width="150" height="60" rx="8" fill="#18805d"/><text x="20" y="40" fill="#fff">SVG 图示</text></svg></article></body></html>'});
   return route.abort();
  });
  await page.goto('https://chatgpt.com/c/fixture');
@@ -34,7 +34,7 @@ try{
  assert(payload.webDocument.html.includes('FRESH_DOM'),'Must recapture the page at export time');
  assert(payload.webDocument.html.includes('data-local-pdf-markdown="true"'),'Missing server Markdown renderer marker');
  assert(payload.webDocument.html.includes('font-size:26px'),'DOM heading typography must remain frozen');
- assert(payload.webDocument.html.includes('<svg'));
+ assert(payload.webDocument.html.includes('<svg'));assert(!payload.webDocument.html.includes('HIDDEN_ROLE_LABEL'));
  // An older service must never silently print the fallback source.
  await page.evaluate(()=>{supportsFallback=false;calls=[];});
  const oldService=await page.evaluate(async conversation=>{try{await ArchiveCore.createPdf(conversation,conversation.messages,{...ArchiveCore.defaults,engine:'chromium'});return '';}catch(error){return error.message;}},conversation);

@@ -39,12 +39,7 @@ try{
  await page.getByRole('button',{name:'标为已读',exact:true}).click();await page.getByRole('button',{name:'标为未读',exact:true}).waitFor();
  await page.screenshot({path:path.join(root,'preview.png')});
  await page.getByRole('button',{name:'移到回收站'}).click();await page.getByRole('button',{name:'恢复收藏'}).waitFor();await page.getByRole('button',{name:'回收站',exact:true}).click();assert.equal(await page.locator('.item').count(),1);await page.getByRole('button',{name:'恢复收藏'}).click();
- for(const [name,cancel,fail,expected] of [['success',false,false,'done'],['cancel',true,false,'cancelled'],['failure',false,true,'failed']]){
-  await page.evaluate(({name,cancel,fail})=>{cancelSave=cancel;failPrint=fail;testJobs.push({jobId:name,itemId:'fixture-1',filename:'浏览器文件.pdf',status:'queued',options:{pageSize:'a5',pageOrient:'landscape',toc:true,outline:false}});},{name,cancel,fail});
-  await page.getByRole('button',{name:'连接与备份',exact:true}).click();await page.locator('#settings-dialog').getByRole('button',{name:'关闭',exact:true}).click();
-  await page.waitForFunction(({name,expected})=>testJobs.find(j=>j.jobId===name).status===expected,{name,expected});
- }
- assert.equal(await page.evaluate(()=>calls.find(c=>c.command==='print_pdf').args.layout.options.pageOrient),'landscape');
- assert.equal(await page.evaluate(()=>calls.filter(c=>c.command==='print_pdf').length),2,'Cancellation must not render a PDF');
+ await page.getByRole('button',{name:'设置',exact:false}).click();
+ await page.waitForFunction(()=>calls.some(c=>c.args?.request?.action==='open_settings'));
  assert.deepEqual(errors,[]);console.log('PASS reading UI: snapshot CSS/diagram and headings, blocked scripts/network, Chinese search, tags/folder/notes, read/star/trash/restore. Native transport is mocked.');
 }finally{await browser.close();}

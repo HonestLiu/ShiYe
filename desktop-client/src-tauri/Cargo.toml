@@ -1,11 +1,11 @@
 [package]
 name = "archive-reader"
-version = "0.2.1"
+version = "0.10.2"
 edition = "2021"
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -22,4 +22,6 @@ block2 = "0.6"
 [profile.release]
 opt-level = "s"
 lto = true
-strip = true
+# Rust#157750: do not strip build-time dylibs on macOS 27.
+# package-macos.mjs strips only the final executable with the platform tool.
+strip = false

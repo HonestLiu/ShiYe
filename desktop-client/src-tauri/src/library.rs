@@ -77,9 +77,38 @@ pub fn init(root: &Path) -> Result<()> {
         db.execute_batch("ALTER TABLE exports ADD COLUMN options TEXT NOT NULL DEFAULT '{}'")
             .map_err(err)?;
     }
+    let columns: Vec<String> = db
+        .prepare("PRAGMA table_info(exports)")
+        .map_err(err)?
+        .query_map([], |r| r.get(1))
+        .map_err(err)?
+        .collect::<std::result::Result<_, _>>()
+        .map_err(err)?;
+    if !columns.iter().any(|n| n == "delivery") {
+        db.execute_batch("ALTER TABLE exports ADD COLUMN delivery TEXT NOT NULL DEFAULT 'client'")
+            .map_err(err)?;
+    }
+    db.execute_batch("CREATE TABLE IF NOT EXISTS reading_pages(url TEXT PRIMARY KEY,data TEXT NOT NULL,text TEXT NOT NULL)").map_err(err)?;
+    let item_columns: Vec<String> = db.prepare("PRAGMA table_info(items)").map_err(err)?.query_map([],|r|r.get(1)).map_err(err)?.collect::<std::result::Result<_,_>>().map_err(err)?;
+    if !item_columns.iter().any(|n| n=="reading_url") {db.execute_batch("ALTER TABLE items ADD COLUMN reading_url TEXT NOT NULL DEFAULT ''").map_err(err)?;}
+    let addresses:Vec<(String,String)>=db.prepare("SELECT id,url FROM items WHERE reading_url=''").map_err(err)?.query_map([],|r|Ok((r.get(0)?,r.get(1)?))).map_err(err)?.collect::<std::result::Result<_,_>>().map_err(err)?;
+    for(id,address)in addresses {if let Ok(key)=crate::reading::url(&address){db.execute("UPDATE items SET reading_url=?1 WHERE id=?2",params![key,id]).map_err(err)?;}}
+    crate::batch::init(&db)?;
+    let terminal: Vec<String> = db
+        .prepare(
+            "SELECT id FROM exports WHERE item_id='' AND status IN ('done','failed','cancelled')",
+        )
+        .map_err(err)?
+        .query_map([], |r| r.get(0))
+        .map_err(err)?
+        .collect::<std::result::Result<_, _>>()
+        .map_err(err)?;
+    for id in terminal {
+        let _ = fs::remove_file(export_source_path(root, &id)?);
+    }
     Ok(())
 }
-fn db(root: &Path) -> Result<Connection> {
+pub(crate) fn db(root: &Path) -> Result<Connection> {
     let c = Connection::open(root.join("library.sqlite3")).map_err(err)?;
     c.busy_timeout(std::time::Duration::from_secs(5))
         .map_err(err)?;
@@ -103,6 +132,8 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
     if html.is_empty() || html.len() > 256 * 1024 * 1024 {
         return Err("网页快照大小无效".into());
     }
+    let article_html=archive["articleSnapshot"]["html"].as_str().unwrap_or("");
+    if !archive["articleSnapshot"].is_null() && (article_html.is_empty() || html.len()+article_html.len()>256*1024*1024){return Err("正文版本或归档大小无效".into());}
     let title = archive["title"]
         .as_str()
         .unwrap_or("未命名收藏")
@@ -113,6 +144,7 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
     if !url.is_empty() && !url.starts_with("https://") && !url.starts_with("http://") {
         return Err("无效的来源链接".into());
     }
+    if archive["reading"].is_object(){crate::reading::preview(root,&url,&archive["reading"])?;}
     let text = archive["messages"]
         .as_array()
         .map(|messages| {
@@ -125,12 +157,13 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
         .unwrap_or_else(|| archive["text"].as_str().unwrap_or("").to_owned());
     let digest = format!(
         "{:x}",
-        Sha256::digest(serde_json::to_vec(&json!([url, html, archive["messages"]])).map_err(err)?)
+        Sha256::digest(serde_json::to_vec(&if article_html.is_empty(){json!([url,html,archive["messages"]])}else{json!([url,html,archive["messages"],article_html])}).map_err(err)?)
     );
     let c = db(root)?;
     if let Ok(id) = c.query_row("SELECT id FROM items WHERE digest=?1", [&digest], |r| {
         r.get::<_, String>(0)
     }) {
+        if archive["reading"].is_object(){crate::reading::merge(root,&url,&archive["reading"])?;}
         return Ok(json!({"id":id,"duplicate":true}));
     }
     let id = Uuid::new_v4().to_string();
@@ -160,9 +193,11 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
         let _ = fs::remove_dir_all(&dir);
         return Err(err(e));
     }
+    c.execute("UPDATE items SET reading_url=?1 WHERE id=?2",params![crate::reading::url(&url).unwrap_or_default(),id]).map_err(err)?;
     if archive["library"].is_object() {
-        update(root, &id, &archive["library"])?;
+        update_only(root, &id, &archive["library"])?;
     }
+    if archive["reading"].is_object(){let record=match crate::reading::merge(root,&url,&archive["reading"]){Ok(v)=>v,Err(e)=>{let _=c.execute("DELETE FROM items WHERE id=?1",[&id]);let _=fs::remove_dir_all(&dir);return Err(e);}};let mut patch=json!({});if record["meta"]["updatedAt"].as_u64().unwrap_or(0)>0 {for field in ["folder","tags","starred","read"]{patch[field]=record["meta"][field].clone();}}if record["note"]["updatedAt"].as_u64().unwrap_or(0)>0{patch["notes"]=record["note"]["text"].clone();}update_only(root,&id,&patch)?;}
     Ok(json!({"id":id,"duplicate":false}))
 }
 pub fn list(root: &Path) -> Result<Value> {
@@ -176,7 +211,7 @@ pub fn list(root: &Path) -> Result<Value> {
 pub fn search(root: &Path, query: &str) -> Result<Value> {
     // Literal substring search supports Chinese without pretending unicode61 tokenizes it.
     let c = db(root)?;
-    let mut stmt=c.prepare("SELECT id FROM items WHERE instr(lower(title||' '||text||' '||tags||' '||notes),lower(?1))>0").map_err(err)?;
+    let mut stmt=c.prepare("SELECT items.id FROM items LEFT JOIN reading_pages ON items.reading_url=reading_pages.url WHERE instr(lower(title||' '||items.text||' '||tags||' '||notes||' '||coalesce(reading_pages.text,'')),lower(?1))>0").map_err(err)?;
     let rows = stmt
         .query_map([query], |r| r.get::<_, String>(0))
         .map_err(err)?;
@@ -196,9 +231,21 @@ pub fn load(root: &Path, id: &str) -> Result<Value> {
     {
         archive["library"] = meta.clone();
     }
+    if crate::reading::url(archive["url"].as_str().unwrap_or("")).is_ok(){let mut record=crate::reading::get(root,archive["url"].as_str().unwrap())?;if record["note"]["updatedAt"]==0&&archive["library"]["notes"].as_str().is_some_and(|s|!s.is_empty()&&s.encode_utf16().count()<=100000){record["note"]=json!({"text":archive["library"]["notes"],"updatedAt":1,"mutationId":"legacy"});}archive["reading"]=record;}
     Ok(archive)
 }
 pub fn update(root: &Path, id: &str, patch: &Value) -> Result<Value> {
+    for(field,max)in [("title",300),("folder",100),("tags",500),("notes",100000)]{if let Some(v)=patch.get(field){if !v.as_str().is_some_and(|s|s.encode_utf16().count()<=max){return Err("整理字段无效或过长".into());}}}
+    let result=update_only(root,id,patch)?;
+    if ["title","folder","tags","starred","read","notes"].iter().any(|k|patch.get(k).is_some()) {
+        let address: String=db(root)?.query_row("SELECT url FROM items WHERE id=?1",[id],|r|r.get(0)).map_err(err)?;
+        if crate::reading::url(&address).is_ok(){let mut record=crate::reading::get(root,&address)?;let current=record["meta"]["updatedAt"].as_u64().unwrap_or(0).max(record["note"]["updatedAt"].as_u64().unwrap_or(0));let now=SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis() as u64;let stamp=now.max(current+1);let mutation=Uuid::new_v4().to_string();
+        if let Some(note)=patch.get("notes"){record["note"]=json!({"text":note,"updatedAt":stamp,"mutationId":mutation});}
+        if ["title","folder","tags","starred","read"].iter().any(|k|patch.get(k).is_some()){for field in ["title","folder","tags","starred","read"]{if let Some(v)=patch.get(field){record["meta"][field]=v.clone();}}record["meta"]["updatedAt"]=json!(stamp);record["meta"]["mutationId"]=json!(mutation);}
+        crate::reading::merge(root,&address,&record)?;}
+    }Ok(result)
+}
+fn update_only(root: &Path, id: &str, patch: &Value) -> Result<Value> {
     item_dir(root, id)?;
     let c = db(root)?;
     for field in [
@@ -243,19 +290,33 @@ pub fn queue_export(root: &Path, item_id: &str, request: &Value) -> Result<Value
     }
     let c = db(root)?;
     c.execute(
-        "INSERT OR IGNORE INTO exports(id,item_id,filename,status,options) VALUES(?1,?2,?3,'queued',?4)",
-        params![id, item_id, filename,serde_json::to_string(request.get("options").unwrap_or(&json!({}))).map_err(err)?],
+        "INSERT OR IGNORE INTO exports(id,item_id,filename,status,options,delivery) VALUES(?1,?2,?3,'queued',?4,?5)",
+        params![id, item_id, filename,serde_json::to_string(request.get("options").unwrap_or(&json!({}))).map_err(err)?,if request["browserDownload"]==true&&crate::service::settings(root)["browserDownload"]==true {"browser"}else{"client"}],
     )
     .map_err(err)?;
     export_status(root, id)
 }
-pub fn export_status(root: &Path, id: &str) -> Result<Value> {
-    db(root)?.query_row("SELECT id,item_id,filename,status,error,path,options FROM exports WHERE id=?1",[id],|r|Ok(json!({"jobId":r.get::<_,String>(0)?,"itemId":r.get::<_,String>(1)?,"filename":r.get::<_,String>(2)?,"status":r.get::<_,String>(3)?,"error":r.get::<_,String>(4)?,"path":r.get::<_,String>(5)?,"options":serde_json::from_str::<Value>(&r.get::<_,String>(6)?).unwrap_or(json!({}))}))).map_err(err)
+pub(crate) fn export_row(r: &rusqlite::Row) -> rusqlite::Result<Value> {
+    Ok(
+        json!({"jobId":r.get::<_,String>(0)?,"itemId":r.get::<_,String>(1)?,"filename":r.get::<_,String>(2)?,"status":r.get::<_,String>(3)?,"error":r.get::<_,String>(4)?,"path":r.get::<_,String>(5)?,"options":serde_json::from_str::<Value>(&r.get::<_,String>(6)?).unwrap_or(json!({})),"delivery":r.get::<_,String>(7)?,"format":r.get::<_,String>(8)?,"batchId":r.get::<_,String>(9)?}),
+    )
 }
+pub(crate) const EXPORT_FIELDS: &str =
+    "id,item_id,filename,status,error,path,options,delivery,format,batch_id";
+pub fn export_status(root: &Path, id: &str) -> Result<Value> {
+    db(root)?
+        .query_row(
+            &format!("SELECT {EXPORT_FIELDS} FROM exports WHERE id=?1"),
+            [id],
+            export_row,
+        )
+        .map_err(err)
+}
+
 pub fn pending_exports(root: &Path) -> Result<Value> {
     let c = db(root)?;
     let mut s = c
-        .prepare("SELECT id FROM exports WHERE status='queued' ORDER BY rowid")
+        .prepare("SELECT id FROM exports WHERE status='queued' ORDER BY rowid LIMIT 1")
         .map_err(err)?;
     let ids = s
         .query_map([], |r| r.get::<_, String>(0))
@@ -282,9 +343,20 @@ pub fn finish_export(root: &Path, req: &Value) -> Result<Value> {
     if !["done", "failed", "cancelled"].contains(&status) {
         return Err("无效任务状态".into());
     }
+    let cancelled = crate::batch::is_cancelled(root, id)?;
+    let status = if cancelled { "cancelled" } else { status };
+    if cancelled
+        && export_status(root, id)?["status"] == "processing"
+        && crate::batch::owns_output(root, id)?
+    {
+        let job = export_status(root, id)?;
+        if let Some(path) = job["path"].as_str().filter(|s| !s.is_empty()) {
+            let _ = fs::remove_file(path);
+        }
+    }
     db(root)?
         .execute(
-            "UPDATE exports SET status=?1,error=?2,path=?3 WHERE id=?4 AND status='processing'",
+            "UPDATE exports SET status=?1,error=?2,output_owned=CASE WHEN ?1='cancelled' THEN 0 ELSE output_owned END,path=CASE WHEN ?3='' THEN path ELSE ?3 END WHERE id=?4 AND status='processing'",
             params![
                 status,
                 req["error"].as_str().unwrap_or(""),
@@ -293,15 +365,91 @@ pub fn finish_export(root: &Path, req: &Value) -> Result<Value> {
             ],
         )
         .map_err(err)?;
-    export_status(root, id)
+    let result = export_status(root, id)?;
+    if result["itemId"] == ""
+        && ["done", "failed", "cancelled"].contains(&result["status"].as_str().unwrap_or(""))
+    {
+        let _ = fs::remove_file(export_source_path(root, id)?);
+    }
+    Ok(result)
+}
+pub fn browser_export_path(root: &Path, id: &str) -> Result<PathBuf> {
+    Uuid::parse_str(id).map_err(err)?;
+    Ok(root.join("incoming").join(format!("browser-{id}.pdf")))
+}
+pub fn export_chunk(root: &Path, req: &Value) -> Result<Value> {
+    use base64::Engine;
+    use std::io::{Read, Seek, SeekFrom};
+    let id = req["jobId"].as_str().ok_or("缺少任务ID")?;
+    let job = export_status(root, id)?;
+    if job["delivery"] != "browser" || job["status"] != "done" {
+        return Err("此任务没有可下载的PDF".into());
+    }
+    let mut file = fs::File::open(browser_export_path(root, id)?).map_err(err)?;
+    let size = file.metadata().map_err(err)?.len();
+    if size == 0 || size > 256 * 1024 * 1024 {
+        return Err("PDF文件大小超出范围".into());
+    }
+    let offset = req["offset"].as_u64().ok_or("缺少下载偏移")?;
+    if offset > size {
+        return Err("无效下载偏移".into());
+    }
+    file.seek(SeekFrom::Start(offset)).map_err(err)?;
+    let mut bytes = vec![0; (384 * 1024).min((size - offset) as usize)];
+    file.read_exact(&mut bytes).map_err(err)?;
+    Ok(
+        json!({"offset":offset,"size":size,"length":bytes.len(),"data":base64::engine::general_purpose::STANDARD.encode(bytes)}),
+    )
+}
+fn export_source_path(root: &Path, id: &str) -> Result<PathBuf> {
+    Uuid::parse_str(id).map_err(err)?;
+    Ok(root
+        .join("incoming")
+        .join(format!("export-source-{id}.json")))
+}
+pub fn load_export(root: &Path, id: &str) -> Result<Value> {
+    let job = export_status(root, id)?;
+    if job["itemId"] == "" {
+        serde_json::from_slice(&fs::read(export_source_path(root, id)?).map_err(err)?).map_err(err)
+    } else {
+        load(root, job["itemId"].as_str().ok_or("任务缺少收藏ID")?)
+    }
+}
+fn queue_pdf_only(root: &Path, archive: &Value, request: &Value) -> Result<Value> {
+    let id = request["id"].as_str().ok_or("缺少任务ID")?;
+    let path = export_source_path(root, id)?;
+    if let Ok(job) = export_status(root, id) {
+        if job["itemId"] != "" {
+            return Err("任务保存方式冲突".into());
+        }
+        return Ok(job);
+    }
+    if archive["version"] != 1
+        || archive["snapshot"]["html"]
+            .as_str()
+            .is_none_or(|h| h.is_empty() || h.len() > 256 * 1024 * 1024)
+    {
+        return Err("无效的PDF网页快照".into());
+    }
+    fs::write(&path, serde_json::to_vec(archive).map_err(err)?).map_err(err)?;
+    match queue_export(root, "", request) {
+        Ok(v) => Ok(v),
+        Err(e) => {
+            let _ = fs::remove_file(path);
+            Err(e)
+        }
+    }
 }
 pub fn dispatch(root: &Path, req: Value) -> Result<Value> {
     use base64::Engine;
     match req["action"].as_str().unwrap_or("") {
         "hello" => Ok(
-            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"appVersion":"0.2.1","pdfOptionsVersion":1,"platform":std::env::consts::OS}),
+            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"browserPdfDownload":true,"pdfOnly":true,"appVersion":"0.10.2","offlineWebPagesVersion":1,"readingAnnotationsVersion":1,"webSnapshotLayoutVersion":2,"articleCaptureVersion":1,"dualWebCaptureVersion":1,"connectionMonitorVersion":1,"pdfOptionsVersion":1,"platform":std::env::consts::OS}),
         ),
+        "reading_get"=>crate::reading::get(root,req["url"].as_str().ok_or("缺少笔记来源")?),
+        "reading_merge"=>crate::reading::merge(root,req["url"].as_str().ok_or("缺少笔记来源")?,&req["record"]),
         "export_status" => export_status(root, req["jobId"].as_str().ok_or("缺少任务ID")?),
+        "export_chunk" => export_chunk(root, &req),
         "begin" => {
             let size = req["size"].as_u64().ok_or("缺少大小")?;
             if size == 0 || size > 256 * 1024 * 1024 {
@@ -320,6 +468,12 @@ pub fn dispatch(root: &Path, req: Value) -> Result<Value> {
             )
             .map_err(err)?;
             Ok(json!({"upload":upload}))
+        }
+        "abort" => {
+            let id=req["upload"].as_str().ok_or("缺少传输ID")?;Uuid::parse_str(id).map_err(err)?;let path=root.join("incoming").join(id);
+            if path.with_extension("result").exists(){return Ok(json!({"committed":true}));}
+            for ext in ["part","json"]{match fs::remove_file(path.with_extension(ext)){Ok(())=>{},Err(e)if e.kind()==std::io::ErrorKind::NotFound=>{},Err(e)=>return Err(err(e))}}
+            Ok(json!({"aborted":true}))
         }
         "chunk" | "commit" => {
             let id = req["upload"].as_str().ok_or("缺少传输ID")?;
@@ -367,11 +521,22 @@ pub fn dispatch(root: &Path, req: Value) -> Result<Value> {
                 }
                 let archive: Value = serde_json::from_slice(&bytes).map_err(err)?;
                 let export_request = archive["exportRequest"].clone();
-                let mut value = import(root, archive)?;
-                if export_request.is_object() {
-                    let job = queue_export(root, value["id"].as_str().unwrap(), &export_request)?;
-                    value["jobId"] = job["jobId"].clone();
-                }
+                let value = if export_request.is_object()
+                    && export_request["saveToLibrary"] == false
+                {
+                    let job = queue_pdf_only(root, &archive, &export_request)?;
+                    json!({"jobId":job["jobId"],"delivery":job["delivery"],"savedToLibrary":false})
+                } else {
+                    let mut value = import(root, archive)?;
+                    if export_request.is_object() {
+                        let job =
+                            queue_export(root, value["id"].as_str().unwrap(), &export_request)?;
+                        value["jobId"] = job["jobId"].clone();
+                        value["delivery"] = job["delivery"].clone();
+                        value["savedToLibrary"] = json!(true);
+                    }
+                    value
+                };
                 fs::write(
                     path.with_extension("result"),
                     serde_json::to_vec(&value).map_err(err)?,
@@ -391,6 +556,29 @@ mod tests {
     use super::*;
     fn fixture() -> Value {
         json!({"version":1,"title":"计组地址划分","url":"https://chatgpt.com/c/test","source":"chatgpt","snapshot":{"html":"<!doctype html><h1>计组地址划分</h1><pre>code end</pre>","width":760},"messages":[{"id":"answer-1","role":"assistant","markdown":"# 计组地址划分\n中文正文与代码","text":"中文正文与代码"}]})
+    }
+    #[test]
+    fn dual_versions_roundtrip_and_dedup() {
+        let root=std::env::temp_dir().join(format!("reader-dual-{}",Uuid::new_v4()));init(&root).unwrap();
+        let mut archive=fixture();archive["source"]=json!("webpage");archive["articleSnapshot"]=json!({"html":"<h1>ARTICLE_VERSION</h1>","mode":"article"});
+        let result=import(&root,archive.clone()).unwrap();let id=result["id"].as_str().unwrap();init(&root).unwrap();
+        let stored=load(&root,id).unwrap();assert_eq!(stored["snapshot"]["html"],archive["snapshot"]["html"]);assert_eq!(stored["articleSnapshot"],archive["articleSnapshot"]);
+        let json=export_contents(&stored,"json",&Value::Null,&Value::Null).unwrap();assert_eq!(serde_json::from_str::<Value>(&json).unwrap()["articleSnapshot"],archive["articleSnapshot"]);
+        assert_eq!(import(&root,archive.clone()).unwrap()["duplicate"],true);
+        archive["articleSnapshot"]["html"]=json!("<h1>UPDATED_ARTICLE</h1>");assert_ne!(import(&root,archive.clone()).unwrap()["id"],result["id"]);
+        archive["articleSnapshot"]["html"]=json!("");assert!(import(&root,archive).is_err());
+        let mut failed=fixture();failed["articleError"]=json!("not an article");assert!(import(&root,failed).is_ok());fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn cancelled_upload_removes_only_uncommitted_parts() {
+        use base64::Engine;
+        let root=std::env::temp_dir().join(format!("reader-abort-{}",Uuid::new_v4()));init(&root).unwrap();
+        let bytes=serde_json::to_vec(&fixture()).unwrap();
+        let begin=||dispatch(&root,json!({"action":"begin","size":bytes.len(),"sha256":format!("{:x}",Sha256::digest(&bytes))})).unwrap()["upload"].as_str().unwrap().to_owned();
+        let id=begin();dispatch(&root,json!({"action":"chunk","upload":id,"offset":0,"data":base64::engine::general_purpose::STANDARD.encode(&bytes[..10])})).unwrap();
+        dispatch(&root,json!({"action":"abort","upload":id})).unwrap();
+        assert!(!root.join("incoming").join(format!("{id}.part")).exists());assert!(!root.join("incoming").join(format!("{id}.json")).exists());assert!(list(&root).unwrap().as_array().unwrap().is_empty());assert!(dispatch(&root,json!({"action":"commit","upload":id})).is_err());
+        let id=begin();dispatch(&root,json!({"action":"chunk","upload":id,"offset":0,"data":base64::engine::general_purpose::STANDARD.encode(&bytes)})).unwrap();dispatch(&root,json!({"action":"commit","upload":id})).unwrap();assert_eq!(dispatch(&root,json!({"action":"abort","upload":id})).unwrap()["committed"],true);assert_eq!(list(&root).unwrap().as_array().unwrap().len(),1);assert!(dispatch(&root,json!({"action":"abort","upload":"../../invalid"})).is_err());fs::remove_dir_all(root).unwrap();
     }
     #[test]
     fn durable_library_and_transfer() {
@@ -506,4 +694,144 @@ mod tests {
         .is_err());
         fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn browser_download_settings_chunks_and_legacy_delivery() {
+        use base64::Engine;
+        let root = std::env::temp_dir().join(format!("reader-download-{}", Uuid::new_v4()));
+        init(&root).unwrap();
+        assert_eq!(crate::service::settings(&root)["lightweight"], true);
+        let item = import(&root, fixture()).unwrap();
+        let item = item["id"].as_str().unwrap();
+        let id = Uuid::new_v4().to_string();
+        let job = queue_export(
+            &root,
+            item,
+            &json!({"id":id,"filename":"test.pdf","browserDownload":true}),
+        )
+        .unwrap();
+        assert_eq!(job["delivery"], "browser");
+        assert!(export_chunk(&root, &json!({"jobId":id,"offset":0})).is_err());
+        let mut bytes = b"%PDF-1.7\n".to_vec();
+        bytes.extend((0..950000).map(|i| (i % 251) as u8));
+        fs::write(browser_export_path(&root, &id).unwrap(), &bytes).unwrap();
+        claim_export(&root, &id).unwrap();
+        finish_export(&root, &json!({"jobId":id,"status":"done"})).unwrap();
+        let mut copied = Vec::new();
+        while copied.len() < bytes.len() {
+            let p = export_chunk(&root, &json!({"jobId":id,"offset":copied.len()})).unwrap();
+            assert!(serde_json::to_vec(&p).unwrap().len() < 1024 * 1024);
+            copied.extend(
+                base64::engine::general_purpose::STANDARD
+                    .decode(p["data"].as_str().unwrap())
+                    .unwrap(),
+            );
+        }
+        assert_eq!(copied, bytes);
+        assert!(export_chunk(&root, &json!({"jobId":id,"offset":bytes.len()+1})).is_err());
+        assert!(browser_export_path(&root, "../secret").is_err());
+        crate::service::save_settings(&root, &json!({"lightweight":false,"browserDownload":false}))
+            .unwrap();
+        assert_eq!(crate::service::settings(&root)["browserDownload"], false);
+        let next = queue_export(
+            &root,
+            item,
+            &json!({"id":Uuid::new_v4().to_string(),"filename":"next.pdf","browserDownload":true}),
+        )
+        .unwrap();
+        assert_eq!(next["delivery"], "client");
+        assert_eq!(export_status(&root, &id).unwrap()["delivery"], "browser");
+        crate::service::save_settings(&root, &json!({"lightweight":true,"browserDownload":true}))
+            .unwrap();
+        let legacy = queue_export(
+            &root,
+            item,
+            &json!({"id":Uuid::new_v4().to_string(),"filename":"old.pdf"}),
+        )
+        .unwrap();
+        assert_eq!(legacy["delivery"], "client");
+        fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn pdf_only_never_imports_and_cleans_temporary_source() {
+        use base64::Engine;
+        let root = std::env::temp_dir().join(format!("reader-pdf-only-{}", Uuid::new_v4()));
+        init(&root).unwrap();
+        for status in ["done", "cancelled", "failed", "interrupted"] {
+            let id = Uuid::new_v4().to_string();
+            let mut archive = fixture();
+            archive["exportRequest"] =
+                json!({"id":id,"filename":"only.pdf","saveToLibrary":false,"browserDownload":true});
+            let bytes = serde_json::to_vec(&archive).unwrap();
+            let upload=dispatch(&root,json!({"action":"begin","size":bytes.len(),"sha256":format!("{:x}",Sha256::digest(&bytes))})).unwrap()["upload"].as_str().unwrap().to_owned();
+            dispatch(&root,json!({"action":"chunk","upload":upload,"offset":0,"data":base64::engine::general_purpose::STANDARD.encode(bytes)})).unwrap();
+            let result = dispatch(&root, json!({"action":"commit","upload":upload})).unwrap();
+            assert_eq!(result["savedToLibrary"], false);
+            assert!(result.get("id").is_none());
+            assert_eq!(export_status(&root, &id).unwrap()["itemId"], "");
+            assert_eq!(
+                load_export(&root, &id).unwrap()["snapshot"],
+                archive["snapshot"]
+            );
+            assert!(list(&root).unwrap().as_array().unwrap().is_empty());
+            assert_eq!(fs::read_dir(root.join("items")).unwrap().count(), 0);
+            claim_export(&root, &id).unwrap();
+            if status == "interrupted" {
+                init(&root).unwrap();
+            } else {
+                finish_export(&root, &json!({"jobId":id,"status":status})).unwrap();
+            }
+            assert!(!export_source_path(&root, &id).unwrap().exists());
+            assert_eq!(
+                dispatch(&root, json!({"action":"commit","upload":upload})).unwrap(),
+                result
+            );
+        }
+        fs::remove_dir_all(root).unwrap();
+    }
+}
+
+pub fn export_contents(
+    archive: &Value,
+    format: &str,
+    html: &Value,
+    plain_text: &Value,
+) -> Result<String> {
+    let data = match format {
+        "json" => serde_json::to_string_pretty(&archive).map_err(err)?,
+        "html" => html.as_str().ok_or("缺少清理后的网页")?.to_owned(),
+        "md" | "txt" => {
+            let mut text = format!(
+                "# {}\n\n{}\n\n",
+                archive["library"]["title"]
+                    .as_str()
+                    .or(archive["title"].as_str())
+                    .unwrap_or("收藏"),
+                archive["url"].as_str().unwrap_or("")
+            );
+            if let Some(messages) = archive["messages"].as_array() {
+                for m in messages {
+                    let content = if format == "md" {
+                        m["markdown"].as_str()
+                    } else {
+                        m["text"].as_str().or(m["markdown"].as_str())
+                    };
+                    text.push_str(&format!(
+                        "## {}\n\n{}\n\n",
+                        if m["role"] == "user" {
+                            "用户"
+                        } else {
+                            "助手"
+                        },
+                        content.unwrap_or("")
+                    ));
+                }
+            } else {
+                text.push_str(plain_text.as_str().unwrap_or(""));
+            }
+            if archive["reading"].is_object() && (archive["reading"]["note"]["text"].as_str().is_some_and(|s|!s.is_empty()) || archive["reading"]["annotations"].as_array().is_some_and(|a|!a.is_empty())){text.push_str("\n\n---\n\n");text.push_str(&crate::reading::markdown(&archive["reading"])?);}
+            text
+        }
+        _ => return Err("不支持的格式".into()),
+    };
+    Ok(data)
 }

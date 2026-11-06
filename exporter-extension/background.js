@@ -14,18 +14,45 @@ function trusted(sender) {
 }
 function safeFilename(value){return String(value||'chat').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/^\.+/,'_').slice(0,160);}
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
+  if(message.target==='webpage-processor')return;
+  if(['readingGet','readingMutate','readingSync','readingList','readingDownload','readingClip','readingLink','readingBackup','readingImport','readingImage','readingConfigure','readingOpen'].includes(message.action)){
+    if(sender.id!==chrome.runtime.id)return;
+    globalThis.ShiyeReadingBackground.handleReading(message,sender,{native:async request=>{const r=await chrome.runtime.sendNativeMessage('io.local.archive_reader',request);if(r?.error)throw Error(r.error);if(!r?.data)throw Error('客户端未响应');void ensureClientPresence(r.data,true).catch(()=>{});return r.data;}}).then(data=>respond({data}),e=>respond({error:e.message}));return true;
+  }
+  if(['webPermissionInfo','webPageRetry','webPageAuthorize','openWebPage','webPageSave','webPageStatus','webPageContinue','webPageCancel','webPageSettings','processorRead','processorProgress'].includes(message.action)){
+    if(sender.id!==chrome.runtime.id)return;
+    (async()=>{return globalThis.ShiyeWebPageBackground.handleWebPage(message,sender,{native:async request=>{const r=await chrome.runtime.sendNativeMessage('io.local.archive_reader',request);if(r?.error)throw Error(r.error);if(!r?.data)throw Error('客户端未响应');void ensureClientPresence(r.data,true).catch(()=>{});return r.data;}});})().then(data=>respond({data}),e=>respond({error:e.message}));return true;
+  }
   if (!trusted(sender)) return;
   (async () => {
     if(message.action==='ensurePage')return ensurePage(message.tabId??sender.tab?.id);
     if(message.action==='clientHello'||message.action==='clientRequest'){
       const request=message.action==='clientHello'?{action:'hello'}:message.request;
-      if(!request||!['hello','begin','chunk','commit','export_status'].includes(request.action))throw Error('无效的客户端操作');
+      if(!request||!['hello','begin','chunk','commit','abort','export_status'].includes(request.action))throw Error('无效的客户端操作');
       let result;
       try{result=await chrome.runtime.sendNativeMessage('io.local.archive_reader',request);}
-      catch(error){throw Error('无法连接拾页，请安装客户端并在“连接与备份”中完成扩展 ID 配对。'+error.message);}
+      catch(error){throw Error('无法连接拾页，请安装客户端并在“设置 → 浏览器连接”中完成扩展 ID 配对。'+error.message);}
       if(result?.error)throw Error(result.error);
       if(!result?.data)throw Error('拾页未返回有效响应');
+      void ensureClientPresence(result.data,true).catch(()=>{});
       return result.data;
+    }
+    if(message.action==='clientDownload'){
+      if(!/^[a-f0-9-]{36}$/.test(message.jobId||''))throw Error('无效的客户端任务ID');
+      const native=async request=>{const r=await chrome.runtime.sendNativeMessage('io.local.archive_reader',request);if(r?.error)throw Error(r.error);if(!r?.data)throw Error('客户端未返回下载数据');return r.data;};
+      const job=await native({action:'export_status',jobId:message.jobId});
+      if(job.status!=='done'||job.delivery!=='browser')throw Error('PDF 尚未准备好供浏览器下载');
+      const chunks=[];let offset=0,total;
+      do{
+        const part=await native({action:'export_chunk',jobId:message.jobId,offset});
+        if(!Number.isSafeInteger(part.size)||part.size<=0||part.size>256*1024*1024||part.offset!==offset||!Number.isInteger(part.length)||part.length<=0||part.length>384*1024||typeof part.data!=='string'||part.data.length>524288)throw Error('客户端返回无效的PDF分块');
+        if(total!==undefined&&total!==part.size)throw Error('下载期间PDF大小发生变化');total=part.size;
+        const bytes=atob(part.data);if(bytes.length!==part.length||offset+bytes.length>total||offset+bytes.length<total&&bytes.length%3!==0)throw Error('PDF分块不完整');
+        if(offset===0&&!bytes.startsWith('%PDF-'))throw Error('客户端返回的不是PDF');
+        chunks.push(part.data);offset+=bytes.length;
+      }while(offset<total);
+      const downloadId=await chrome.downloads.download({url:'data:application/pdf;base64,'+chunks.join(''),filename:safeFilename(job.filename),saveAs:message.saveAs===true});
+      return {ok:true,downloadId};
     }
     if(message.action==='snapshotResource'){
       const url=new URL(message.url);
@@ -101,3 +128,31 @@ chrome.runtime.onStartup?.addListener(()=>void refreshOpenPages().catch(()=>{}))
 chrome.tabs?.onUpdated?.addListener((tabId,change,tab)=>{if(change.status==='complete'&&isChatTab(tab))void ensurePage(tabId).catch(()=>{});});
 // Also covers re-enabling an extension whose old page UI was left behind.
 void refreshOpenPages().catch(()=>{});
+
+// Start only after an explicit client operation. Presence-only hosts never wake the app.
+let clientPresencePort=null,clientPresenceTask=null,clientPresenceCapable=false,clientPresenceRetries=0;
+async function ensureClientPresence(info={},explicit=false){
+ if(info.connectionMonitorVersion===1)clientPresenceCapable=true;
+ if(!clientPresenceCapable||typeof chrome.runtime.connectNative!=='function'||clientPresencePort)return;
+ if(clientPresenceTask)return clientPresenceTask;
+ if(explicit)clientPresenceRetries=0;
+ clientPresenceTask=(async()=>{
+  const ua=globalThis.navigator?.userAgent||'';
+  let browser=/Edg\//.test(ua)?'Edge':/OPR\//.test(ua)?'Opera':/Chromium\//.test(ua)?'Chromium':'Chrome / Chromium';
+  try{if(await globalThis.navigator?.brave?.isBrave?.())browser='Brave';}catch{}
+  const port=chrome.runtime.connectNative('io.local.archive_reader');clientPresencePort=port;let timer,deadline,closed=false;
+  const stop=()=>{clearInterval(timer);clearTimeout(deadline);};
+  const finish=()=>{if(closed)return;closed=true;stop();if(clientPresencePort===port)clientPresencePort=null;if(clientPresenceRetries++<2)setTimeout(()=>void ensureClientPresence().catch(()=>{}),2000);};
+  const close=()=>{finish();try{port.disconnect();}catch{}};
+  const send=value=>{if(closed)return;try{port.postMessage(value);}catch{close();}};
+  port.onMessage.addListener(reply=>{
+   if(reply?.error){close();return;}
+   if(reply?.data?.protocol===1){clearTimeout(deadline);if(!timer)timer=setInterval(()=>send({action:'connection_heartbeat'}),3000);clientPresenceRetries=0;}
+   if(typeof reply?.data?.challenge==='string')send({action:'connection_pong',nonce:reply.data.challenge});
+  });
+  port.onDisconnect.addListener(()=>{void chrome.runtime.lastError;finish();});
+  deadline=setTimeout(close,5000);
+  send({action:'connection_open',version:chrome.runtime.getManifest().version,browser});
+ })();
+ try{await clientPresenceTask;}finally{clientPresenceTask=null;}
+}

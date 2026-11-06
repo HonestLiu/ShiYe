@@ -1,7 +1,7 @@
 {
   "name": "archive-reader",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.10.2",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -12,7 +12,10 @@
     "check": "node scripts/check.mjs",
     "package:mac": "node scripts/package-macos.mjs",
     "check:native-pdf": "node scripts/check-native-pdf.mjs",
-    "check:transport": "node scripts/check-extension-transport.mjs"
+    "check:transport": "node scripts/check-extension-transport.mjs",
+    "check:reading": "node scripts/check-reading.mjs",
+    "check:settings": "node scripts/check-settings.mjs",
+    "check:connections": "node scripts/check-connections.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",

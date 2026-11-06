@@ -1,0 +1,194 @@
+:root {
+  font:
+    14px/1.7 -apple-system,
+    BlinkMacSystemFont,
+    'PingFang SC',
+    sans-serif;
+  color: #253b33;
+  background: #f5f4ed;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  border: 1px solid #d6dfd3;
+  background: #fffdf8;
+  color: #253b33;
+  border-radius: 7px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #2c7158;
+  outline-offset: 3px;
+}
+.library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 5vw;
+  border-bottom: 1px solid #dce3d5;
+  background: #fffdf8;
+}
+.library-header p {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #71816b;
+  margin: 0;
+}
+.library-header h1 {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin: 5px 0 0;
+}
+.library-header button {
+  margin: 3px;
+}
+main {
+  display: grid;
+  grid-template-columns: minmax(280px, 36%) 1fr;
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: calc(100vh - 155px);
+}
+.library-list {
+  padding: 28px;
+  border-right: 1px solid #dce3d5;
+}
+#search {
+  width: 100%;
+  border: 1px solid #d6dfd3;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+}
+.library-list nav {
+  display: flex;
+  gap: 7px;
+  margin: 17px 0;
+}
+.library-list nav button {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+.library-list nav [aria-pressed='true'] {
+  background: #245d49;
+  color: white;
+}
+#count {
+  font-size: 12px;
+  color: #7d8877;
+}
+#pages {
+  display: grid;
+  gap: 8px;
+}
+#pages button {
+  text-align: left;
+  display: block;
+  padding: 15px;
+  border-color: transparent;
+}
+#pages button.active {
+  border-color: #729d7e;
+  background: #edf3e9;
+}
+#pages strong {
+  font-size: 14px;
+  font-weight: 600;
+  display: block;
+  overflow-wrap: anywhere;
+}
+#pages small {
+  display: block;
+  color: #7a8875;
+  font-size: 11px;
+  margin-top: 7px;
+}
+#pages p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #617463;
+  max-height: 44px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.library-detail {
+  padding: 32px 40px;
+  background: #fffdf8;
+}
+.library-detail header {
+  border-bottom: 1px solid #e1e6d9;
+  padding-bottom: 20px;
+}
+.library-detail h2 {
+  margin: 0;
+  font-size: 23px;
+  overflow-wrap: anywhere;
+}
+#url {
+  font-size: 11px;
+  color: #7a8875;
+  overflow-wrap: anywhere;
+}
+#source {
+  font-size: 12px;
+}
+#empty {
+  padding: 12vh 0;
+  text-align: center;
+  color: #7c8975;
+}
+#empty h2 {
+  font-size: 20px;
+  color: #49634e;
+}
+#status {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90vw;
+  padding: 8px 16px;
+  border-radius: 7px;
+  background: #253b33;
+  color: white;
+  font-size: 12px;
+  box-shadow: 0 3px 15px #0002;
+}
+#status:empty {
+  display: none;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 750px) {
+  .library-header {
+    padding: 20px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  main {
+    display: block;
+  }
+  .library-list {
+    border: 0;
+    padding: 20px;
+  }
+  .library-detail {
+    padding: 24px;
+  }
+  #empty {
+    padding: 30px;
+  }
+}

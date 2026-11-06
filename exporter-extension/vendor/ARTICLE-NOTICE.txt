@@ -1,0 +1,4 @@
+Readability.js is copied, without source modification, from the user-provided SiYuan Chrome checkout (lib/Readability.js, extension 1.15.20).
+Its original Arc90 copyright and Apache License 2.0 header are retained. The full Apache license is in Readability-APACHE-2.0.txt.
+The Zhihu cleanup in ../article.js is adapted from SiYuan Chrome content.js (siyuanCleanZhihu), under MulanPSL-2.0. The SiYuan project license is in SiYuan-MulanPSL-2.0.txt.
+SiYuan's API token handling, server requests, note database integration and application branding are not included.

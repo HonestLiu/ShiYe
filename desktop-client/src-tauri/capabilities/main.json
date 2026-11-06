@@ -1,1 +1,1 @@
-{"identifier":"main","description":"应用界面，归档阅读文档没有本机权限","windows":["main"],"permissions":["core:default","dialog:allow-open","dialog:allow-save"]}
+{"identifier": "main", "description": "应用界面，归档阅读文档没有本机权限", "windows": ["main", "worker", "settings"], "permissions": ["core:default", "dialog:allow-open", "dialog:allow-save"]}

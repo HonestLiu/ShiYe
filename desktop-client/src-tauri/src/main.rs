@@ -1,6 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use tauri::Emitter;
+mod batch;
 mod bridge;
 mod library;
+mod reading;
+mod service;
+mod connections;
 use library::{err, Result};
 use serde_json::{json, Value};
 use std::{collections::HashMap, fs, sync::Mutex};
@@ -14,11 +19,132 @@ fn require_main(window: &WebviewWindow) -> Result<()> {
     }
 }
 #[tauri::command]
-fn command(window: WebviewWindow, request: Value) -> Result<Value> {
+async fn load_archive_bytes(window: WebviewWindow,id: String) -> Result<tauri::ipc::Response> {
     require_main(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let archive=library::load(&library::root(),&id)?;
+        Ok(tauri::ipc::Response::new(serde_json::to_vec(&archive).map_err(err)?))
+    }).await.map_err(err)?
+}
+#[tauri::command]
+async fn command(window: WebviewWindow, app: tauri::AppHandle, request: Value) -> Result<Value> {
+    // Keep archive/file/SQLite work off AppKit's event thread. Permission checks
+    // remain in the shared dispatcher, for both execution paths.
+    if ["load","list","search","update","reading_get","reading_list","reading_merge","export_file","import_file","backup"].contains(&request["action"].as_str().unwrap_or("")) {
+        return tauri::async_runtime::spawn_blocking(move || command_dispatch(window,app,request)).await.map_err(err)?;
+    }
+    // Clipboard, native windows and activation policy must stay on AppKit.
+    let (tx,rx)=std::sync::mpsc::sync_channel(1);let handle=app.clone();
+    app.run_on_main_thread(move ||{let _=tx.send(command_dispatch(window,handle,request));}).map_err(err)?;
+    tauri::async_runtime::spawn_blocking(move || rx.recv().map_err(err)?).await.map_err(err)?
+}
+fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value) -> Result<Value> {
+    let action = request["action"].as_str().unwrap_or("");
+    if window.label() == "worker" {
+        if ![
+            "pending_exports",
+            "claim_export",
+            "finish_export",
+            "load_export",
+            "write_export",
+            "prepare_export",
+            "show_main",
+            "service_idle",
+        ]
+        .contains(&action)
+        {
+            return Err("后台任务没有此权限".into());
+        }
+    } else if window.label() == "settings" {
+        if !["info", "settings", "save_settings", "register", "backup", "import_file", "show_main", "connections", "connection_check", "unpair"].contains(&action) { return Err("设置窗口没有此权限".into()); }
+    } else {
+        require_main(&window)?;
+    }
     let root = library::root();
     let id = request["id"].as_str().unwrap_or("");
     match request["action"].as_str().unwrap_or("") {
+        "batch_update" => batch::update(&root, &request),
+        "batch_create" => {
+            let result = batch::create(&root, &request)?;
+            service::ensure_worker(&app)?;
+            Ok(result)
+        }
+        "batch_list" => batch::list(&root),
+        "batch_cancel" => {
+            batch::cancel(&root, request["batchId"].as_str().ok_or("缺少批量任务ID")?)
+        }
+        "write_export" => batch::write_export(&root, &request),
+        "copy_text" => {
+            let text = request["text"]
+                .as_str()
+                .filter(|s| s.len() <= 8 * 1024 * 1024)
+                .ok_or("代码内容过长")?;
+            #[cfg(target_os = "macos")]
+            {
+                use objc2_app_kit::{NSPasteboard, NSPasteboardTypeString};
+                use objc2_foundation::NSString;
+                let board = NSPasteboard::generalPasteboard();
+                board.clearContents();
+                if !board
+                    .setString_forType(&NSString::from_str(text), unsafe { NSPasteboardTypeString })
+                {
+                    return Err("无法写入系统剪贴板".into());
+                }
+                Ok(json!({"ok":true}))
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = text;
+                Err("此平台暂不支持复制".into())
+            }
+        }
+        "open_settings" => {
+            service::show_settings(&app, request["section"].as_str().unwrap_or("general"))?;
+            Ok(json!({"ok":true}))
+        }
+        "settings" => Ok(service::settings(&root)),
+        "save_settings" => {
+            let v = service::save_settings(&root, &request["settings"])?;
+            service::apply_policy(&app)?;
+            Ok(v)
+        }
+        "enter_lightweight" => {
+            let mut v = service::settings(&root);
+            v["lightweight"] = json!(true);
+            service::save_settings(&root, &v)?;
+            service::apply_policy(&app)?;
+            window.close().map_err(err)?;
+            Ok(json!({"ok":true}))
+        }
+        "show_main" => {
+            service::show_main(&app)?;
+            Ok(json!({"ok":true}))
+        }
+        "service_idle" => {
+            let idle = library::pending_exports(&root)?
+                .as_array()
+                .is_some_and(|v| v.is_empty());
+            if idle && window.label() == "worker" {
+                window.close().map_err(err)?;
+            }
+            Ok(json!({"idle":idle}))
+        }
+        "prepare_export" => {
+            let job_id = request["jobId"].as_str().ok_or("缺少任务ID")?;
+            let job = library::export_status(&root, job_id)?;
+            if job["batchId"] != "" {
+                return Ok(json!({"delivery":"client","path":job["path"]}));
+            }
+            if job["delivery"] == "browser" {
+                Ok(json!({"delivery":"browser","path":library::browser_export_path(&root,job_id)?}))
+            } else {
+                service::show_main(&app)?;
+                Ok(json!({"delivery":"client"}))
+            }
+        }
+        "reading_list"=>reading::all(&root),
+        "reading_get"=>reading::get(&root,request["url"].as_str().ok_or("缺少笔记来源")?),
+        "reading_merge"=>{let result=reading::merge(&root,request["url"].as_str().ok_or("缺少笔记来源")?,&request["record"])?;let _=app.emit("reading-changed",json!({"url":result["url"]}));let _=app.emit("library-changed",json!({}));Ok(result)},
         "list" => library::list(&root),
         "pending_exports" => library::pending_exports(&root),
         "claim_export" => {
@@ -27,10 +153,16 @@ fn command(window: WebviewWindow, request: Value) -> Result<Value> {
         "finish_export" => library::finish_export(&root, &request),
         "search" => library::search(&root, request["query"].as_str().unwrap_or("")),
         "load" => library::load(&root, id),
-        "update" => library::update(&root, id, &request["patch"]),
-        "register" => bridge::register(&root, request["extensionId"].as_str().unwrap_or("")),
+        "load_export" => {
+            library::load_export(&root, request["jobId"].as_str().ok_or("缺少任务ID")?)
+        }
+        "update" => {let result=library::update(&root,id,&request["patch"])?;if ["title","folder","tags","starred","read","notes"].iter().any(|k|request["patch"].get(k).is_some()){let _=app.emit("reading-changed",json!({}));}Ok(result)},
+        "register" => { let id=request["extensionId"].as_str().unwrap_or(""); let result=bridge::register(&root,id)?; connections::save_label(&root,id,request["label"].as_str().unwrap_or(""))?; Ok(result) },
+        "connections" => app.state::<connections::Monitor>().snapshot(&root),
+        "connection_check" => app.state::<connections::Monitor>().check(request["sessionId"].as_str().ok_or("缺少连接ID")?),
+        "unpair" => { bridge::unregister(&root,request["extensionId"].as_str().ok_or("缺少扩展ID")?)?; Ok(json!({"ok":true})) },
         "info" => Ok(
-            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.2.1"}),
+            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.10.2"}),
         ),
         "import_file" => {
             let path = request["path"].as_str().ok_or("缺少文件路径")?;
@@ -46,6 +178,7 @@ fn command(window: WebviewWindow, request: Value) -> Result<Value> {
             } else {
                 let value: Value = serde_json::from_str(&data).map_err(err)?;
                 if value["backupVersion"] == 1 {
+                    if let Some(pages)=value["readingPages"].as_array(){for page in pages{reading::merge(&root,page["url"].as_str().ok_or("缺少笔记来源")?,page)?;}}
                     let mut count = 0;
                     for item in value["items"].as_array().ok_or("无效备份")? {
                         let result = library::import(&root, item["archive"].clone())?;
@@ -58,46 +191,13 @@ fn command(window: WebviewWindow, request: Value) -> Result<Value> {
                 }
             }
         }
+        "export_notes"=>{let record=reading::get(&root,request["url"].as_str().ok_or("缺少笔记来源")?)?;fs::write(request["path"].as_str().ok_or("缺少保存路径")?,reading::markdown(&record)?).map_err(err)?;Ok(json!({"ok":true}))},
         "export_file" => {
             let path = request["path"].as_str().ok_or("缺少保存路径")?;
             let format = request["format"].as_str().ok_or("缺少格式")?;
             let archive = library::load(&root, id)?;
-            let data = match format {
-                "json" => serde_json::to_string_pretty(&archive).map_err(err)?,
-                "html" => request["html"]
-                    .as_str()
-                    .ok_or("缺少清理后的网页")?
-                    .to_owned(),
-                "md" | "txt" => {
-                    let mut text = format!(
-                        "# {}\n\n{}\n\n",
-                        archive["title"].as_str().unwrap_or("收藏"),
-                        archive["url"].as_str().unwrap_or("")
-                    );
-                    if let Some(messages) = archive["messages"].as_array() {
-                        for m in messages {
-                            let content = if format == "md" {
-                                m["markdown"].as_str()
-                            } else {
-                                m["text"].as_str().or(m["markdown"].as_str())
-                            };
-                            text.push_str(&format!(
-                                "## {}\n\n{}\n\n",
-                                if m["role"] == "user" {
-                                    "用户"
-                                } else {
-                                    "助手"
-                                },
-                                content.unwrap_or("")
-                            ));
-                        }
-                    } else {
-                        text.push_str(request["text"].as_str().unwrap_or(""));
-                    }
-                    text
-                }
-                _ => return Err("不支持的格式".into()),
-            };
+            let data =
+                library::export_contents(&archive, format, &request["html"], &request["text"])?;
             fs::write(path, data).map_err(err)?;
             Ok(json!({"ok":true}))
         }
@@ -109,7 +209,7 @@ fn command(window: WebviewWindow, request: Value) -> Result<Value> {
                 items.push(json!({"archive":library::load(&root,meta["id"].as_str().unwrap())?,"meta":meta}));
             }
             let data =
-                serde_json::to_vec(&json!({"backupVersion":1,"items":items})).map_err(err)?;
+                serde_json::to_vec(&json!({"backupVersion":1,"items":items,"readingPages":reading::all(&root)?})).map_err(err)?;
             fs::write(path, data).map_err(err)?;
             Ok(json!({"ok":true}))
         }
@@ -184,11 +284,27 @@ async fn print_pdf(
     html: String,
     path: String,
     layout: Value,
+    job_id: Option<String>,
 ) -> Result<Value> {
-    require_main(&window)?;
+    if window.label() != "worker" {
+        require_main(&window)?;
+    }
     if !cfg!(target_os = "macos") {
         return Err("当前预览版尚未提供此平台的PDF导出".into());
     }
+    let batch_output = if let Some(id) = job_id.as_deref() {
+        let job = library::export_status(&library::root(), &id)?;
+        if job["batchId"] != "" {
+            if job["path"] != path {
+                return Err("批量输出位置不匹配".into());
+            }
+            true
+        } else {
+            false
+        }
+    } else {
+        false
+    };
     let width = layout["width"].as_f64().ok_or("缺少页面宽度")?;
     let height = layout["height"].as_f64().ok_or("缺少页面高度")?;
     if width <= 0. || height <= 0. || height > 500_000. || width > 20_000. {
@@ -282,7 +398,12 @@ async fn print_pdf(
         .resource_dir()
         .map_err(err)?
         .join("resources/pdf-split");
-    let destination = path.clone();
+    let rendered_path = if batch_output {
+        temporary.with_extension("pdf")
+    } else {
+        std::path::PathBuf::from(&path)
+    };
+    let destination = rendered_path.clone();
     let input = continuous.clone();
     let metadata = layout_path.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
@@ -304,8 +425,16 @@ async fn print_pdf(
             String::from_utf8_lossy(&result.stderr)
         ));
     }
-    if fs::metadata(&path).map_err(err)?.len() < 10 {
+    if fs::metadata(&rendered_path).map_err(err)?.len() < 10 {
         return Err("PDF为空".into());
+    }
+    if batch_output {
+        let result = batch::copy_exclusive(&rendered_path, std::path::Path::new(&path));
+        let _ = fs::remove_file(rendered_path);
+        result?;
+        if let Some(id) = job_id.as_deref() {
+            batch::mark_output(&library::root(), id)?;
+        }
     }
     Ok(json!({"ok":true,"engine":"WKWebView/CoreGraphics"}))
 }
@@ -318,8 +447,7 @@ fn main() {
         return;
     }
     let root = library::root();
-    if let Err(e) = library::init(&root) {
-        eprintln!("{e}");
+    if fs::create_dir_all(&root).is_err() {
         return;
     }
     let lock = fs::OpenOptions::new()
@@ -329,14 +457,32 @@ fn main() {
         .open(root.join("instance.lock"))
         .expect("Application lock");
     if lock.try_lock().is_err() {
-        let _ = bridge::call(&root, &json!({"action":"show"}));
+        if !std::env::args().any(|s| s == "--background") {
+            let _ = bridge::call(&root, &json!({"action":"show"}));
+        }
         return;
     }
-    tauri::Builder::default().plugin(tauri_plugin_dialog::init()).manage(PrintJobs(Mutex::new(HashMap::new())))
+    if let Err(e) = library::init(&root) {
+        eprintln!("{e}");
+        return;
+    }
+    tauri::Builder::default().plugin(tauri_plugin_dialog::init()).manage(PrintJobs(Mutex::new(HashMap::new()))).manage(connections::Monitor::default())
  .register_uri_scheme_protocol("archive",|context,request|{
   let key=request.uri().host().unwrap_or("");let html=context.app_handle().state::<PrintJobs>().0.lock().ok().and_then(|m|m.get(key).cloned()).unwrap_or_else(||"<p>导出任务不存在</p>".into());
   tauri::http::Response::builder().header("Content-Type","text/html; charset=utf-8").header("Content-Security-Policy","default-src 'none'; script-src 'none'; style-src 'unsafe-inline' data:; img-src data:; font-src data:; object-src 'none'; base-uri 'none'; form-action 'none'").body(html.into_bytes()).unwrap()
  })
- .setup(move|app|{#[cfg(unix)] bridge::serve(root.clone(),app.handle().clone()).map_err(std::io::Error::other)?;Ok(())})
- .invoke_handler(tauri::generate_handler![command,print_pdf]).run(tauri::generate_context!()).expect("Failed to start reader");
+ .setup(move|app|{
+ service::apply_policy(app.handle()).map_err(std::io::Error::other)?;
+ service::tray(app.handle()).map_err(std::io::Error::other)?;
+ service::reading_menu(app.handle()).map_err(std::io::Error::other)?;
+ #[cfg(unix)] bridge::serve(root.clone(),app.handle().clone()).map_err(std::io::Error::other)?;
+ let background=std::env::args().any(|s|s=="--background");
+ if service::opens_on_launch(&root,background){service::show_main(app.handle()).map_err(std::io::Error::other)?;}
+ if library::pending_exports(&root).ok().and_then(|v|v.as_array().map(|a|!a.is_empty())).unwrap_or(false){service::ensure_worker(app.handle()).map_err(std::io::Error::other)?;}
+ Ok(())})
+ .on_window_event(|w,event|{if ["main","settings"].contains(&w.label()){if let tauri::WindowEvent::Destroyed=event{let _=service::apply_policy_excluding(w.app_handle(),w.label());}}})
+ .invoke_handler(tauri::generate_handler![command,load_archive_bytes,print_pdf]).build(tauri::generate_context!()).expect("Failed to start reader").run(|app,event|{
+ if let tauri::RunEvent::ExitRequested{code:None,ref api,..}=event{api.prevent_exit();}
+ if let tauri::RunEvent::Reopen{..}=event{let _=service::show_main(app);}
+ });
 }
