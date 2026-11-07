@@ -8,7 +8,7 @@
   host.style.cssText =
     'all:initial!important;position:fixed!important;right:22px!important;bottom:22px!important;z-index:2147483100!important';
   const root = host.attachShadow({ mode: 'open' });
-  for (const file of ['webpage.css', 'reading.css']) {
+  for (const file of ['webpage.css', 'reading.css', 'webpage-theme.css']) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL(file);
@@ -121,7 +121,8 @@
         color: Object.hasOwn(ShiyeReading.colors, preferences.color) ? preferences.color : 'yellow',
         note: ''
       };
-      const next = existing ? record : await mutate({ kind: 'upsert', annotation: a });
+      const updated = note ? { ...a, kind: 'note' } : a;
+      const next = existing && !note ? record : await mutate({ kind: 'upsert', annotation: updated, ...(existing ? { expected: existing } : {}) });
       editor.set(next);
       document.getSelection()?.removeAllRanges();
       selection = null;
@@ -231,7 +232,7 @@
   const markClick = (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || !document.getSelection()?.isCollapsed) return;
     const mark = e.target.closest?.('mark[data-shiye-highlight]'),
-      id = mark?.dataset.shiyeHighlight.split(' ')[0];
+      id = (mark?.dataset.readerNote || mark?.dataset.shiyeHighlight)?.split(' ')[0];
     if (!record.annotations.some((a) => a.id === id)) return;
     e.preventDefault();
     e.stopPropagation();
@@ -256,12 +257,12 @@
             image: m.image,
             title: m.image
               ? '图片 · ' +
-                ([...document.images].find((n) => (n.currentSrc || n.src) === m.image)?.alt || document.title)
+              ([...document.images].find((n) => (n.currentSrc || n.src) === m.image)?.alt || document.title)
               : m.link
                 ? '链接 · ' +
-                  ([...document.querySelectorAll('a[href]')]
-                    .find((n) => n.href === m.link)
-                    ?.textContent.trim() || new URL(m.link).hostname)
+                ([...document.querySelectorAll('a[href]')]
+                  .find((n) => n.href === m.link)
+                  ?.textContent.trim() || new URL(m.link).hostname)
                 : document.title + ' · 摘录'
           });
           open();

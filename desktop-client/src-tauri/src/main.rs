@@ -3,7 +3,11 @@ use tauri::Emitter;
 mod batch;
 mod bridge;
 mod library;
+mod deletion;
+mod context_menu;
+mod reading_input;
 mod reading;
+mod article_edit;
 mod service;
 mod connections;
 use library::{err, Result};
@@ -30,7 +34,7 @@ async fn load_archive_bytes(window: WebviewWindow,id: String) -> Result<tauri::i
 async fn command(window: WebviewWindow, app: tauri::AppHandle, request: Value) -> Result<Value> {
     // Keep archive/file/SQLite work off AppKit's event thread. Permission checks
     // remain in the shared dispatcher, for both execution paths.
-    if ["load","list","search","update","reading_get","reading_list","reading_merge","export_file","import_file","backup"].contains(&request["action"].as_str().unwrap_or("")) {
+    if ["purge","load","list","search","update","reading_get","reading_list","reading_merge","export_file","import_file","backup","article_get","article_draft","article_save","article_asset_put","article_asset_get","article_render","article_history"].contains(&request["action"].as_str().unwrap_or("")) {
         return tauri::async_runtime::spawn_blocking(move || command_dispatch(window,app,request)).await.map_err(err)?;
     }
     // Clipboard, native windows and activation policy must stay on AppKit.
@@ -56,13 +60,20 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
             return Err("后台任务没有此权限".into());
         }
     } else if window.label() == "settings" {
-        if !["info", "settings", "save_settings", "register", "backup", "import_file", "show_main", "connections", "connection_check", "unpair"].contains(&action) { return Err("设置窗口没有此权限".into()); }
+        if !["copy_text", "read_text", "info", "settings", "save_settings", "register", "backup", "import_file", "show_main", "connections", "connection_check", "unpair"].contains(&action) { return Err("设置窗口没有此权限".into()); }
     } else {
         require_main(&window)?;
     }
     let root = library::root();
     let id = request["id"].as_str().unwrap_or("");
     match request["action"].as_str().unwrap_or("") {
+        "article_get"=>article_edit::get(&root,id),
+        "article_draft"=>article_edit::save(&root,&request,true),
+        "article_save"=>{let result=article_edit::save(&root,&request,false)?;let _=app.emit("library-changed",json!({}));Ok(result)},
+        "article_asset_put"=>article_edit::asset_put(&root,&request),
+        "article_asset_get"=>article_edit::asset_get(&root,id,request["asset"].as_str().ok_or("缺少资源ID")?),
+        "article_render"=>article_edit::render(&root,id),
+        "article_history"=>article_edit::history(&root,id,request["revision"].as_u64().ok_or("缺少历史版本")?),
         "batch_update" => batch::update(&root, &request),
         "batch_create" => {
             let result = batch::create(&root, &request)?;
@@ -74,6 +85,12 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
             batch::cancel(&root, request["batchId"].as_str().ok_or("缺少批量任务ID")?)
         }
         "write_export" => batch::write_export(&root, &request),
+        "read_text" => {
+            #[cfg(target_os = "macos")]
+            {use objc2_app_kit::{NSPasteboard,NSPasteboardTypeString};let value=NSPasteboard::generalPasteboard().stringForType(unsafe {NSPasteboardTypeString}).map(|s|s.to_string()).unwrap_or_default();if value.len()>8*1024*1024{return Err("剪贴板文本过长".into());}Ok(json!({"text":value}))}
+            #[cfg(not(target_os = "macos"))]
+            {Err("此平台暂不支持读取剪贴板".into())}
+        }
         "copy_text" => {
             let text = request["text"]
                 .as_str()
@@ -146,6 +163,7 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
         "reading_get"=>reading::get(&root,request["url"].as_str().ok_or("缺少笔记来源")?),
         "reading_merge"=>{let result=reading::merge(&root,request["url"].as_str().ok_or("缺少笔记来源")?,&request["record"])?;let _=app.emit("reading-changed",json!({"url":result["url"]}));let _=app.emit("library-changed",json!({}));Ok(result)},
         "list" => library::list(&root),
+        "purge" => {require_main(&window)?;let result=deletion::purge(&root,&request)?;let _=app.emit("library-changed",json!({}));let _=app.emit("reading-changed",json!({}));Ok(result)},
         "pending_exports" => library::pending_exports(&root),
         "claim_export" => {
             library::claim_export(&root, request["jobId"].as_str().ok_or("缺少任务ID")?)
@@ -162,7 +180,7 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
         "connection_check" => app.state::<connections::Monitor>().check(request["sessionId"].as_str().ok_or("缺少连接ID")?),
         "unpair" => { bridge::unregister(&root,request["extensionId"].as_str().ok_or("缺少扩展ID")?)?; Ok(json!({"ok":true})) },
         "info" => Ok(
-            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.10.2"}),
+            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.16.8"}),
         ),
         "import_file" => {
             let path = request["path"].as_str().ok_or("缺少文件路径")?;
@@ -195,7 +213,8 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
         "export_file" => {
             let path = request["path"].as_str().ok_or("缺少保存路径")?;
             let format = request["format"].as_str().ok_or("缺少格式")?;
-            let archive = library::load(&root, id)?;
+            let mut archive = library::load(&root, id)?;
+            if format=="json"{archive["articleEditing"]=article_edit::bundle(&root,id)?;}else if request["edited"]==true{archive["reading"]=Value::Null;}
             let data =
                 library::export_contents(&archive, format, &request["html"], &request["text"])?;
             fs::write(path, data).map_err(err)?;
@@ -206,7 +225,7 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
             let entries = library::list(&root)?;
             let mut items = Vec::new();
             for meta in entries.as_array().unwrap() {
-                items.push(json!({"archive":library::load(&root,meta["id"].as_str().unwrap())?,"meta":meta}));
+                let id=meta["id"].as_str().unwrap();let mut archive=library::load(&root,id)?;archive["articleEditing"]=article_edit::bundle(&root,id)?;items.push(json!({"archive":archive,"meta":meta}));
             }
             let data =
                 serde_json::to_vec(&json!({"backupVersion":1,"items":items,"readingPages":reading::all(&root)?})).map_err(err)?;
@@ -473,6 +492,8 @@ fn main() {
  })
  .setup(move|app|{
  service::apply_policy(app.handle()).map_err(std::io::Error::other)?;
+ context_menu::install(app.handle());
+ reading_input::install(app.handle());
  service::tray(app.handle()).map_err(std::io::Error::other)?;
  service::reading_menu(app.handle()).map_err(std::io::Error::other)?;
  #[cfg(unix)] bridge::serve(root.clone(),app.handle().clone()).map_err(std::io::Error::other)?;

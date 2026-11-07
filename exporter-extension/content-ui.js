@@ -16,6 +16,16 @@
   const toolbar=document.createElement('div');toolbar.className='button-bar';
   toolbar.innerHTML='<div class="split"><button data-action="select">SELECT</button><button data-action="selection-menu" aria-label="选择范围" aria-haspopup="menu">▾</button></div><div class="split"><button data-action="export" disabled>EXPORT</button><button data-action="export-menu" disabled aria-label="选择导出格式" aria-haspopup="menu">▾</button></div>';
   root.append(toolbar);
+  const launcher=document.createElement('button');launcher.className='chat-edge-launcher';launcher.setAttribute('aria-label','打开拾页消息选择器');launcher.title='存到拾页 · 拖动可调整位置';launcher.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>';root.append(launcher);
+  let edge={side:'right',y:.65},edgeDisabled=false,edgeDrag=null,suppressEdgeClick=false;
+  function placeEdge(){launcher.dataset.side=edge.side;launcher.style.left=edge.side==='left'?'0':'auto';launcher.style.right=edge.side==='right'?'0':'auto';launcher.style.top=Math.max(8,Math.min(innerHeight-44,edge.y*Math.max(1,innerHeight-44)))+'px';}
+  function readEdge(data){const value=data.edgeLauncher||{};edge={side:value.side==='left'?'left':'right',y:Number.isFinite(value.y)?Math.max(0,Math.min(1,value.y)):.65};edgeDisabled=value.disabled===true||(data.edgeHiddenSites||[]).includes(location.origin);placeEdge();if(typeof state!=='undefined')launcher.hidden=edgeDisabled||state.prefs.displayBtns===false;}
+  listen(launcher,'pointerdown',e=>{if(e.button!==0)return;edgeDrag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};suppressEdgeClick=false;launcher.setPointerCapture(e.pointerId);});
+  listen(launcher,'pointermove',e=>{if(!edgeDrag||e.pointerId!==edgeDrag.id)return;if(Math.hypot(e.clientX-edgeDrag.x,e.clientY-edgeDrag.y)>5)edgeDrag.moved=true;if(!edgeDrag.moved)return;launcher.dataset.dragging='';edge={side:e.clientX<innerWidth/2?'left':'right',y:Math.max(0,Math.min(1,(e.clientY-18)/Math.max(1,innerHeight-44)))};placeEdge();});
+  listen(launcher,'pointerup',e=>{if(!edgeDrag||e.pointerId!==edgeDrag.id)return;suppressEdgeClick=edgeDrag.moved;edgeDrag=null;delete launcher.dataset.dragging;if(suppressEdgeClick)void chrome.storage.local.get('edgeLauncher').then(({edgeLauncher={}})=>chrome.storage.local.set({edgeLauncher:{...edgeLauncher,...edge}})).catch(()=>{});});
+  for(const name of ['pointercancel','lostpointercapture'])listen(launcher,name,()=>{edgeDrag=null;delete launcher.dataset.dragging;});
+  listen(launcher,'click',e=>{e.preventDefault();if(suppressEdgeClick){suppressEdgeClick=false;return;}state.open?close():void open();});
+
   const panel=document.createElement('aside');panel.className='selector';panel.hidden=true;panel.setAttribute('aria-label','选择消息');
   panel.innerHTML=`<div class="resize" role="separator" aria-label="调整选择器宽度" aria-orientation="vertical" tabindex="0"></div>
     <header><button data-action="dock" class="icon" title="停靠到左侧" aria-label="停靠到左侧">⇤</button><h2>选择消息</h2><button data-action="reload" class="icon" title="重新读取" aria-label="重新读取">↻</button><button data-action="close" class="icon" title="关闭选择器" aria-label="关闭选择器">×</button></header>
@@ -219,16 +229,8 @@
   function mount(){
     if(!state.active)return;
     if(!alive()){markDisconnected();return;}
-    // Follow the composer through ChatGPT's client-side navigations; float only when absent.
-    const composer=document.querySelector('#prompt-textarea');
-    const form=composer?.closest('form');const anchor=form?.parentElement;
-    // Keep the overlay outside transformed/clipped composer ancestors.
     if(host.parentElement!==document.body)document.body.append(host);
-    if(anchor&&anchor!==document.body){
-      const rect=form.getBoundingClientRect();host.dataset.placement='composer';
-      toolbar.style.cssText=`position:fixed;left:${Math.min(innerWidth-128,Math.max(8,rect.right+10))}px;top:${Math.max(8,Math.min(innerHeight-92,rect.bottom-80))}px`;
-    } else {host.dataset.placement='floating';toolbar.style.cssText='';}
-    toolbar.hidden=state.prefs.displayBtns===false;layout();
+    host.dataset.placement='edge';toolbar.hidden=true;launcher.hidden=state.prefs.displayBtns===false||edgeDisabled;placeEdge();layout();
     if(state.href!==location.href){state.href=location.href;state.revision++;state.loading=false;state.conversation={messages:[]};state.selected.clear();close();message('');}
   }
   let scheduled=false;
@@ -243,7 +245,7 @@
     if(event.action==='open-selector'){void open(event.selectType);respond({ok:true});}
     if(event.action==='export-selected'){void exportChosen(event.format);respond({ok:true});}
   };
-  const storageListener=(changes,area)=>{if(area==='local'&&changes.preferences&&state.active){state.prefs={...C.defaults,...changes.preferences.newValue};mount();update();}};
+  const storageListener=(changes,area)=>{if(area==='local'&&(changes.edgeLauncher||changes.edgeHiddenSites))void chrome.storage.local.get(['edgeLauncher','edgeHiddenSites']).then(readEdge).catch(()=>{});if(area==='local'&&changes.preferences&&state.active){state.prefs={...C.defaults,...changes.preferences.newValue};mount();update();}};
   runtime.onMessage.addListener(runtimeListener);
   chrome.storage.onChanged.addListener(storageListener);
   function markDisconnected(){
@@ -261,6 +263,7 @@
     if(globalThis.__archiveOverlay?.dispose===dispose)delete globalThis.__archiveOverlay;
   }
   globalThis.__archiveOverlay={open,close,dispose,alive,version,markDisconnected};
+  void chrome.storage.local.get(['edgeLauncher','edgeHiddenSites']).then(readEdge).catch(()=>{});
   void C.preferences().then(async prefs=>{
     if(!state.active)return;state.prefs=prefs;mount();update();
     if(restored?.url===location.href){

@@ -1,9 +1,9 @@
 import '../../exporter-extension/custom-select.js';
-export function mountBulk({cmd,run,status,getItems,getVisible,refresh,openExport}){
+export function mountBulk({cmd,run,status,getItems,getVisible,refresh,openExport,purge}){
  const ids=new Set(),$=s=>document.querySelector(s);
  const tools=document.createElement('div');tools.className='list-tools';tools.innerHTML='<label class="select-visible"><input type="checkbox" id="select-visible">全选当前结果</label><label class="sort-control"><span class="sr-only">收藏排序</span><select aria-label="收藏排序" name="sort"><option value="newest">最近保存</option><option value="oldest">最早保存</option><option value="title">标题顺序</option></select></label>';
  $('.search').after(tools);
- const bar=document.createElement('div');bar.className='bulk-bar';bar.hidden=true;bar.innerHTML='<div class="bulk-summary"><strong id="chosen-count"></strong><button id="clear-chosen">清空选择</button></div><div class="bulk-actions"><button data-bulk-state="read:true">标为已读</button><button data-bulk-state="read:false">标为未读</button><button data-bulk-state="starred:true">添加星标</button><button data-bulk-state="starred:false">取消星标</button><button data-bulk-state="trashed:true">移入回收站</button><button data-bulk-state="trashed:false">恢复收藏</button><button id="bulk-organize">整理</button><button id="bulk-export" class="primary">导出所选</button></div>';
+ const bar=document.createElement('div');bar.className='bulk-bar';bar.hidden=true;bar.innerHTML='<div class="bulk-summary"><strong id="chosen-count"></strong><button id="clear-chosen">清空选择</button></div><div class="bulk-actions"><button data-bulk-state="read:true">标为已读</button><button data-bulk-state="read:false">标为未读</button><button data-bulk-state="starred:true">添加星标</button><button data-bulk-state="starred:false">取消星标</button><button data-bulk-state="trashed:true">移入回收站</button><button data-bulk-state="trashed:false">恢复收藏</button><button id="bulk-delete" class="danger" hidden>永久删除</button><button id="bulk-organize">整理</button><button id="bulk-export" class="primary">导出所选</button></div>';
  tools.after(bar);
  const taskButton=document.createElement('button');taskButton.id='batch-tasks';taskButton.textContent='批量导出任务';$('.sidebar-bottom').prepend(taskButton);
  const organize=document.createElement('dialog');organize.id='bulk-dialog';organize.setAttribute('aria-labelledby','bulk-dialog-title');organize.innerHTML='<form id="bulk-form"><header><h2 id="bulk-dialog-title">批量整理</h2><button type="button" data-close aria-label="关闭">×</button></header><p>为选中的收藏设置收藏夹，或追加标签。已有标签会保留。</p><label class="service-choice"><input id="bulk-change-folder" type="checkbox">修改收藏夹</label><input id="bulk-folder" aria-label="目标收藏夹" maxlength="100" placeholder="留空将移出原收藏夹"><label for="bulk-tags">追加标签（逗号分隔）</label><input id="bulk-tags" maxlength="500"><footer><button type="button" data-close>取消</button><button class="primary">保存整理</button></footer></form>';
@@ -14,11 +14,13 @@ export function mountBulk({cmd,run,status,getItems,getVisible,refresh,openExport
  tools.addEventListener('change',e=>{if(e.target===sortInput){localStorage.setItem('collection-sort',sortInput.value);renderList();}});
  const sort=values=>[...values].sort((a,b)=>sortInput.value==='title'?a.title.localeCompare(b.title,'zh-CN'):sortInput.value==='oldest'?a.savedAt-b.savedAt:b.savedAt-a.savedAt);
  function renderList(){refresh(false);}
- function update(){for(const id of ids)if(!getItems().some(i=>i.id===id))ids.delete(id);bar.hidden=!ids.size;const hidden=[...ids].filter(id=>!getVisible().some(i=>i.id===id)).length;$('#chosen-count').textContent=`已选 ${ids.size} 条`+(hidden?`（${hidden} 条在其他结果中）`:'');
+ function update(){for(const id of ids)if(!getItems().some(i=>i.id===id))ids.delete(id);bar.hidden=!ids.size;$('#app').classList.toggle('has-selection',!!ids.size);const hidden=[...ids].filter(id=>!getVisible().some(i=>i.id===id)).length;$('#chosen-count').textContent=`已选 ${ids.size} 条`+(hidden?`（${hidden} 条在其他结果中）`:'');
+  $('#bulk-delete').hidden=!ids.size||![...ids].every(id=>getItems().find(i=>i.id===id)?.trashed);
   const visible=getVisible(),count=visible.filter(i=>ids.has(i.id)).length;const input=$('#select-visible');input.checked=visible.length>0&&count===visible.length;input.indeterminate=count>0&&count<visible.length;input.disabled=!visible.length;
  }
- const toggle=id=>{const focused=document.activeElement?.dataset.itemId===id;ids.has(id)?ids.delete(id):ids.add(id);renderList();if(focused)document.querySelector(`[data-item-id="${CSS.escape(id)}"]`)?.focus();};
+ const toggle=id=>{const focused=document.activeElement?.dataset.itemId===id;ids.has(id)?ids.delete(id):ids.add(id);renderList();if(focused)document.querySelector(`.bulk-check input[data-item-id="${CSS.escape(id)}"]`)?.focus();};
  $('#select-visible').onchange=e=>{for(const i of getVisible())if(e.target.checked)ids.add(i.id);else ids.delete(i.id);renderList();};
+ $('#bulk-delete').onclick=()=>purge([...ids]);
  $('#clear-chosen').onclick=()=>{ids.clear();renderList();};
  for(const b of bar.querySelectorAll('[data-bulk-state]'))b.onclick=()=>run(async()=>{const [key,value]=b.dataset.bulkState.split(':');const result=await cmd({action:'batch_update',ids:[...ids],patch:{[key]:value==='true'}});await refresh();status(`已更新 ${result.count} 条收藏`);});
  $('#bulk-organize').onclick=()=>{organize.querySelector('h2').textContent=`整理 ${ids.size} 条收藏`;$('#bulk-change-folder').checked=false;$('#bulk-folder').value='';$('#bulk-tags').value='';organize.showModal();};

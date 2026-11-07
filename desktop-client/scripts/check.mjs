@@ -33,13 +33,13 @@ try{
  assert.equal(secure.scripts,0);assert.equal(secure.src,null);assert.equal(secure.href,null);assert(Math.abs(secure.ratio-20/6)<.05);
  assert.equal(await page.locator('#toc button').count(),2);
  await page.getByRole('button',{name:'切换星标'}).click();await page.waitForFunction(()=>testItems[0].starred);
- await page.getByRole('button',{name:'整理',exact:true}).click();await page.locator('#edit-folder').fill('408');await page.locator('#edit-tags').fill('计组,地址');await page.locator('#edit-notes').fill('考前复习');await page.locator('#edit-form').getByRole('button',{name:'保存',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>testItems[0].folder),'408');
+ await page.getByRole('button',{name:'更多文章操作',exact:true}).click();await page.getByRole('menuitem',{name:'整理',exact:true}).click();await page.locator('#edit-folder').fill('408');await page.locator('#edit-tags').fill('计组,地址');await page.locator('#edit-notes').fill('考前复习');await page.locator('#edit-form').getByRole('button',{name:'保存',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>testItems[0].folder),'408');
  await page.locator('#search').fill('考前复习');await page.waitForFunction(()=>document.querySelector('#list-count').textContent==='1 条收藏');
  await page.locator('#search').fill('不匹配内容');await page.getByText('没有找到匹配内容').waitFor();await page.locator('#search').fill('');await page.locator('.item').waitFor();
  await page.getByRole('button',{name:'标为已读',exact:true}).click();await page.getByRole('button',{name:'标为未读',exact:true}).waitFor();
  await page.screenshot({path:path.join(root,'preview.png')});
- await page.getByRole('button',{name:'移到回收站'}).click();await page.getByRole('button',{name:'恢复收藏'}).waitFor();await page.getByRole('button',{name:'回收站',exact:true}).click();assert.equal(await page.locator('.item').count(),1);await page.getByRole('button',{name:'恢复收藏'}).click();
- await page.getByRole('button',{name:'设置',exact:false}).click();
+ await page.getByRole('button',{name:'更多文章操作',exact:true}).click();await page.getByRole('menuitem',{name:'移到回收站'}).click();assert.equal(await page.locator('#trash').getAttribute('aria-label'),'恢复收藏');await page.getByRole('button',{name:'回收站',exact:true}).click();assert.equal(await page.locator('.item').count(),1);await page.getByRole('button',{name:'更多文章操作',exact:true}).click();await page.getByRole('menuitem',{name:'恢复收藏'}).click();
+ await page.getByRole('button',{name:'设置',exact:true}).click();
  await page.waitForFunction(()=>calls.some(c=>c.args?.request?.action==='open_settings'));
  assert.deepEqual(errors,[]);console.log('PASS reading UI: snapshot CSS/diagram and headings, blocked scripts/network, Chinese search, tags/folder/notes, read/star/trash/restore. Native transport is mocked.');
 }finally{await browser.close();}

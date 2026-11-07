@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "拾页 · 稍后读助手",
-  "version": "1.9.2",
+  "version": "1.9.17",
   "description": "收藏网页离线快照、划词高亮与阅读笔记；支持 ChatGPT 对话选择与原貌导出。",
   "minimum_chrome_version": "120",
   "permissions": [
@@ -10,18 +10,11 @@
     "activeTab",
     "scripting",
     "downloads",
-    "contextMenus"
+    "contextMenus",
+    "pageCapture",
+    "offscreen"
   ],
   "host_permissions": [
-    "https://chatgpt.com/*",
-    "https://chat.openai.com/*",
-    "http://127.0.0.1/*",
-    "http://localhost/*",
-    "https://*.oaistatic.com/*",
-    "https://*.oaiusercontent.com/*",
-    "https://cdn.openai.com/*"
-  ],
-  "optional_host_permissions": [
     "http://*/*",
     "https://*/*"
   ],
@@ -62,6 +55,20 @@
         "content-ui.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "exclude_matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*"
+      ],
+      "js": [
+        "edge-bootstrap.js"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
@@ -81,13 +88,10 @@
       ],
       "resources": [
         "webpage.css",
-        "reading.css"
+        "reading.css",
+        "webpage-theme.css"
       ]
     }
-  ],
-  "optional_permissions": [
-    "pageCapture",
-    "offscreen"
   ],
   "commands": {
     "_execute_action": {

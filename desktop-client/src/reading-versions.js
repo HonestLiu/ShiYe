@@ -1,3 +1,4 @@
+import {withSourceHighlights} from './article-highlights.js';
 // Old single-version archives remain readable. Embedded payloads are inert JSON, never scripts.
 export function restoreVersions(archive){
  if(!archive.articleSnapshot&&!archive.articleError&&archive.snapshot?.html?.includes('data-shiye-reading-versions'))try{
@@ -6,6 +7,8 @@ export function restoreVersions(archive){
  }catch{archive.articleError='正文版本数据无法读取，原貌快照仍可阅读。';}
  return archive;
 }
-export function readingVersion(archive,version){
- return version==='article'&&archive.articleSnapshot?.html?{...archive,source:'article',snapshot:archive.articleSnapshot}:{...archive};
+export function readingVersion(archive,version,base=false){
+ const article=archive.articleSnapshot||(archive.source==='article'?archive.snapshot:null);
+ if(version==='article'&&article){const edited=!base&&archive.articleEdit?.hasDocument&&archive.editedSnapshot;return {...archive,source:'article',snapshot:edited?withSourceHighlights(edited,archive.reading):article,edited:!!edited,reading:archive.reading};}
+ return {...archive};
 }

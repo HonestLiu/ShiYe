@@ -43,7 +43,7 @@ export async function printDocument(archive,settings={}){
  const options=normalizePdfOptions(settings),paper=paperGeometry(options);
  const frame=document.createElement('iframe');frame.setAttribute('sandbox','allow-same-origin');frame.style.cssText='position:fixed;left:-20000px;top:0;width:900px;height:1px;border:0';
  const loaded=new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=()=>reject(Error('网页加载失败'));});
- frame.srcdoc=cleanSnapshot(ShiyeAnchors.html(archive.snapshot.html,archive.reading),true);document.body.append(frame);
+ const {readingMarksHTML}=await import('./reading-marks.js');frame.srcdoc=cleanSnapshot(readingMarksHTML(archive.snapshot.html,archive.reading,archive.snapshot),true);document.body.append(frame);
  try{
   await loaded;const doc=frame.contentDocument,win=frame.contentWindow;expandOfflineFrames(doc);
   await Promise.race([doc.fonts.ready,new Promise((_,reject)=>setTimeout(()=>reject(Error('字体加载超时')),15000))]);
@@ -51,7 +51,7 @@ export async function printDocument(archive,settings={}){
   const source=doc.createElement('main');source.className='reader-print-content'+(['webpage','html'].includes(archive.source)?' pdf-message':'');source.append(...doc.body.childNodes);doc.body.append(source);
   if(['webpage','html'].includes(archive.source))for(const n of source.querySelectorAll('div,section,header,figure')){const r=n.getBoundingClientRect();if(r.height>0&&r.height<1200&&n.textContent.trim().length<300&&win.getComputedStyle(n).backgroundImage!=='none'){n.setAttribute('data-d-component','row');n.setAttribute('data-d-has-height','true');}}
   const graphicRoots=[...source.querySelectorAll('[data-d-component="row"][data-d-has-height],svg,img,canvas')].map(n=>n.closest('[data-d-component="box"][data-d-has-border]')||n);
-  const protectedNode=n=>n.closest('.katex,math,mark[data-shiye-highlight]')||graphicRoots.some(g=>g===n||g.contains(n));
+  const protectedNode=n=>n.closest('.katex,math,mark[data-shiye-highlight],mark[data-article-highlight]')||graphicRoots.some(g=>g===n||g.contains(n));
   // Change prose typography without changing formula metrics or chart geometry.
   const metrics=new Map([...source.querySelectorAll('*')].map(n=>{const c=win.getComputedStyle(n);return [n,{size:parseFloat(c.fontSize),line:parseFloat(c.lineHeight)}];}));
   for(const n of source.querySelectorAll('*')){

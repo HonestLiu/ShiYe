@@ -46,7 +46,7 @@ async function persist(record, extra = {}) {
 
 export function rememberReading(record, extra) {
   const task = queue.then(async () => persist(M.merge(await localReading(record.url), record), extra));
-  queue = task.catch(() => {});
+  queue = task.catch(() => { });
   return task;
 }
 const escape = (value) =>
@@ -112,7 +112,7 @@ export async function saveClip({ url, title, text = '', link, image }, context) 
   } catch (e) {
     try {
       await context.native({ action: 'abort', upload });
-    } catch {}
+    } catch { }
     throw e;
   }
 }
@@ -152,11 +152,11 @@ export async function handleReading(message, sender, context) {
           if (k.startsWith('reading:'))
             try {
               await restoreSite(v.record);
-            } catch {}
+            } catch { }
       }
       return { ok: true };
     });
-    queue = task.catch(() => {});
+    queue = task.catch(() => { });
     return task;
   }
   if (['readingList', 'readingBackup', 'readingImport'].includes(message.action)) {
@@ -193,7 +193,7 @@ export async function handleReading(message, sender, context) {
       await chrome.storage.local.set(updates);
       return { ok: true };
     });
-    queue = task.catch(() => {});
+    queue = task.catch(() => { });
     return task;
   }
   if (dashboard) url = M.url(message.url);
@@ -210,7 +210,7 @@ export async function handleReading(message, sender, context) {
     await chrome.scripting.executeScript({
       target: { tabId: sender.tab.id },
       files: [
-        'capture-ui.js','webpage-prepare.js',
+        'capture-ui.js', 'webpage-prepare.js',
         'webpage-ui.js',
         'reading-model.js',
         'reading-anchors.js',
@@ -260,7 +260,7 @@ export async function handleReading(message, sender, context) {
       const reader = response.body.getReader(),
         parts = [];
       let size = 0;
-      for (;;) {
+      for (; ;) {
         const { done, value } = await reader.read();
         if (done) break;
         size += value.length;
@@ -311,6 +311,6 @@ export async function handleReading(message, sender, context) {
     }
     throw Error('无效的阅读笔记操作');
   });
-  queue = task.catch(() => {});
+  queue = task.catch(() => { });
   return task;
 }

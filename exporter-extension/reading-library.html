@@ -1,1 +1,53 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>拾页 · 标注与笔记</title><link rel="stylesheet" href="reading.css"><link rel="stylesheet" href="reading-library.css"><script src="reading-model.js" defer></script><script src="reading-editor.js" defer></script><script src="reading-library.js" defer></script></head><body><header class="library-header"><div><p>拾页 · 保存在这台浏览器</p><h1>标注与笔记</h1></div><div><button id="backup">备份笔记</button><button id="restore">导入笔记</button><input id="backup-file" type="file" accept="application/json,.json" hidden><button id="settings">连接与设置</button></div></header><main><section class="library-list"><input id="search" type="search" placeholder="搜索标题、标签、摘录与笔记" aria-label="搜索笔记"><nav aria-label="笔记筛选"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="unread" aria-pressed="false">未读</button><button data-filter="starred" aria-pressed="false">星标</button><button data-filter="notes" aria-pressed="false">有笔记</button></nav><p id="count"></p><div id="pages"></div></section><section class="library-detail"><div id="empty"><h2>让读过的内容留下线索</h2><p>在网页选中文字，保存高亮或批注。<br>这里可以集中查找、整理与同步。</p><p>网页完整快照保存在拾页客户端，<br>这里管理浏览器中的标注与笔记。</p></div><div id="detail" hidden><header><div><h2 id="title"></h2><p id="url"></p></div><button id="source">打开原网页 ↗</button></header><div id="editor"></div></div></section></main><p id="status" role="status" aria-live="polite"></p></body></html>
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>拾页 · 标注与笔记</title>
+    <link rel="stylesheet" href="reading.css">
+    <link rel="stylesheet" href="reading-library.css">
+    <link rel="stylesheet" href="webpage-theme.css">
+    <script src="reading-model.js" defer></script>
+    <script src="reading-editor.js" defer></script>
+    <script src="reading-library.js" defer></script>
+</head>
+
+<body>
+    <header class="library-header">
+        <div>
+            <p>拾页 · 保存在这台浏览器</p>
+            <h1>标注与笔记</h1>
+        </div>
+        <div><button id="backup">备份笔记</button><button id="restore">导入笔记</button><input id="backup-file" type="file"
+                accept="application/json,.json" hidden><button id="settings">连接与设置</button></div>
+    </header>
+    <main>
+        <section class="library-list"><input id="search" type="search" placeholder="搜索标题、标签、摘录与笔记" aria-label="搜索笔记">
+            <nav aria-label="笔记筛选"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="unread"
+                    aria-pressed="false">未读</button><button data-filter="starred"
+                    aria-pressed="false">星标</button><button data-filter="notes" aria-pressed="false">有笔记</button></nav>
+            <p id="count"></p>
+            <div id="pages"></div>
+        </section>
+        <section class="library-detail">
+            <div id="empty">
+                <h2>让读过的内容留下线索</h2>
+                <p>在网页选中文字，保存高亮或批注。<br>这里可以集中查找、整理与同步。</p>
+                <p>网页完整快照保存在拾页客户端，<br>这里管理浏览器中的标注与笔记。</p>
+            </div>
+            <div id="detail" hidden>
+                <header>
+                    <div>
+                        <h2 id="title"></h2>
+                        <p id="url"></p>
+                    </div><button id="source">打开原网页 ↗</button>
+                </header>
+                <div id="editor"></div>
+            </div>
+        </section>
+    </main>
+    <p id="status" role="status" aria-live="polite"></p>
+</body>
+
+</html>

@@ -1,6 +1,7 @@
 // Local reading records. Shared by the extension and the desktop client.
 (() => {
   const colors = { yellow: '#ffe89a', green: '#bde8c7', blue: '#bcdcff', pink: '#f7c9da', purple: '#dfcafa' };
+  const underlineColors = { yellow: '#c78b08', green: '#318957', blue: '#3678c5', pink: '#c14e80', purple: '#8654bf' };
   function url(value) {
     const u = new URL(value);
     if (!['http:', 'https:'].includes(u.protocol) || u.username || u.password || u.href.length > 8000)
@@ -126,11 +127,11 @@
     )
       conflict();
     const latest = Math.max(
-        out.note.updatedAt,
-        out.meta.updatedAt,
-        ...out.annotations.map((a) => a.updatedAt),
-        ...out.deleted.map((a) => a.updatedAt)
-      ),
+      out.note.updatedAt,
+      out.meta.updatedAt,
+      ...out.annotations.map((a) => a.updatedAt),
+      ...out.deleted.map((a) => a.updatedAt)
+    ),
       s = {
         updatedAt: Math.max(Date.now(), latest + 1),
         mutationId:
@@ -189,5 +190,5 @@
       extension
     );
   }
-  globalThis.ShiyeReading = { colors, url, empty, validate, merge, mutate, markdown, filename };
+  globalThis.ShiyeReading = { colors, underlineColors, url, empty, validate, merge, mutate, markdown, filename };
 })();

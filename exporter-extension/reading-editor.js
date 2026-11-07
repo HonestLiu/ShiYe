@@ -4,12 +4,12 @@
     container,
     record,
     mutate,
-    status = () => {},
+    status = () => { },
     locate = () => false,
     sync,
     clip,
     exportNotes,
-    changed = () => {}
+    changed = () => { }
   }) {
     const node = document.createElement('section');
     node.className = 'shiye-notes';

@@ -93,7 +93,7 @@ pub fn init(root: &Path) -> Result<()> {
     if !item_columns.iter().any(|n| n=="reading_url") {db.execute_batch("ALTER TABLE items ADD COLUMN reading_url TEXT NOT NULL DEFAULT ''").map_err(err)?;}
     let addresses:Vec<(String,String)>=db.prepare("SELECT id,url FROM items WHERE reading_url=''").map_err(err)?.query_map([],|r|Ok((r.get(0)?,r.get(1)?))).map_err(err)?.collect::<std::result::Result<_,_>>().map_err(err)?;
     for(id,address)in addresses {if let Ok(key)=crate::reading::url(&address){db.execute("UPDATE items SET reading_url=?1 WHERE id=?2",params![key,id]).map_err(err)?;}}
-    crate::batch::init(&db)?;
+    crate::batch::init(&db)?;crate::article_edit::init(&db)?;
     let terminal: Vec<String> = db
         .prepare(
             "SELECT id FROM exports WHERE item_id='' AND status IN ('done','failed','cancelled')",
@@ -106,6 +106,7 @@ pub fn init(root: &Path) -> Result<()> {
     for id in terminal {
         let _ = fs::remove_file(export_source_path(root, &id)?);
     }
+    crate::deletion::recover(root)?;
     Ok(())
 }
 pub(crate) fn db(root: &Path) -> Result<Connection> {
@@ -125,6 +126,7 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
     if archive["version"].as_u64() != Some(1) {
         return Err("不支持的归档版本".into());
     }
+    let editing=archive.as_object_mut().and_then(|a|a.remove("articleEditing")).unwrap_or(Value::Null);
     let html = archive["snapshot"]["html"]
         .as_str()
         .ok_or("归档缺少网页快照")?
@@ -164,7 +166,7 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
         r.get::<_, String>(0)
     }) {
         if archive["reading"].is_object(){crate::reading::merge(root,&url,&archive["reading"])?;}
-        return Ok(json!({"id":id,"duplicate":true}));
+        crate::article_edit::restore(root,&id,&editing)?;return Ok(json!({"id":id,"duplicate":true}));
     }
     let id = Uuid::new_v4().to_string();
     let staging = root.join("incoming").join(format!("item-{id}"));
@@ -198,6 +200,7 @@ pub fn import(root: &Path, mut archive: Value) -> Result<Value> {
         update_only(root, &id, &archive["library"])?;
     }
     if archive["reading"].is_object(){let record=match crate::reading::merge(root,&url,&archive["reading"]){Ok(v)=>v,Err(e)=>{let _=c.execute("DELETE FROM items WHERE id=?1",[&id]);let _=fs::remove_dir_all(&dir);return Err(e);}};let mut patch=json!({});if record["meta"]["updatedAt"].as_u64().unwrap_or(0)>0 {for field in ["folder","tags","starred","read"]{patch[field]=record["meta"][field].clone();}}if record["note"]["updatedAt"].as_u64().unwrap_or(0)>0{patch["notes"]=record["note"]["text"].clone();}update_only(root,&id,&patch)?;}
+    if let Err(e)=crate::article_edit::restore(root,&id,&editing){let _=c.execute("DELETE FROM items WHERE id=?1",[&id]);let _=fs::remove_dir_all(&dir);return Err(e);}
     Ok(json!({"id":id,"duplicate":false}))
 }
 pub fn list(root: &Path) -> Result<Value> {
@@ -211,7 +214,7 @@ pub fn list(root: &Path) -> Result<Value> {
 pub fn search(root: &Path, query: &str) -> Result<Value> {
     // Literal substring search supports Chinese without pretending unicode61 tokenizes it.
     let c = db(root)?;
-    let mut stmt=c.prepare("SELECT items.id FROM items LEFT JOIN reading_pages ON items.reading_url=reading_pages.url WHERE instr(lower(title||' '||items.text||' '||tags||' '||notes||' '||coalesce(reading_pages.text,'')),lower(?1))>0").map_err(err)?;
+    let mut stmt=c.prepare("SELECT items.id FROM items LEFT JOIN reading_pages ON items.reading_url=reading_pages.url WHERE instr(lower(title||' '||items.text||' '||tags||' '||notes||' '||coalesce(reading_pages.text,'')||' '||coalesce((SELECT json_extract(document,'$.text') FROM article_documents WHERE item_id=items.id),'')),lower(?1))>0").map_err(err)?;
     let rows = stmt
         .query_map([query], |r| r.get::<_, String>(0))
         .map_err(err)?;
@@ -232,6 +235,7 @@ pub fn load(root: &Path, id: &str) -> Result<Value> {
         archive["library"] = meta.clone();
     }
     if crate::reading::url(archive["url"].as_str().unwrap_or("")).is_ok(){let mut record=crate::reading::get(root,archive["url"].as_str().unwrap())?;if record["note"]["updatedAt"]==0&&archive["library"]["notes"].as_str().is_some_and(|s|!s.is_empty()&&s.encode_utf16().count()<=100000){record["note"]=json!({"text":archive["library"]["notes"],"updatedAt":1,"mutationId":"legacy"});}archive["reading"]=record;}
+    archive["articleEdit"]=crate::article_edit::metadata(root,id)?;
     Ok(archive)
 }
 pub fn update(root: &Path, id: &str, patch: &Value) -> Result<Value> {
@@ -444,7 +448,7 @@ pub fn dispatch(root: &Path, req: Value) -> Result<Value> {
     use base64::Engine;
     match req["action"].as_str().unwrap_or("") {
         "hello" => Ok(
-            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"browserPdfDownload":true,"pdfOnly":true,"appVersion":"0.10.2","offlineWebPagesVersion":1,"readingAnnotationsVersion":1,"webSnapshotLayoutVersion":2,"articleCaptureVersion":1,"dualWebCaptureVersion":1,"connectionMonitorVersion":1,"pdfOptionsVersion":1,"platform":std::env::consts::OS}),
+            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"browserPdfDownload":true,"pdfOnly":true,"appVersion":"0.16.8","offlineWebPagesVersion":1,"readingAnnotationsVersion":1,"webSnapshotLayoutVersion":2,"articleCaptureVersion":1,"dualWebCaptureVersion":1,"connectionMonitorVersion":1,"pdfOptionsVersion":1,"platform":std::env::consts::OS}),
         ),
         "reading_get"=>crate::reading::get(root,req["url"].as_str().ok_or("缺少笔记来源")?),
         "reading_merge"=>crate::reading::merge(root,req["url"].as_str().ok_or("缺少笔记来源")?,&req["record"]),

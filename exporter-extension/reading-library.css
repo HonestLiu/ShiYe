@@ -7,16 +7,20 @@
   color: #253b33;
   background: #f5f4ed;
 }
+
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
 }
+
 button,
 input {
   font: inherit;
 }
+
 button {
   border: 1px solid #d6dfd3;
   background: #fffdf8;
@@ -25,11 +29,13 @@ button {
   padding: 7px 12px;
   cursor: pointer;
 }
+
 button:focus-visible,
 input:focus-visible {
   outline: 2px solid #2c7158;
   outline-offset: 3px;
 }
+
 .library-header {
   display: flex;
   align-items: center;
@@ -39,21 +45,25 @@ input:focus-visible {
   border-bottom: 1px solid #dce3d5;
   background: #fffdf8;
 }
+
 .library-header p {
   font-size: 11px;
   letter-spacing: 1px;
   color: #71816b;
   margin: 0;
 }
+
 .library-header h1 {
   font-size: 30px;
   font-weight: 600;
   letter-spacing: 2px;
   margin: 5px 0 0;
 }
+
 .library-header button {
   margin: 3px;
 }
+
 main {
   display: grid;
   grid-template-columns: minmax(280px, 36%) 1fr;
@@ -61,10 +71,12 @@ main {
   margin: 0 auto;
   min-height: calc(100vh - 155px);
 }
+
 .library-list {
   padding: 28px;
   border-right: 1px solid #dce3d5;
 }
+
 #search {
   width: 100%;
   border: 1px solid #d6dfd3;
@@ -72,49 +84,59 @@ main {
   background: white;
   border-radius: 8px;
 }
+
 .library-list nav {
   display: flex;
   gap: 7px;
   margin: 17px 0;
 }
+
 .library-list nav button {
   font-size: 12px;
   padding: 5px 10px;
 }
+
 .library-list nav [aria-pressed='true'] {
   background: #245d49;
   color: white;
 }
+
 #count {
   font-size: 12px;
   color: #7d8877;
 }
+
 #pages {
   display: grid;
   gap: 8px;
 }
+
 #pages button {
   text-align: left;
   display: block;
   padding: 15px;
   border-color: transparent;
 }
+
 #pages button.active {
   border-color: #729d7e;
   background: #edf3e9;
 }
+
 #pages strong {
   font-size: 14px;
   font-weight: 600;
   display: block;
   overflow-wrap: anywhere;
 }
+
 #pages small {
   display: block;
   color: #7a8875;
   font-size: 11px;
   margin-top: 7px;
 }
+
 #pages p {
   font-size: 12px;
   line-height: 1.8;
@@ -123,36 +145,44 @@ main {
   overflow: hidden;
   margin-bottom: 0;
 }
+
 .library-detail {
   padding: 32px 40px;
   background: #fffdf8;
 }
+
 .library-detail header {
   border-bottom: 1px solid #e1e6d9;
   padding-bottom: 20px;
 }
+
 .library-detail h2 {
   margin: 0;
   font-size: 23px;
   overflow-wrap: anywhere;
 }
+
 #url {
   font-size: 11px;
   color: #7a8875;
   overflow-wrap: anywhere;
 }
+
 #source {
   font-size: 12px;
 }
+
 #empty {
   padding: 12vh 0;
   text-align: center;
   color: #7c8975;
 }
+
 #empty h2 {
   font-size: 20px;
   color: #49634e;
 }
+
 #status {
   position: fixed;
   bottom: 10px;
@@ -166,29 +196,46 @@ main {
   font-size: 12px;
   box-shadow: 0 3px 15px #0002;
 }
+
 #status:empty {
   display: none;
 }
+
 [hidden] {
   display: none !important;
 }
+
 @media (max-width: 750px) {
   .library-header {
     padding: 20px;
     align-items: flex-start;
     flex-direction: column;
   }
+
   main {
     display: block;
   }
+
   .library-list {
     border: 0;
     padding: 20px;
   }
+
   .library-detail {
     padding: 24px;
   }
+
   #empty {
     padding: 30px;
   }
+}:root{color:var(--note-text);background:var(--note-surface);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}.library-header{background:var(--note-bg);border-color:var(--note-line);padding:24px 5vw}.library-header p{color:var(--note-muted);letter-spacing:0}.library-header h1{font-size:23px;letter-spacing:-.3px}.library-header button{font-size:11px;min-height:32px}button{background:var(--note-bg);border-color:var(--note-line);color:var(--note-text)}button:hover{background:var(--note-selected)}button:focus-visible,input:focus-visible{outline-color:var(--note-accent)}.library-list{border-color:var(--note-line);padding:24px}#search{background:var(--note-bg);border-color:var(--note-line);color:var(--note-text);font-size:12px;padding:10px 12px}.library-list nav{gap:4px}.library-list nav button{border:0;background:var(--note-bg);font-size:11px}.library-list nav [aria-pressed=true]{background:#4267df;color:#fff}#count,#pages small,#pages p,#url,#empty,#empty h2{color:var(--note-muted)}#pages button{border-radius:8px;background:var(--note-bg);padding:14px}#pages button.active{background:var(--note-selected);border-color:var(--note-accent)}#pages strong{font-size:13px}#pages small{font-size:10px}.library-detail{background:var(--note-bg);padding:28px 34px}.library-detail header{border-color:var(--note-line)}.library-detail h2{font-size:20px}.library-detail #editor{padding-top:14px}#status{background:#3d4961;color:#fff}
+@media(min-width:751px){
+ html,body{height:100%;min-height:0}body{display:grid;grid-template-rows:auto minmax(0,1fr);height:100dvh}
+ main{width:100%;min-height:0;overflow:clip}
+ .library-list{display:flex;flex-direction:column;min-height:0;min-width:0}
+ .library-list>#search,.library-list>nav,.library-list>#count{flex:none}
+ #pages{display:block;flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 5px 8px 2px}
+ #pages button+button{margin-top:8px}.library-detail{min-height:0;overflow:auto;overscroll-behavior:contain}
 }
+@media(max-width:750px){#pages{max-height:45dvh;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px}}
+#pages button{width:100%;min-width:0;max-width:100%;box-sizing:border-box}#pages strong,#pages small,#pages p{min-width:0;max-width:100%;overflow-wrap:anywhere}#pages small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

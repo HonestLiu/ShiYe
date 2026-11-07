@@ -16,7 +16,7 @@ const release=path.join(root,'releases');await fs.mkdir(release,{recursive:true}
 try{
  execFileSync('/usr/bin/ditto',[path.join(root,'src-tauri/target/release/bundle/macos/拾页.app'),path.join(stage,'拾页.app')]);
  await fs.symlink('/Applications',path.join(stage,'Applications'));
- const output=path.join(release,`拾页_0.10.2_${process.arch}.dmg`);
+ const output=path.join(release,`拾页_0.16.8_${process.arch}.dmg`);
  execFileSync('/usr/bin/hdiutil',['create','-volname','拾页','-srcfolder',stage,'-ov','-format','UDZO',output],{stdio:'inherit'});
  console.log('Installer:',output);
 }finally{await fs.rm(stage,{recursive:true,force:true});}

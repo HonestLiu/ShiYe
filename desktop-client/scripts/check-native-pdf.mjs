@@ -48,9 +48,9 @@ try{
   if(name==='code'){for(let i=0;i<120;i++)assert(pages.join('').includes('CODE_'+i));assert(pages.join('').includes('AFTER_CODE'));assert.equal(pages.filter(p=>p.includes('CODE_119')).length,1);}
   else if(name==='diagram'){const index=pages.findIndex(p=>p.includes('FIGURE_BEGIN'));assert(index>0);assert(pages[index].includes('FIGURE_END'));assert(pages[index].includes('INDEX_3'));assert(pages.join('').includes('AFTER_FIGURE'));}
   else if(name==='tail'){assert.equal(pages.length,1);assert(pages[0].includes('END_OF_VISIBLE_CONTENT'));assert(pages[0].includes('FORMULA_VISIBLE'));assert(!pages.join('').includes('HIDDEN_SPEAKER_LABEL'));assert(!document.html.includes('HIDDEN_UI'));}
-  else if(name==='captured'){assert(pages.join('').replace(/_/g,'').includes('ARTICLEENDPROOF'));assert(pages.join('').replace(/_/g,'').includes('KEEPCOMMENT'));}
+  else if(name==='captured'){assert(pages.join('').replace(/_/g,'').includes('ARTICLEENDPROOF'));assert(pages.join('').replace(/_/g,'').includes('KEEPCOMMENT'));if(html.includes('EDITED_EXPORT_PROOF')){assert(pages.join('').replace(/_/g,'').includes('EDITEDEXPORTPROOF'));assert(pages.join('').replace(/_/g,'').includes('GRAPHPROOF'),'protected diagram text retained in edited PDF');assert(pages.join('').replace(/_/g,'').includes('TABLEEDITPROOF'));}}
   else if(name==='noted'){assert(pages.join('').replace(/_/g,'').includes('PAGENOTEPROOF'));assert(pages.join('').includes('跨段落批注'));assert(document.html.includes('data-shiye-highlight'));}
-  else{assert(pages.join('').length>0);if(html.includes('data-shiye-offline'))for(const label of ['FRAME_OFFLINE_TEXT','SHADOW_OFFLINE_TEXT','END_OF_PAGE','FONT_OFFLINE_123'])assert(pages.join('').includes(label),'offline webpage PDF must retain '+label);}
+  else{assert(pages.join('').length>0);if(html.includes('HIGHLIGHT_EXPORT_PROOF')){assert(pages.join('').replace(/_/g,'').includes('HIGHLIGHTEXPORTPROOF'));assert(document.html.includes('data-article-highlight="blue"'));}if(html.includes('data-shiye-offline'))for(const label of ['FRAME_OFFLINE_TEXT','SHADOW_OFFLINE_TEXT','END_OF_PAGE','FONT_OFFLINE_123'])assert(pages.join('').includes(label),'offline webpage PDF must retain '+label);}
   console.log('PASS WKWebView vector PDF + CoreGraphics A4 pagination:',name,pages.length,'pages');
  }
  console.log('Artifacts:',dir);

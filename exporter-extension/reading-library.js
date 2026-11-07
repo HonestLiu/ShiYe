@@ -56,6 +56,7 @@ function draw() {
         v.annotations.find((a) => a.note)?.note ||
         v.annotations[0]?.selector.exact ||
         '尚未添加笔记';
+      title.title=title.textContent;meta.title=meta.textContent;p.title=p.textContent;
       b.append(title, meta, p);
       b.onclick = () => run(() => open(v.url));
       return b;

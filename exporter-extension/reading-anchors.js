@@ -111,8 +111,8 @@
     // Segment overlaps once per text node instead of nesting or replacing markup.
     for (const [node, list] of parts) {
       const cuts = [...new Set([0, node.length, ...list.flatMap((p) => [p.start, p.end])])].sort(
-          (a, b) => a - b
-        ),
+        (a, b) => a - b
+      ),
         frag = doc.createDocumentFragment();
       for (let i = 0; i < cuts.length - 1; i++) {
         const start = cuts[i],
@@ -125,8 +125,19 @@
           const m = doc.createElement('mark');
           m.style.setProperty('all', 'unset', 'important');
           m.dataset.shiyeHighlight = marks.map((p) => p.a.id).join(' ');
-          m.style.setProperty('background-color', ShiyeReading.colors[marks[0].a.color], 'important');
-          m.style.setProperty('color', '#172b23', 'important');
+          const notes = marks.filter(({ a }) => a.kind === 'note' || !!a.note?.trim()),
+            highlights = marks.filter(({ a }) => a.kind !== 'note' && !a.note?.trim());
+          m.style.setProperty('background-color', highlights.length ? ShiyeReading.colors[highlights[0].a.color] : 'transparent', 'important');
+          m.style.setProperty('color', notes.length ? 'inherit' : '#172b23', 'important');
+          if (notes.length) {
+            m.dataset.readerNote = notes.map(({ a }) => a.id).join(' ');
+            m.style.setProperty('text-decoration-line', 'underline', 'important');
+            m.style.setProperty('text-decoration-color', ShiyeReading.underlineColors[notes[0].a.color], 'important');
+            m.style.setProperty('text-decoration-thickness', '3px', 'important');
+            m.style.setProperty('text-underline-offset', '.22em', 'important');
+            m.style.setProperty('text-decoration-skip-ink', 'auto');
+            m.style.setProperty('cursor', 'pointer', 'important');
+          }
           m.style.setProperty('box-decoration-break', 'clone');
           m.textContent = node.data.slice(start, end);
           frag.append(m);

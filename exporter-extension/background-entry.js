@@ -90,3 +90,19 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
     await menuVisibility(tab);
   })().catch(() => {});
 });
+
+async function ensureEdge(tab){
+ if(!tab?.id||!/^https?:\/\//.test(tab.url||''))return;
+ const url=new URL(tab.url);if(['chatgpt.com','chat.openai.com'].includes(url.hostname))return;
+ const {edgeLauncher={},edgeHiddenSites=[],siteEntryPreferences={}}=await chrome.storage.local.get(['edgeLauncher','edgeHiddenSites','siteEntryPreferences']);
+ const site='shiye-site-'+btoa(url.protocol+'//'+url.hostname).replace(/[^a-zA-Z0-9]/g,'');
+ if(edgeLauncher.disabled||edgeHiddenSites.includes(url.origin)||siteEntryPreferences[site]===false)return;
+ await chrome.scripting.executeScript({target:{tabId:tab.id},files:readingFiles});
+}
+chrome.runtime.onMessage.addListener((message,sender,reply)=>{
+ if(message.action!=='edgeEnsure'||sender.id!==chrome.runtime.id||!sender.tab||sender.frameId!==0)return;
+ void ensureEdge(sender.tab).then(()=>reply({ok:true}),()=>reply({ok:false}));return true;
+});
+async function restoreEdges(){for(const tab of await chrome.tabs.query({}))void ensureEdge(tab).catch(()=>{});}
+chrome.runtime.onInstalled.addListener(()=>void restoreEdges().catch(()=>{}));
+chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&((changes.edgeLauncher&&changes.edgeLauncher.newValue?.disabled!==changes.edgeLauncher.oldValue?.disabled)||changes.edgeHiddenSites||changes.siteEntryPreferences))void restoreEdges().catch(()=>{});});

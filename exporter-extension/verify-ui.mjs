@@ -40,7 +40,8 @@ try{
  for(const file of ['bootstrap.js','snapshot-adapter.js','capture.js','core.js','web-snapshot.js','role-icons.js','custom-select.js','content-ui.js'])await page.addScriptTag({content:await fs.readFile(path.join(root,file),'utf8')});
  const bar=page.locator('#conversation-archive .button-bar');
  const panel=page.locator('#conversation-archive .selector');
- await bar.getByRole('button',{name:'SELECT',exact:true}).click();
+ const edge=page.getByRole('button',{name:'打开拾页消息选择器',exact:true});await edge.waitFor();assert.equal((await edge.boundingBox()).width,32);const edgeRect=await edge.boundingBox();await page.mouse.move(Math.min(edgeRect.x+8,page.viewportSize().width-2),edgeRect.y+18);await page.mouse.down();await page.mouse.move(8,220,{steps:16});await page.mouse.up();assert(await panel.isHidden());await page.waitForFunction(()=>stored.edgeLauncher?.side==='left');await page.screenshot({path:'/tmp/archive-chat-edge.png'});
+ await page.getByRole('button',{name:'打开拾页消息选择器',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#conversation-archive').shadowRoot.querySelector('.count').textContent==='6/6');
  assert.equal(await panel.locator('.row').count(),6);
  assert.equal(await panel.locator('.row.assistant svg.role-icon use[href="#archive-role-assistant"]').count(),3);
@@ -77,7 +78,7 @@ try{
  await page.getByRole('button',{name:'完成',exact:true}).click();
  await page.evaluate(async()=>{await ArchiveCore.savePreferences({format:'md',copyToClipboard:true,muteExport:true,autoCloseSelector:true,selectType:'answers'});});
  await panel.locator('.actions [data-action=export]').click();await panel.waitFor({state:'hidden'});assert((await page.evaluate(()=>clipboardText)).includes('消息 2'),JSON.stringify(await page.evaluate(()=>({clipboardText,prefs:stored.preferences,calls:calls.slice(-4)}))));
- await bar.getByRole('button',{name:'SELECT',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#conversation-archive').shadowRoot.querySelector('.count').textContent==='3/6');
+ await page.getByRole('button',{name:'打开拾页消息选择器',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#conversation-archive').shadowRoot.querySelector('.count').textContent==='3/6');
  await page.screenshot({path:'/tmp/archive-selector-light.png'});
  await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.screenshot({path:'/tmp/archive-selector-dark.png'});
  await page.setViewportSize({width:360,height:740});assert((await panel.boundingBox()).width<=360);await page.screenshot({path:'/tmp/archive-selector-mobile.png'});

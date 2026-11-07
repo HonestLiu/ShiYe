@@ -58,11 +58,11 @@
   const markClick = (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || !document.getSelection()?.isCollapsed) return;
     const mark = e.target.closest?.('mark[data-shiye-highlight]'),
-      id = mark?.dataset.shiyeHighlight.split(' ')[0];
+      id = (mark?.dataset.readerNote || mark?.dataset.shiyeHighlight)?.split(' ')[0];
     if (!record?.annotations.some((a) => a.id === id)) return;
     e.preventDefault();
     e.stopPropagation();
-    void chrome.runtime.sendMessage({ action: 'readingOpen', url: location.href, id }).catch(() => {});
+    void chrome.runtime.sendMessage({ action: 'readingOpen', url: location.href, id }).catch(() => { });
   };
   document.addEventListener('click', markClick, true);
   function dispose() {
@@ -73,7 +73,7 @@
     observer.disconnect();
     try {
       chrome.storage.onChanged.removeListener(storage);
-    } catch {}
+    } catch { }
   }
   globalThis.__shiyeReadingRestore = { dispose };
   timer = setInterval(() => {
