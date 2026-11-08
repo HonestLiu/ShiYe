@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "拾页 · 稍后读助手",
-  "version": "1.9.17",
+  "version": "1.10.0",
   "description": "收藏网页离线快照、划词高亮与阅读笔记；支持 ChatGPT 对话选择与原貌导出。",
   "minimum_chrome_version": "120",
   "permissions": [

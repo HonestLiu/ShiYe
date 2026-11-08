@@ -24,3 +24,5 @@ $('#reading-library').onclick = () => chrome.tabs.create({ url: chrome.runtime.g
 $('#client-check').onclick = async () => { const b = $('#client-check'); b.disabled = true; $('#status').textContent = '正在连接拾页客户端…'; try { const info = await ArchiveCore.request({ action: 'clientHello' }); $('#status').textContent = '已连接 ' + (info.name || '拾页客户端'); } catch (e) { $('#status').textContent = '连接失败：' + e.message; } finally { b.disabled = false; } };
 
 $('#page-notes').onclick = async () => { try { if (!activeTab?.id || !currentOrigin) throw Error('请先打开普通网页'); await ArchiveCore.request({ action: 'openWebPage', tabId: activeTab.id }); await chrome.tabs.sendMessage(activeTab.id, { action: 'reading-open' }); window.close(); } catch (e) { $('#status').textContent = e.message; } };
+
+$('#translate-open').onclick=()=>chrome.tabs.create({url:chrome.runtime.getURL('translate.html')});

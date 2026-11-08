@@ -14,7 +14,7 @@ function trusted(sender) {
 }
 function safeFilename(value){return String(value||'chat').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/^\.+/,'_').slice(0,160);}
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
-  if(message.target==='webpage-processor')return;
+  if(message.target==='webpage-processor'||message.action==='translateBing')return;
   if(['readingGet','readingMutate','readingSync','readingList','readingDownload','readingClip','readingLink','readingBackup','readingImport','readingImage','readingConfigure','readingOpen'].includes(message.action)){
     if(sender.id!==chrome.runtime.id)return;
     globalThis.ShiyeReadingBackground.handleReading(message,sender,{native:async request=>{const r=await chrome.runtime.sendNativeMessage('io.local.archive_reader',request);if(r?.error)throw Error(r.error);if(!r?.data)throw Error('客户端未响应');void ensureClientPresence(r.data,true).catch(()=>{});return r.data;}}).then(data=>respond({data}),e=>respond({error:e.message}));return true;

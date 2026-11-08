@@ -1,3 +1,4 @@
+import {translateBing} from './bing-translation.js';
 import { handleWebPage } from './webpage-background.js';
 import { handleReading } from './reading-background.js';
 import './background.js';
@@ -106,3 +107,11 @@ chrome.runtime.onMessage.addListener((message,sender,reply)=>{
 async function restoreEdges(){for(const tab of await chrome.tabs.query({}))void ensureEdge(tab).catch(()=>{});}
 chrome.runtime.onInstalled.addListener(()=>void restoreEdges().catch(()=>{}));
 chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&((changes.edgeLauncher&&changes.edgeLauncher.newValue?.disabled!==changes.edgeLauncher.oldValue?.disabled)||changes.edgeHiddenSites||changes.siteEntryPreferences))void restoreEdges().catch(()=>{});});
+
+chrome.runtime.onMessage.addListener((message,sender,reply)=>{
+ if(message.action!=='translateBing'||sender.id!==chrome.runtime.id)return;
+ let source;try{source=new URL(sender.url);}catch{return;}
+ const extension=source.protocol==='chrome-extension:'&&source.hostname===chrome.runtime.id;
+ if(!extension&&(!sender.tab||!['http:','https:'].includes(source.protocol)))return;
+ void translateBing(message.text,message.to).then(data=>reply({data}),error=>reply({error:error.name==='TimeoutError'?'翻译请求超时，请重试':error instanceof TypeError?'无法连接必应翻译，请检查网络后重试':error.message}));return true;
+});

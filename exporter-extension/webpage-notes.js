@@ -16,7 +16,7 @@
   }
   const box = document.createElement('div');
   box.innerHTML =
-    '<section id="shiye-notes-panel" popover="auto" aria-labelledby="notes-heading" style="position:fixed;inset:20px 20px 20px auto;margin:0;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #d7e1d6;border-radius:16px;padding:22px;background:#fffdf8;color:#253b33;box-shadow:0 15px 65px #1b352731;font:13px/1.7 system-ui"><header><div><span class="eyebrow">留下一点自己的思考</span><h2 id="notes-heading">标注与笔记</h2></div><button class="close" popovertarget="shiye-notes-panel" popovertargetaction="hide" aria-label="关闭笔记面板">×</button></header><p class="site"></p><div data-editor></div><p class="notes-status" role="status" aria-live="polite"></p></section><div id="shiye-selection" popover="manual" style="position:fixed;inset:auto;margin:0;border:1px solid #d7e1d6;border-radius:10px;padding:6px;background:#fffdf8;color:#253b33;box-shadow:0 5px 25px #1b352731;font:12px system-ui"><button data-highlight>高亮</button><button data-note>批注</button><button data-clip>收藏选区</button><button data-dismiss aria-label="关闭划词工具">×</button></div>';
+    '<section id="shiye-notes-panel" popover="auto" aria-labelledby="notes-heading" style="position:fixed;inset:20px 20px 20px auto;margin:0;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #d7e1d6;border-radius:16px;padding:22px;background:#fffdf8;color:#253b33;box-shadow:0 15px 65px #1b352731;font:13px/1.7 system-ui"><header><div><span class="eyebrow">留下一点自己的思考</span><h2 id="notes-heading">标注与笔记</h2></div><button class="close" popovertarget="shiye-notes-panel" popovertargetaction="hide" aria-label="关闭笔记面板">×</button></header><p class="site"></p><div data-editor></div><p class="notes-status" role="status" aria-live="polite"></p></section><div id="shiye-selection" popover="manual" style="position:fixed;inset:auto;margin:0;border:1px solid #d7e1d6;border-radius:10px;padding:6px;background:#fffdf8;color:#253b33;box-shadow:0 5px 25px #1b352731;font:12px system-ui"><button data-highlight>高亮</button><button data-note>批注</button><button data-clip>收藏选区</button><button data-translate>翻译</button><button data-dismiss aria-label="关闭划词工具">×</button></div>';
   root.append(box);
   document.documentElement.append(host);
   const $ = (s) => root.querySelector(s),
@@ -133,6 +133,22 @@
       status(e.message);
     }
   }
+  const translation=document.createElement('section');translation.id='shiye-translation';translation.setAttribute('popover','auto');translation.setAttribute('aria-label','选区翻译');translation.innerHTML='<header><h2>选区翻译</h2><button class="close" aria-label="关闭翻译">×</button></header><p class="translation-info">仅翻译选中文字，由必应提供服务</p><blockquote data-original></blockquote><p data-result role="status" aria-live="polite"></p><div class="notes-actions"><button data-target="zh-Hans">译为中文</button><button data-target="en">译为英语</button><button data-save-translation disabled>保存为批注</button></div>';root.append(translation);
+  let translated=null,translationSelector=null,translationUrl=null,translationRevision=0;
+  translation.querySelector('.close').onclick=()=>translation.hidePopover();
+  async function translateSelection(to='zh-Hans'){
+    const own=++translationRevision,selector=translationSelector,url=translationUrl;if(!selector)return;
+    translated=null;translation.querySelector('[data-save-translation]').disabled=true;translation.querySelector('[data-result]').textContent='正在翻译…';
+    try{const result=await request({action:'translateBing',text:selector.display||selector.exact,to});if(disposed||own!==translationRevision||location.href!==url)return;translated=result;translation.querySelector('[data-result]').textContent=result.text+(result.cached?'\n（本地缓存）':'');translation.querySelector('[data-save-translation]').disabled=false;}catch(e){if(own===translationRevision)translation.querySelector('[data-result]').textContent=e.message;}
+  }
+  for(const b of translation.querySelectorAll('[data-target]'))b.onclick=()=>translateSelection(b.dataset.target);
+  $('[data-translate]').onclick=()=>{if(!selection)return;translationSelector={...selection};translationUrl=location.href;hide();translation.querySelector('[data-original]').textContent=translationSelector.display||translationSelector.exact;translation.showPopover();void translateSelection();};
+  translation.querySelector('[data-save-translation]').onclick=async()=>{
+    if(!translated||!translationSelector)return;const b=translation.querySelector('[data-save-translation]');b.disabled=true;
+    try{if(location.href!==translationUrl)throw Error('网页已切换，请重新选择文字');if(editor?.hasDraft())throw Error('请先保存正在编辑的笔记');const existing=record.annotations.find(a=>a.selector.start===translationSelector.start&&a.selector.exact===translationSelector.exact),note=(existing?.note?existing.note+'\n\n':'')+'必应译文：\n'+translated.text;
+      const next=await mutate({kind:'upsert',annotation:{...(existing||{id:crypto.randomUUID?.()||Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),selector:translationSelector,color:Object.hasOwn(ShiyeReading.colors,preferences.color)?preferences.color:'yellow'}),kind:'note',note},...(existing?{expected:existing}:{})});editor.set(next);translation.hidePopover();open(existing?.id||next.annotations.find(a=>a.note===note)?.id);status('译文已保存为批注');
+    }catch(e){translation.querySelector('[data-result]').textContent=e.message;b.disabled=false;}
+  };
   $('[data-highlight]').onclick = () => add(false);
   $('[data-note]').onclick = () => add(true);
   $('[data-clip]').onclick = async () => {
@@ -200,6 +216,7 @@
   observer.observe(document.body, { childList: true, subtree: true, characterData: true });
   const timer = setInterval(() => {
     if (location.href !== currentUrl) {
+      ++translationRevision;translated=null;translationSelector=null;translation.hidePopover();
       hide();
       if (editor?.hasDraft()) {
         status('网页已切换，当前笔记草稿仍保留；请返回原页面保存。');
