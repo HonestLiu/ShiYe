@@ -161,7 +161,7 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
         }
         "reading_list"=>reading::all(&root),
         "reading_get"=>reading::get(&root,request["url"].as_str().ok_or("缺少笔记来源")?),
-        "reading_merge"=>{let result=reading::merge(&root,request["url"].as_str().ok_or("缺少笔记来源")?,&request["record"])?;let _=app.emit("reading-changed",json!({"url":result["url"]}));let _=app.emit("library-changed",json!({}));Ok(result)},
+        "reading_merge"=>{let before=reading::revision(&root);let result=reading::merge(&root,request["url"].as_str().ok_or("缺少笔记来源")?,&request["record"])?;if before!=reading::revision(&root){let _=app.emit("reading-changed",json!({"url":result["url"]}));let _=app.emit("library-changed",json!({}));}Ok(result)},
         "list" => library::list(&root),
         "purge" => {require_main(&window)?;let result=deletion::purge(&root,&request)?;let _=app.emit("library-changed",json!({}));let _=app.emit("reading-changed",json!({}));Ok(result)},
         "pending_exports" => library::pending_exports(&root),
@@ -180,7 +180,7 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
         "connection_check" => app.state::<connections::Monitor>().check(request["sessionId"].as_str().ok_or("缺少连接ID")?),
         "unpair" => { bridge::unregister(&root,request["extensionId"].as_str().ok_or("缺少扩展ID")?)?; Ok(json!({"ok":true})) },
         "info" => Ok(
-            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.16.8"}),
+            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.16.9"}),
         ),
         "import_file" => {
             let path = request["path"].as_str().ok_or("缺少文件路径")?;

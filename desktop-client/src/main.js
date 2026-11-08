@@ -135,6 +135,7 @@ deleteDialog.querySelector('form').onsubmit=e=>{e.preventDefault();if(deleting)r
 $('#delete-permanently').onclick=()=>requestPurge([selected]);$('#empty-trash').onclick=()=>requestPurge();
 async function changeItems(ids,patchValue){if(ids.length===1)await cmd({action:'update',id:ids[0],patch:patchValue});else await cmd({action:'batch_update',ids,patch:patchValue});await refresh();updateToolbar();}
 mountContextMenus({cmd,run,status,resolve:({target,doc,text,restore})=>{
+ const noteActions=doc===document?annotations.contextActions(target):null;if(noteActions)return noteActions;
  const row=target.closest('.item'),item=row?items.find(i=>i.id===row.dataset.itemId):doc!==document||target.closest('.reader')?items.find(i=>i.id===selected):null;
  if(item){const ids=row&&bulk.ids.has(item.id)&&bulk.ids.size>1?[...bulk.ids]:[item.id],chosen=items.filter(i=>ids.includes(i.id)),allTrash=chosen.every(i=>i.trashed),actions=[];
   if(row&&ids.length===1)actions.push({label:'打开收藏',icon:'note',action:()=>select(item.id)});

@@ -1,6 +1,6 @@
 import './reading-model.js';
 const M = globalThis.ShiyeReading;
-let queue = Promise.resolve();
+let queue = Promise.resolve(), pendingLocal = true;
 const key = async (url) =>
   'reading:' +
   Array.from(
@@ -35,6 +35,7 @@ async function persist(record, extra = {}) {
   record = M.validate(record);
   const k = await key(record.url),
     old = (await chrome.storage.local.get(k))[k] || {};
+  if (extra.syncPending !== false) pendingLocal = true;
   await chrome.storage.local.set({ [k]: { ...old, ...extra, record, updatedAt: Date.now() } });
   try {
     await restoreSite(record);
@@ -48,6 +49,52 @@ export function rememberReading(record, extra) {
   const task = queue.then(async () => persist(M.merge(await localReading(record.url), record), extra));
   queue = task.catch(() => { });
   return task;
+}
+let syncTask = null, lastSyncAttempt = 0, observedRevision = null;
+const nativeContext = {native: async request => {
+  const r = await chrome.runtime.sendNativeMessage('io.local.archive_reader', request);
+  if (r?.error) throw Error(r.error);
+  if (!r?.data) throw Error('客户端未响应');
+  return r.data;
+}};
+export function syncAllReading(context = nativeContext) {
+  if (syncTask) return syncTask;
+  const task = queue.then(async () => {
+    const hello = await context.native({action:'hello'});
+    if (hello.readingSyncVersion !== 1) throw Error('自动同步需要更新拾页客户端');
+    const all = await chrome.storage.local.get(null), urls = new Set(Object.entries(all).filter(([k])=>k.startsWith('reading:')).map(([,v])=>M.url(v.record.url)));
+    let after = '', initialRevision, pages = 0;
+    do {
+      const inventory = await context.native({action:'reading_inventory',after});
+      if (!Array.isArray(inventory.urls) || inventory.urls.length > 50 || ++pages > 2000) throw Error('客户端笔记列表异常');
+      initialRevision ??= inventory.revision;
+      for (const url of inventory.urls) urls.add(M.url(url));
+      if (inventory.next && (typeof inventory.next !== 'string' || inventory.next <= after)) throw Error('客户端同步游标异常');
+      after = inventory.next || '';
+    } while(after);
+    let count = 0;
+    for (const url of urls) {
+      const local = await localReading(url), k = await key(url);
+      const merged = M.merge(local, await context.native({action:'reading_merge',url,record:local}));
+      const stored = (await chrome.storage.local.get(k))[k];
+      if (!stored || JSON.stringify(stored.record)!==JSON.stringify(merged) || stored.syncPending)
+        await persist(merged,{syncPending:false,syncedAt:Date.now()});
+      count++;
+    }
+    // Keep the pre-exchange revision: concurrent changes trigger another pass.
+    observedRevision = initialRevision; pendingLocal = false;
+    await chrome.storage.local.set({readingSyncStatus:{at:Date.now(),error:''}});
+    return {count};
+  });
+  queue = task.catch(()=>{});
+  syncTask = task.finally(()=>{syncTask=null;});
+  return syncTask;
+}
+export async function autoSyncReading(revision) {
+  if (typeof revision!=='string' || syncTask || Date.now()-lastSyncAttempt<15000) return;
+  if (revision===observedRevision && !pendingLocal) return;
+  lastSyncAttempt = Date.now();
+  try {await syncAllReading();} catch(e) {await chrome.storage.local.set({readingSyncStatus:{at:Date.now(),error:e.message}});}
 }
 const escape = (value) =>
   String(value).replace(
@@ -159,6 +206,7 @@ export async function handleReading(message, sender, context) {
     queue = task.catch(() => { });
     return task;
   }
+  if (message.action === 'readingSyncAll') {if (!dashboard) throw Error('请从笔记库同步全部记录');return syncAllReading(context);}
   if (['readingList', 'readingBackup', 'readingImport'].includes(message.action)) {
     if (!dashboard) throw Error('只有笔记库可以访问全部记录');
     const task = queue.then(async () => {
@@ -187,9 +235,10 @@ export async function handleReading(message, sender, context) {
         updates[k] = {
           ...old,
           record: M.merge(old?.record || M.empty(record.url), record),
-          updatedAt: Date.now()
+          updatedAt: Date.now(), syncPending:true
         };
       }
+      pendingLocal = true;
       await chrome.storage.local.set(updates);
       return { ok: true };
     });
@@ -224,7 +273,11 @@ export async function handleReading(message, sender, context) {
   const task = queue.then(async () => {
     const local = await localReading(url);
     if (message.action === 'readingGet') return local;
-    if (message.action === 'readingMutate') return persist(M.mutate(local, message.op));
+    if (message.action === 'readingMutate') {
+      const saved=await persist(M.mutate(local, message.op),{syncPending:true});
+      if(['clear','delete'].includes(message.op?.kind)) void syncAllReading(context).catch(async e=>{await chrome.storage.local.set({readingSyncStatus:{at:Date.now(),error:e.message}});});
+      return saved;
+    }
     if (message.action === 'readingDownload') {
       if (!['md', 'json'].includes(message.format)) throw Error('不支持的笔记格式');
       const data = message.format === 'json' ? JSON.stringify(local, null, 2) : M.markdown(local),
@@ -306,8 +359,9 @@ export async function handleReading(message, sender, context) {
     if (message.action === 'readingSync') {
       const hello = await context.native({ action: 'hello' });
       if (hello.readingAnnotationsVersion !== 1) throw Error('标注同步需要拾页0.8.0或以上版本');
+      if(local.cleared && hello.readingSyncVersion!==1) throw Error('整页删除同步需要更新拾页客户端');
       const merged = await context.native({ action: 'reading_merge', url, record: local });
-      return persist(M.merge(local, merged), { syncedAt: Date.now() });
+      return persist(M.merge(local, merged), { syncedAt: Date.now(), syncPending:false });
     }
     throw Error('无效的阅读笔记操作');
   });

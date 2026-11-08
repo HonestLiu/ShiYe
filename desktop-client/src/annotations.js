@@ -48,6 +48,7 @@ export function mountAnnotations({ cmd, run, status }) {
         )
         .map((value) => {
           const b = document.createElement('button');
+          b.dataset.url = value.url;
           b.className = value.url === notebookUrl ? 'active' : '';
           const title = document.createElement('strong');
           title.textContent = value.meta.title || new URL(value.url).hostname;
@@ -60,7 +61,7 @@ export function mountAnnotations({ cmd, run, status }) {
     );
   }
   async function refreshPages() {
-    pages = (await cmd({ action: 'reading_list' })).sort(
+    pages = (await cmd({ action: 'reading_list' })).filter(v=>!M.isRemoved(v)).sort(
       (a, b) =>
         Math.max(b.note.updatedAt, b.meta.updatedAt, ...b.annotations.map((a) => a.updatedAt)) -
         Math.max(a.note.updatedAt, a.meta.updatedAt, ...a.annotations.map((a) => a.updatedAt))
@@ -92,6 +93,7 @@ export function mountAnnotations({ cmd, run, status }) {
         status('请在对应的网页快照或原网页中定位摘录');
         return false;
       },
+      removed: () => {notebookUrl=null;notebookEditor?.dispose();notebookEditor=null;document.querySelector('#notebook-detail').hidden=true;document.querySelector('#notebook-empty').hidden=false;void run(refreshPages);},
       exportNotes: exportRecord
     });
     drawPages();
@@ -246,8 +248,10 @@ export function mountAnnotations({ cmd, run, status }) {
     if (notebook.open)
       void run(async () => {
         await refreshPages();
-        if (notebookUrl && notebookEditor && !notebookEditor.isBusy() && !notebookEditor.hasDraft())
-          notebookEditor.set(await cmd({ action: 'reading_get', url: notebookUrl }));
+        if (notebookUrl && notebookEditor && !notebookEditor.isBusy() && !notebookEditor.hasDraft()) {
+          const fresh = await cmd({ action: 'reading_get', url: notebookUrl });
+          if(M.isRemoved(fresh)){notebookUrl=null;notebookEditor.dispose();notebookEditor=null;$('#notebook-detail').hidden=true;$('#notebook-empty').hidden=false;}else notebookEditor.set(fresh);
+        }
       });
     if (!active || editor?.isBusy()) return;
     const address = event.payload?.url;
@@ -263,6 +267,7 @@ export function mountAnnotations({ cmd, run, status }) {
     });
   });
   return {
+    contextActions(target) {const row=target.closest('#notebook-pages button');if(!row)return null;return [{label:'打开阅读记录',icon:'note',action:()=>row.click()},{label:'删除本页笔记',icon:'trash',danger:true,action:async()=>{await openNotebookPage(row.dataset.url);document.querySelector('#notebook-editor [data-delete-page]').click();}}];},
     hasDraft: () => !!editor?.hasDraft(),
     attach({ doc, archive }) {
       stopObserving();

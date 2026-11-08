@@ -72,6 +72,7 @@
       stamp(d);
       if (typeof d.id !== 'string' || !/^[a-zA-Z0-9-]{1,80}$/.test(d.id)) throw Error('无效的删除记录');
     }
+    if (v.cleared) stamp(v.cleared);
     stamp(v.note);
     text(v.note.text, 100000);
     stamp(v.meta);
@@ -97,11 +98,14 @@
       if (newer(d, deleted.get(d.id))) deleted.set(d.id, d);
     for (const a of [...left.annotations, ...right.annotations])
       if (newer(a, entries.get(a.id))) entries.set(a.id, a);
-    out.deleted = [...deleted.values()].sort((a, b) => a.id.localeCompare(b.id));
+    const cleared = !left.cleared ? right.cleared : !right.cleared ? left.cleared : newer(right.cleared, left.cleared) ? right.cleared : left.cleared;
+    if (cleared) out.cleared = cleared;
+    out.deleted = [...deleted.values()].filter(d=>!cleared || !newer(cleared,d)).sort((a, b) => a.id.localeCompare(b.id));
     out.annotations = [...entries.values()]
-      .filter((a) => !deleted.has(a.id) || newer(a, deleted.get(a.id)))
+      .filter((a) => (!cleared || newer(a, cleared)) && (!deleted.has(a.id) || newer(a, deleted.get(a.id))))
       .sort((a, b) => a.selector.start - b.selector.start || a.id.localeCompare(b.id));
     out.note = newer(right.note, left.note) ? right.note : left.note;
+    if (cleared && !newer(out.note, cleared)) out.note = {text:'', ...cleared};
     out.meta = newer(right.meta, left.meta) ? right.meta : left.meta;
     return validate(out);
   }
@@ -111,6 +115,7 @@
     const conflict = () => {
       throw Error('此笔记已在另一处更新，当前草稿仍保留；请复制草稿后重新打开记录');
     };
+    if (op.kind === 'clear' && op.base && JSON.stringify(out) !== JSON.stringify(validate(op.base))) conflict();
     if (op.expected) {
       const current =
         op.kind === 'note'
@@ -127,6 +132,7 @@
     )
       conflict();
     const latest = Math.max(
+      out.cleared?.updatedAt || 0,
       out.note.updatedAt,
       out.meta.updatedAt,
       ...out.annotations.map((a) => a.updatedAt),
@@ -140,7 +146,9 @@
             ''
           )
       };
-    if (op.kind === 'organize') {
+    if (op.kind === 'clear') {
+      out.cleared = s; out.deleted = out.annotations.map(a=>({id:a.id,...s})); out.annotations = []; out.note = {text:'', ...s};
+    } else if (op.kind === 'organize') {
       out.note = { text: op.text, ...s };
       out.meta = { ...out.meta, ...op.patch, ...s };
     } else if (op.kind === 'upsert') {
@@ -190,5 +198,6 @@
       extension
     );
   }
-  globalThis.ShiyeReading = { colors, underlineColors, url, empty, validate, merge, mutate, markdown, filename };
+  const isRemoved = record => !!record.cleared && !record.annotations.length && !record.note.text;
+  globalThis.ShiyeReading = { isRemoved, colors, underlineColors, url, empty, validate, merge, mutate, markdown, filename };
 })();

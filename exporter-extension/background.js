@@ -14,8 +14,8 @@ function trusted(sender) {
 }
 function safeFilename(value){return String(value||'chat').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/^\.+/,'_').slice(0,160);}
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
-  if(message.target==='webpage-processor'||message.action==='translateBing')return;
-  if(['readingGet','readingMutate','readingSync','readingList','readingDownload','readingClip','readingLink','readingBackup','readingImport','readingImage','readingConfigure','readingOpen'].includes(message.action)){
+  if(message.target==='webpage-processor'||['translateBing','edgeEnsure'].includes(message.action))return;
+  if(['readingSyncAll','readingGet','readingMutate','readingSync','readingList','readingDownload','readingClip','readingLink','readingBackup','readingImport','readingImage','readingConfigure','readingOpen'].includes(message.action)){
     if(sender.id!==chrome.runtime.id)return;
     globalThis.ShiyeReadingBackground.handleReading(message,sender,{native:async request=>{const r=await chrome.runtime.sendNativeMessage('io.local.archive_reader',request);if(r?.error)throw Error(r.error);if(!r?.data)throw Error('客户端未响应');void ensureClientPresence(r.data,true).catch(()=>{});return r.data;}}).then(data=>respond({data}),e=>respond({error:e.message}));return true;
   }
@@ -73,6 +73,9 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       return {ok:true};
     }
 
+    // Only path-based requests belong to the HTTP PDF service.
+    // Unknown UI actions must never fall through to its path validation.
+    if(message.action)throw Error('扩展后台不支持此操作，请重新加载插件，并关闭后重新打开笔记页');
     const { connection = DEFAULT_CONNECTION } = await chrome.storage.local.get('connection');
     const base = new URL(connection.url);
     if (!['http:','https:'].includes(base.protocol) || base.username || base.password || base.pathname !== '/' || base.search || base.hash) throw Error('服务地址只能包含 HTTP(S) 域名或 IP 和端口');
@@ -148,6 +151,7 @@ async function ensureClientPresence(info={},explicit=false){
   port.onMessage.addListener(reply=>{
    if(reply?.error){close();return;}
    if(reply?.data?.protocol===1){clearTimeout(deadline);if(!timer)timer=setInterval(()=>send({action:'connection_heartbeat'}),3000);clientPresenceRetries=0;}
+   if(typeof reply?.data?.readingRevision==='string')void globalThis.ShiyeReadingBackground.autoSyncReading(reply.data.readingRevision).catch(()=>{});
    if(typeof reply?.data?.challenge==='string')send({action:'connection_pong',nonce:reply.data.challenge});
   });
   port.onDisconnect.addListener(()=>{void chrome.runtime.lastError;finish();});

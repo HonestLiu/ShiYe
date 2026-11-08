@@ -48,17 +48,18 @@ pub fn serve(root: std::path::PathBuf, app: tauri::AppHandle) -> Result<()> {
                     .as_str()
                     .is_some_and(|a| a.starts_with("connection_"))
                 {
-                    return app
-                        .state::<crate::connections::Monitor>()
-                        .receive(&root, &req);
+                    let mut response = app.state::<crate::connections::Monitor>().receive(&root, &req)?;
+                    response["readingRevision"] = json!(crate::reading::revision(&root));
+                    return Ok(response);
                 }
                 let committed = req["action"] == "commit";
                 let reading_changed=if req["action"]=="reading_merge"{req["url"].as_str().map(str::to_owned)}else{None};
+                let before_reading = crate::reading::revision(&root);
                 let hello = req["action"] == "hello";
                 let inspect_policy = req["includePolicy"] == true;
                 let inspect_connections = req["includeConnections"] == true;
                 let mut value = library::dispatch(&root, req)?;
-                if let Some(url)=reading_changed {let _=app.emit("reading-changed",json!({"url":url}));let _=app.emit("library-changed",json!({}));}
+                if let Some(url)=reading_changed.filter(|_| before_reading != crate::reading::revision(&root)) {let _=app.emit("reading-changed",json!({"url":url}));let _=app.emit("library-changed",json!({}));}
                 if hello {
                     if inspect_connections {
                         value["connections"] =

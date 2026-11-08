@@ -1,10 +1,10 @@
 import {translateBing} from './bing-translation.js';
 import { handleWebPage } from './webpage-background.js';
-import { handleReading } from './reading-background.js';
+import { handleReading, autoSyncReading } from './reading-background.js';
 import './background.js';
 // Static dependencies: dynamic import is unavailable in an extension service worker.
 globalThis.ShiyeWebPageBackground = { handleWebPage };
-globalThis.ShiyeReadingBackground = { handleReading };
+globalThis.ShiyeReadingBackground = { handleReading, autoSyncReading };
 const readingFiles = [
   'capture-ui.js','webpage-prepare.js',
   'webpage-ui.js',

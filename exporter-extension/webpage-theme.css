@@ -8,3 +8,5 @@
 #shiye-notes-panel>header{position:sticky;top:-20px;z-index:2;background:var(--note-bg);padding-top:20px;margin-top:-20px}
 
 #shiye-translation{position:fixed;inset:auto 20px 70px auto;margin:0;width:min(380px,calc(100vw - 32px));max-height:75dvh;overflow:auto;padding:18px;border:1px solid var(--note-line);border-radius:12px;background:var(--note-bg);color:var(--note-text);box-shadow:0 10px 40px #25354b28;font:12px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}#shiye-translation h2{font-size:17px;margin:0}#shiye-translation .translation-info{color:var(--note-muted);font-size:10px}#shiye-translation blockquote{margin:12px 0;padding-left:10px;border-left:3px solid var(--note-line);max-height:130px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}#shiye-translation [data-result]{white-space:pre-wrap;overflow-wrap:anywhere}#shiye-translation button{font-size:11px;background:var(--note-surface);color:var(--note-text);border-color:var(--note-line)}
+
+#shiye-selection{max-width:calc(100vw - 16px)}

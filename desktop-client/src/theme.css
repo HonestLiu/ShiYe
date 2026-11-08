@@ -41,3 +41,5 @@
 :root[data-theme=dark] #notebook-editor .notes-color[aria-pressed=true]{border-color:#adc0ff;outline-color:#22262e}
 :root[data-theme=dark] #notebook-editor .notes-card.unresolved{background:#463c2a;color:#f0dfb9}
 :root[data-theme=dark] #notebook-editor :focus-visible{outline-color:#a2b8ff}
+
+:root[data-theme=dark] .notes-delete-dialog{background:#22262e;color:#e0e5ee;border-color:#414957}

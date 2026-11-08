@@ -111,6 +111,7 @@ pub fn validate(v: &Value, address: &str) -> Result<Value> {
         id(&d["id"])?;
         stamp(d)?;
     }
+    if let Some(cleared) = v.get("cleared") { stamp(cleared)?; }
     stamp(&v["note"])?;
     text(&v["note"]["text"], 100000)?;
     stamp(&v["meta"])?;
@@ -143,17 +144,22 @@ fn combine(a: &Value, b: &Value) -> Result<Value> {
             }
         }
     }
+    let cleared = match (a.get("cleared"), b.get("cleared")) {
+        (Some(a), Some(b)) => Some(if newer(b,a) { b } else { a }),
+        (Some(a), None) => Some(a), (None, Some(b)) => Some(b), _ => None
+    };
+    if let Some(clear) = cleared { out["cleared"] = clear.clone(); }
     let mut marks: Vec<Value> = entries
         .into_values()
         .filter(|a| {
-            deleted
+            cleared.is_none_or(|clear| newer(a, clear)) && deleted
                 .get(a["id"].as_str().unwrap())
                 .is_none_or(|d| newer(a, d))
         })
         .collect();
     marks.sort_by_key(|a| a["selector"]["start"].as_u64().unwrap());
     out["annotations"] = json!(marks);
-    out["deleted"] = json!(deleted.into_values().collect::<Vec<_>>());
+    out["deleted"] = json!(deleted.into_values().filter(|d| cleared.is_none_or(|clear| !newer(clear,d))).collect::<Vec<_>>());
     for field in ["note", "meta"] {
         out[field] = if newer(&b[field], &a[field]) {
             b[field].clone()
@@ -161,6 +167,7 @@ fn combine(a: &Value, b: &Value) -> Result<Value> {
             a[field].clone()
         };
     }
+    if let Some(clear) = cleared { if !newer(&out["note"], clear) { out["note"] = json!({"text":"","updatedAt":clear["updatedAt"],"mutationId":clear["mutationId"]}); } }
     validate(&out, address)
 }
 pub fn get(root: &Path, address: &str) -> Result<Value> {
@@ -199,6 +206,7 @@ pub fn merge(root: &Path, address: &str, incoming: &Value) -> Result<Value> {
         None => empty(&key)?,
     };
     let out = combine(&old, &incoming)?;
+    if out == old { return Ok(out); }
     let searchable = out["annotations"]
         .as_array()
         .unwrap()
@@ -249,6 +257,7 @@ pub fn merge(root: &Path, address: &str, incoming: &Value) -> Result<Value> {
         }
     }
     tx.commit().map_err(err)?;
+    std::fs::write(root.join("reading-revision"), uuid::Uuid::new_v4().to_string()).map_err(err)?;
     Ok(out)
 }
 pub fn all(root: &Path) -> Result<Value> {
@@ -264,6 +273,19 @@ pub fn all(root: &Path) -> Result<Value> {
         .into_iter()
         .map(|s| serde_json::from_str::<Value>(&s).map_err(err))
         .collect::<Result<Vec<_>>>()?))
+}
+// Bounded inventory; each record is transferred separately to fit Native Messaging limits.
+pub fn inventory(root: &Path, after: &str) -> Result<Value> {
+    let c = db(root)?;
+    let rows = c.prepare("SELECT url FROM reading_pages WHERE url > ?1 ORDER BY url LIMIT 51").map_err(err)?
+        .query_map([after], |r| r.get::<_, String>(0)).map_err(err)?
+        .collect::<std::result::Result<Vec<_>, _>>().map_err(err)?;
+    let more = rows.len() > 50;
+    let urls: Vec<_> = rows.into_iter().take(50).collect();
+    Ok(json!({"urls":urls,"next":if more {urls.last().cloned()} else {None},"revision":revision(root)}))
+}
+pub fn revision(root: &Path) -> String {
+    std::fs::read_to_string(root.join("reading-revision")).unwrap_or_else(|_| "initial".into())
 }
 pub fn markdown(record: &Value) -> Result<String> {
     let r = validate(record, record["url"].as_str().ok_or("缺少笔记来源")?)?;
@@ -302,6 +324,30 @@ pub fn markdown(record: &Value) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn page_deletion_barrier_survives_old_copies_and_allows_new_notes() {
+        let root = std::env::temp_dir().join(format!("reading-clear-{}", uuid::Uuid::new_v4()));
+        crate::library::init(&root).unwrap();
+        let address = "https://example.test/delete";
+        let mut old = empty(address).unwrap();
+        old["note"] = json!({"text":"old note","updatedAt":10,"mutationId":"old"});
+        old["annotations"] = json!([{"id":"old-mark","selector":{"exact":"原","prefix":"","suffix":"","start":0,"end":1},"note":"批注","color":"yellow","updatedAt":10,"mutationId":"old"}]);
+        merge(&root,address,&old).unwrap();
+        let mut cleared = empty(address).unwrap();
+        cleared["cleared"] = json!({"updatedAt":20,"mutationId":"delete"});
+        let result = merge(&root,address,&cleared).unwrap();
+        assert_eq!(result["note"]["text"], "");
+        assert!(result["annotations"].as_array().unwrap().is_empty());
+        assert!(merge(&root,address,&old).unwrap()["annotations"].as_array().unwrap().is_empty());
+        let rev = revision(&root);
+        merge(&root,address,&old).unwrap();
+        assert_eq!(rev,revision(&root),"unchanged sync must not generate revision loops");
+        old["annotations"][0]["id"] = json!("new-mark");
+        old["annotations"][0]["updatedAt"] = json!(30);
+        assert_eq!(merge(&root,address,&old).unwrap()["annotations"].as_array().unwrap().len(),1);
+        assert_eq!(inventory(&root,"").unwrap()["urls"].as_array().unwrap().len(),1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn merged_capacity_rejects_before_snapshot_import() {
         let root = std::env::temp_dir().join(format!("reading-cap-{}", uuid::Uuid::new_v4()));

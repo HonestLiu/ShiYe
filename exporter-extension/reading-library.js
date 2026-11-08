@@ -65,6 +65,7 @@ function draw() {
 }
 async function refresh() {
   entries = await request({ action: 'readingList' });
+  entries = entries.filter(e=>!ShiyeReading.isRemoved(e.record));
   draw();
 }
 async function open(url) {
@@ -87,6 +88,7 @@ async function open(url) {
       await refresh();
       return next;
     },
+    removed: () => {current=null;editor?.dispose();editor=null;$('#detail').hidden=true;$('#empty').hidden=false;void run(refresh);},
     sync: () => request({ action: 'readingSync', url }),
     locate: () => {
       status('请打开原网页定位标注');
@@ -104,6 +106,7 @@ for (const b of document.querySelectorAll('[data-filter]'))
       n.setAttribute('aria-pressed', String(n === b));
     draw();
   };
+$('#sync-all').onclick = () => run(async()=>{const button=$('#sync-all');button.disabled=true;status('正在与客户端同步…');try{await request({action:'readingSyncAll'});await refresh();const next=entries.find(e=>e.record.url===current);if(next&&editor&&!editor.hasDraft())editor.set(next.record);else if(current&&!next){current=null;editor?.dispose();editor=null;$('#detail').hidden=true;$('#empty').hidden=false;}status('已与客户端双向同步；连接期间会自动更新');}finally{button.disabled=false;}});
 $('#source').onclick = () => {
   if (current) chrome.tabs.create({ url: current });
 };
@@ -138,7 +141,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
       run(async () => {
         await refresh();
         const next = entries.find((e) => e.record.url === current);
-        if (next && editor && !editor.isBusy()) editor.set(next.record);
+        if (next && editor && !editor.isBusy() && !editor.hasDraft()) editor.set(next.record);
+        else if(current&&!next&&!editor?.hasDraft()&&!editor?.isBusy()){current=null;editor?.dispose();editor=null;$('#detail').hidden=true;$('#empty').hidden=false;}
       }),
     150
   );

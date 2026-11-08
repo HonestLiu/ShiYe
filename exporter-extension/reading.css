@@ -177,3 +177,4 @@
 .notes-help:empty {
   display: none;
 }
+.notes-delete-dialog{max-width:min(420px,calc(100vw - 32px));padding:24px;border:1px solid var(--note-line,#dce0dd);border-radius:12px;background:var(--note-bg,#fff);color:var(--note-text,#253b33);font:14px/1.7 system-ui;overscroll-behavior:contain}.notes-delete-dialog::backdrop{background:#0005;overflow:hidden;overscroll-behavior:contain}.notes-delete-dialog [data-confirm-delete],[data-delete-page]{color:#c04444}.notes-delete-dialog [data-delete-error]{color:#c04444}

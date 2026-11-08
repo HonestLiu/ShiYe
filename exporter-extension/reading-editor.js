@@ -9,12 +9,13 @@
     sync,
     clip,
     exportNotes,
+    removed = () => {},
     changed = () => { }
   }) {
     const node = document.createElement('section');
     node.className = 'shiye-notes';
     node.innerHTML =
-      '<div class="notes-meta"><label>收藏夹<input data-field="folder" maxlength="100" placeholder="例如：学习 / 待读"></label><label>标签（逗号分隔）<input data-field="tags" maxlength="500" placeholder="计组, 参考资料"></label><div class="notes-checks"><label><input type="checkbox" data-field="starred">星标</label><label><input type="checkbox" data-field="read">已读</label></div></div><label class="notes-label">整页阅读笔记<textarea data-page-note rows="4" maxlength="100000" placeholder="记下自己的理解、疑问或下一步…"></textarea></label><div class="notes-actions"><button data-save class="primary">保存笔记与整理</button><button data-sync>同步客户端</button><button data-export>导出笔记</button></div><p class="notes-help">笔记保存在本机。定位失败时保留摘录，不强行标到其他段落。</p><div class="notes-list-head"><strong>高亮与批注 <span data-count></span></strong><label><input type="checkbox" data-visible checked>显示高亮</label></div><div data-marks></div><p data-empty>选中网页文字后，可高亮、添加批注或收藏选区。</p>';
+      '<div class="notes-meta"><label>收藏夹<input data-field="folder" maxlength="100" placeholder="例如：学习 / 待读"></label><label>标签（逗号分隔）<input data-field="tags" maxlength="500" placeholder="计组, 参考资料"></label><div class="notes-checks"><label><input type="checkbox" data-field="starred">星标</label><label><input type="checkbox" data-field="read">已读</label></div></div><label class="notes-label">整页阅读笔记<textarea data-page-note rows="4" maxlength="100000" placeholder="记下自己的理解、疑问或下一步…"></textarea></label><div class="notes-actions"><button data-save class="primary">保存笔记与整理</button><button data-sync>同步客户端</button><button data-export>导出笔记</button><button data-delete-page>删除本页笔记</button></div><p class="notes-help">笔记保存在本机。定位失败时保留摘录，不强行标到其他段落。</p><div class="notes-list-head"><strong>高亮与批注 <span data-count></span></strong><label><input type="checkbox" data-visible checked>显示高亮</label></div><div data-marks></div><p data-empty>选中网页文字后，可高亮、添加批注或收藏选区。</p>';
     container.append(node);
     const $ = (s) => node.querySelector(s);
     let value = record,
@@ -167,6 +168,21 @@
         values();
         status('笔记与整理已保存在本机');
       });
+    const confirmation = document.createElement('dialog');
+    const confirmTitle = 'delete-notes-' + (crypto.randomUUID?.() || Math.random().toString(36).slice(2));
+    confirmation.className = 'notes-delete-dialog'; confirmation.setAttribute('aria-labelledby', confirmTitle);
+    confirmation.innerHTML = '<h3 id="'+confirmTitle+'">删除本页阅读记录？</h3><p>将删除此网页的所有高亮、批注及整页阅读笔记，并同步到已连接的客户端和浏览器。已收藏的网页快照会保留。</p><div class="notes-actions"><button data-cancel-delete autofocus>取消</button><button data-confirm-delete>确认删除本页笔记</button></div><p data-delete-error role="alert"></p>';
+    node.append(confirmation);
+    let deleteBase;
+    $('[data-delete-page]').onclick = () => {
+      if (dirty || [...editors.values()].some(e=>e.dirty)) {status('请先保存正在编辑的笔记');return;}
+      deleteBase = value; $('[data-delete-error]').textContent = ''; confirmation.showModal();
+    };
+    $('[data-cancel-delete]').onclick = () => confirmation.close();
+    $('[data-confirm-delete]').onclick = () => run(async()=>{
+      try {const next = await update({kind:'clear',base:deleteBase});confirmation.close();removed(next);status('本页阅读记录已删除；连接后自动同步');}
+      catch(e){$('[data-delete-error]').textContent=e.message;}
+    });
     $('[data-sync]').hidden = !sync;
     $('[data-sync]').onclick = () =>
       run(async () => {

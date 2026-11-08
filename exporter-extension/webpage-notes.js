@@ -16,7 +16,7 @@
   }
   const box = document.createElement('div');
   box.innerHTML =
-    '<section id="shiye-notes-panel" popover="auto" aria-labelledby="notes-heading" style="position:fixed;inset:20px 20px 20px auto;margin:0;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #d7e1d6;border-radius:16px;padding:22px;background:#fffdf8;color:#253b33;box-shadow:0 15px 65px #1b352731;font:13px/1.7 system-ui"><header><div><span class="eyebrow">留下一点自己的思考</span><h2 id="notes-heading">标注与笔记</h2></div><button class="close" popovertarget="shiye-notes-panel" popovertargetaction="hide" aria-label="关闭笔记面板">×</button></header><p class="site"></p><div data-editor></div><p class="notes-status" role="status" aria-live="polite"></p></section><div id="shiye-selection" popover="manual" style="position:fixed;inset:auto;margin:0;border:1px solid #d7e1d6;border-radius:10px;padding:6px;background:#fffdf8;color:#253b33;box-shadow:0 5px 25px #1b352731;font:12px system-ui"><button data-highlight>高亮</button><button data-note>批注</button><button data-clip>收藏选区</button><button data-translate>翻译</button><button data-dismiss aria-label="关闭划词工具">×</button></div>';
+    '<section id="shiye-notes-panel" popover="auto" aria-labelledby="notes-heading" style="position:fixed;inset:20px 20px 20px auto;margin:0;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #d7e1d6;border-radius:16px;padding:22px;background:#fffdf8;color:#253b33;box-shadow:0 15px 65px #1b352731;font:13px/1.7 system-ui"><header><div><span class="eyebrow">留下一点自己的思考</span><h2 id="notes-heading">标注与笔记</h2></div><button class="close" popovertarget="shiye-notes-panel" popovertargetaction="hide" aria-label="关闭笔记面板">×</button></header><p class="site"></p><div data-editor></div><p class="notes-status" role="status" aria-live="polite"></p></section><div id="shiye-selection" popover="manual" style="position:fixed;inset:auto;margin:0;border:1px solid #d7e1d6;border-radius:10px;padding:6px;background:#fffdf8;color:#253b33;box-shadow:0 5px 25px #1b352731;font:12px system-ui"><button data-copy aria-live="polite">复制</button><button data-highlight>高亮</button><button data-note>批注</button><button data-clip>收藏选区</button><button data-translate>翻译</button><button data-dismiss aria-label="关闭划词工具">×</button></div>';
   root.append(box);
   document.documentElement.append(host);
   const $ = (s) => root.querySelector(s),
@@ -27,6 +27,7 @@
     preferences = {},
     editor = null,
     selection = null,
+    copyText = '',
     disposed = false,
     updating = false,
     capturing = false,
@@ -164,6 +165,34 @@
       status(e.message);
     }
   };
+  $('[data-copy]').onpointerdown = e => e.preventDefault();
+  $('[data-copy]').onclick = async () => {
+    if (!copyText) return;
+    const button = $('[data-copy]');
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(copyText);
+      else {
+        // HTTP pages lack Clipboard API; keep this fallback inside the user's click.
+        const ranges = [...Array(document.getSelection().rangeCount)].map((_, i) => document.getSelection().getRangeAt(i).cloneRange());
+        const active = document.activeElement, input = document.createElement('textarea');
+        input.value = copyText;
+        input.dataset.shiyeReadingUi = '';
+        input.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+        document.body.append(input);
+        try {
+          input.focus({preventScroll:true}); input.select();
+          if (!document.execCommand('copy')) throw Error('复制失败，请使用系统复制快捷键');
+        } finally {
+          input.remove(); active?.focus({preventScroll:true});
+          const selected = document.getSelection(); selected.removeAllRanges();
+          for (const range of ranges) selected.addRange(range);
+        }
+      }
+      button.textContent = '已复制'; button.title = '已复制选中文字';
+    } catch {
+      button.textContent = '复制失败'; button.title = '请按 ⌘C / Ctrl+C 复制';
+    }
+  };
   $('[data-dismiss]').onclick = hide;
   function checkSelection() {
     if (
@@ -182,10 +211,17 @@
         return;
       }
       selection = s;
+      const selectedText = document.getSelection().toString();
+      if (copyText !== selectedText) {
+        copyText = selectedText;
+        $('[data-copy]').textContent = '复制';
+        $('[data-copy]').title = '复制选中文字';
+      }
       const r = document.getSelection().getRangeAt(0).getBoundingClientRect();
       toolbar.style.left = Math.max(8, Math.min(innerWidth - 295, r.left)) + 'px';
       toolbar.style.top = Math.max(8, Math.min(innerHeight - 52, r.bottom + 8)) + 'px';
       if (!toolbar.matches(':popover-open')) toolbar.showPopover();
+      toolbar.style.left = Math.max(8, Math.min(innerWidth - toolbar.getBoundingClientRect().width - 8, r.left)) + 'px';
     } catch {
       hide();
     }
@@ -242,7 +278,8 @@
     for (const [k, v] of Object.entries(changes))
       if (k.startsWith('reading:') && v.newValue?.record?.url === ShiyeReading.url(location.href)) {
         record = v.newValue.record;
-        editor?.set(record);
+        if(editor?.hasDraft()){paint(record);status('阅读记录已在另一处更新，当前草稿仍保留；请先复制草稿再重新打开记录');}
+        else editor?.set(record);
       }
   };
   chrome.storage.onChanged.addListener(storage);

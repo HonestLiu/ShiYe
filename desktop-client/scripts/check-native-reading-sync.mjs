@@ -1,0 +1,23 @@
+// Isolated packaged client + real framed Native Messaging host, with two local browser storage replicas.
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import net from 'node:net';import {spawn} from 'node:child_process';import {fileURLToPath} from 'node:url';
+import '../../exporter-extension/reading-model.js';
+const M=globalThis.ShiyeReading,base=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),root=await fs.mkdtemp(path.join(os.tmpdir(),'shiye-native-sync-')),exe=path.join(base,'src-tauri/target/release/bundle/macos/拾页.app/Contents/MacOS/archive-reader'),origin='chrome-extension://'+'a'.repeat(32)+'/',url='https://example.test/native-sync';
+const env={...process.env,ARCHIVE_READER_DATA_DIR:root};await fs.writeFile(path.join(root,'origins.json'),JSON.stringify([origin]));let logs='';const app=spawn(exe,['--background'],{env,stdio:['ignore','pipe','pipe']});for(const pipe of [app.stdout,app.stderr])pipe.on('data',d=>logs+=d);
+const frame=value=>{const bytes=Buffer.from(JSON.stringify(value)),h=Buffer.alloc(4);h.writeUInt32LE(bytes.length);return Buffer.concat([h,bytes]);};
+function ipc(r){return new Promise((resolve,reject)=>{const socket=net.createConnection(path.join(root,'reader.sock'));let bytes=Buffer.alloc(0);socket.setTimeout(5000,()=>socket.destroy(Error('IPC timeout')));socket.on('error',reject);socket.on('connect',()=>socket.write(frame(r)));socket.on('data',d=>{bytes=Buffer.concat([bytes,d]);if(bytes.length>=4&&bytes.length>=bytes.readUInt32LE()+4){socket.end();const result=JSON.parse(bytes.subarray(4));result.error?reject(Error(result.error)):resolve(result.data);}});});}
+function host(r){return new Promise((resolve,reject)=>{const p=spawn(exe,['--native-host',origin],{env}),timer=setTimeout(()=>{p.kill();reject(Error('host timeout'));},10000);let bytes=Buffer.alloc(0),err='';p.stderr.on('data',d=>err+=d);p.stdout.on('data',d=>bytes=Buffer.concat([bytes,d]));p.on('error',reject);p.on('close',code=>{clearTimeout(timer);if(code||bytes.length<4)return reject(Error(err||'empty host frame'));const result=JSON.parse(bytes.subarray(4,4+bytes.readUInt32LE()));result.error?reject(Error(result.error)):resolve(result.data);});p.stdin.end(frame(r));});}
+let storage={readingPreferences:{restoreHighlights:false}};
+globalThis.chrome={runtime:{id:'a'.repeat(32),getURL:p=>origin+p},storage:{local:{get:async keys=>keys===null?structuredClone(storage):Object.fromEntries((Array.isArray(keys)?keys:[keys]).filter(k=>k in storage).map(k=>[k,structuredClone(storage[k])])),set:async values=>Object.assign(storage,structuredClone(values))}}};
+const {syncAllReading}=await import('../../exporter-extension/reading-background.js');
+try{
+ for(let i=0;;i++){try{await ipc({action:'hello'});break;}catch{if(i>100||app.exitCode!==null)throw Error(logs||'startup timeout');await new Promise(r=>setTimeout(r,100));}}
+ assert.equal((await host({action:'hello'})).readingSyncVersion,1);
+ const sessionId=crypto.randomUUID();const presence=await ipc({action:'connection_open',origin,sessionId,version:'test',browser:'fixture'});assert.equal(typeof presence.readingRevision,'string');
+ let record=M.mutate(M.empty(url),{kind:'note',text:'真实客户端同步笔记'});await ipc({action:'reading_merge',url,record});await syncAllReading({native:host});const k=Object.keys(storage).find(k=>k.startsWith('reading:'));assert.equal(storage[k].record.note.text,record.note.text);const second=structuredClone(storage);
+ storage[k].record=M.mutate(storage[k].record,{kind:'clear'});storage[k].syncPending=true;await syncAllReading({native:host});assert(M.isRemoved(await ipc({action:'reading_get',url})));
+ storage=second;await syncAllReading({native:host});assert(M.isRemoved(storage[k].record));
+ record=M.mutate(await ipc({action:'reading_get',url}),{kind:'note',text:'重新记录'});await ipc({action:'reading_merge',url,record});await syncAllReading({native:host});assert.equal(storage[k].record.note.text,'重新记录');
+ record=M.mutate(record,{kind:'clear'});await ipc({action:'reading_merge',url,record});await syncAllReading({native:host});assert(M.isRemoved(storage[k].record));
+ const tick=await ipc({action:'connection_heartbeat',origin,sessionId});assert.notEqual(tick.readingRevision,presence.readingRevision);assert.equal((await host({action:'reading_inventory'})).urls.length,1);
+ console.log('PASS packaged client + real Native Messaging frames: browser deletion, client deletion, two storage replicas, no resurrection, new notes, inventory and heartbeat revision. No installed app/personal data used. Artifacts:',root);
+}finally{app.kill('SIGTERM');await new Promise(r=>app.exitCode!==null?r():app.once('exit',r));}

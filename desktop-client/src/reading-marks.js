@@ -16,7 +16,7 @@ export function paintReadingMarks(doc,record,{visible=true,snapshot={}}={}) {
  for(const mark of doc.querySelectorAll('mark[data-source-highlights]')){
   if(!originals.has(mark))originals.set(mark,mark.getAttribute('style'));const style=originals.get(mark);if(style===null)mark.removeAttribute('style');else mark.setAttribute('style',style);
   const ids=sourceIds(mark.dataset.sourceHighlights),live=ids.map(id=>byId.get(id)).filter(Boolean),notes=live.filter(isNote),deleted=new Set((record.deleted||[]).map(a=>a.id));
-  if(ids.length&&ids.every(id=>deleted.has(id))){mark.replaceWith(...mark.childNodes);continue;}
+  if(ids.length&&ids.every(id=>deleted.has(id)||(record.cleared&&!byId.has(id)))){mark.replaceWith(...mark.childNodes);continue;}
   if(!visible&&live.length)mark.style.setProperty('background-color','transparent','important');
   if(notes.length){mark.style.setProperty('color','inherit','important');const plain=live.filter(a=>!isNote(a)).sort((a,b)=>b.updatedAt-a.updatedAt);mark.style.setProperty('background-color',visible&&plain.length?M.colors[plain[0].color]:'transparent','important');}
  }

@@ -1,0 +1,23 @@
+// Real shared merge + background sync code; Native Messaging transport uses an isolated in-memory server.
+import assert from 'node:assert/strict';
+import './reading-model.js';
+const M=globalThis.ShiyeReading;
+let storage={readingPreferences:{restoreHighlights:false}},server=new Map(),offline=false;
+globalThis.chrome={runtime:{id:'fixture',getURL:p=>'chrome-extension://fixture/'+p},storage:{local:{get:async keys=>keys===null?structuredClone(storage):Object.fromEntries((Array.isArray(keys)?keys:[keys]).filter(k=>k in storage).map(k=>[k,structuredClone(storage[k])])),set:async values=>Object.assign(storage,structuredClone(values))}}};
+const {syncAllReading,handleReading}=await import('./reading-background.js');
+const native={native:async r=>{if(offline)throw Error('离线');if(r.action==='hello')return {readingSyncVersion:1};if(r.action==='reading_inventory'){const urls=[...server.keys()].sort().filter(u=>u>(r.after||'')).slice(0,51);return {urls:urls.slice(0,50),next:urls.length>50?urls[49]:null,revision:'fixture'};}if(r.action==='reading_merge'){const merged=M.merge(server.get(r.url)||M.empty(r.url),r.record);server.set(r.url,merged);return structuredClone(merged);}throw Error(r.action);}};
+const sender={id:'fixture',url:'chrome-extension://fixture/reading-library.html'};
+const key=async url=>'reading:'+Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(M.url(url)))).toString('hex');
+const address='https://example.test/post',old=M.mutate(M.empty(address),{kind:'note',text:'保留换行\n阅读笔记'});
+let record=M.mutate(old,{kind:'upsert',annotation:{id:'one',selector:{exact:'重点',prefix:'',suffix:'',start:0,end:2},color:'blue',note:'原有批注'}});
+server.set(address,record);
+await syncAllReading(native);const k=await key(address);assert.equal(storage[k].record.note.text,old.note.text,'client-only record imported');
+const browserB=structuredClone(storage);
+const deleted=await handleReading({action:'readingMutate',url:address,op:{kind:'clear',base:record}},sender,native);await syncAllReading(native);assert(M.isRemoved(deleted));assert(M.isRemoved(server.get(address)),'browser deletion uploaded');
+storage=browserB;await syncAllReading(native);assert(M.isRemoved(storage[k].record),'second browser receives deletion');assert(M.isRemoved(server.get(address)),'stale browser cannot resurrect');
+const readded=M.mutate(server.get(address),{kind:'note',text:'后来新写的笔记'});server.set(address,readded);await syncAllReading(native);assert.equal(storage[k].record.note.text,'后来新写的笔记','intentional later additions survive barrier');
+const clientDeleted=M.mutate(readded,{kind:'clear'});server.set(address,clientDeleted);await syncAllReading(native);assert(M.isRemoved(storage[k].record),'client deletion pulled');
+assert(M.isRemoved(M.merge(clientDeleted,record)));assert(M.isRemoved(M.merge(record,clientDeleted)));assert.throws(()=>M.mutate(clientDeleted,{kind:'clear',base:record}),/另一处/);
+offline=true;await handleReading({action:'readingMutate',url:address,op:{kind:'upsert',annotation:{...record.annotations[0],id:'offline-new'}}},sender,native);await assert.rejects(syncAllReading(native),/离线/);assert(storage[k].syncPending,'failed sync remains pending');offline=false;await syncAllReading(native);assert(!storage[k].syncPending);assert.equal(server.get(address).annotations[0].id,'offline-new');
+for(let i=0;i<55;i++)server.set('https://example.test/page-'+String(i).padStart(2,'0'),M.mutate(M.empty('https://example.test/page-'+String(i).padStart(2,'0')),{kind:'note',text:'分页笔记'}));await syncAllReading(native);assert.equal(Object.keys(storage).filter(k=>k.startsWith('reading:')).length,56,'paged inventory is complete');
+console.log('PASS bidirectional whole-page deletion, two browser replicas, no stale resurrection, subsequent new notes, conflict guards, offline pending/retry and paginated inventory. Native transport mocked.');
