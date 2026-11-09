@@ -233,12 +233,17 @@
     host.dataset.placement='edge';toolbar.hidden=true;launcher.hidden=state.prefs.displayBtns===false||edgeDisabled;placeEdge();layout();
     if(state.href!==location.href){state.href=location.href;state.revision++;state.loading=false;state.conversation={messages:[]};state.selected.clear();close();message('');}
   }
-  let scheduled=false;
-  const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;mount();});});
+  let mountFrame=0;
+  // Streaming replies mutate the page continuously. Only repair a detached
+  // overlay or reset on navigation; ordinary content changes need no layout.
+  const observer=new MutationObserver(()=>{
+    if(!state.active||mountFrame)return;
+    if(host.parentElement===document.body&&state.href===location.href)return;
+    mountFrame=requestAnimationFrame(()=>{mountFrame=0;mount();});
+  });
   observer.observe(document.documentElement,{subtree:true,childList:true});
   const themeObserver=new MutationObserver(layout);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class','data-theme']});
   listen(window,'resize',mount);
-  listen(document,'scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;mount();});}},{capture:true,passive:true});
   const runtimeListener=(event,sender,respond)=>{
     if(sender.id!==runtime.id)return;
     if(event.action==='archive-health'){respond({version,alive:alive()});return;}
@@ -257,6 +262,7 @@
   function dispose(){
     if(!state.active)return;state.active=false;state.revision++;
     observer.disconnect();themeObserver.disconnect();lifetime.abort();
+    if(mountFrame){cancelAnimationFrame(mountFrame);mountFrame=0;}
     try{runtime.onMessage.removeListener?.(runtimeListener);}catch{}
     try{chrome.storage.onChanged.removeListener?.(storageListener);}catch{}
     state.dialog?.remove();host.remove();

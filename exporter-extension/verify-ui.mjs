@@ -38,6 +38,23 @@ try{
   }},storage:{local:{get:async key=>{if(typeof key==='string')return {[key]:stored[key]};return stored;},set:async patch=>{Object.assign(stored,patch);for(const [key,newValue] of Object.entries(patch))for(const fn of changeListeners)fn({[key]:{newValue}},'local');}},onChanged:{addListener:fn=>changeListeners.push(fn)}}};
  });
  for(const file of ['bootstrap.js','snapshot-adapter.js','capture.js','core.js','web-snapshot.js','role-icons.js','custom-select.js','content-ui.js'])await page.addScriptTag({content:await fs.readFile(path.join(root,file),'utf8')});
+ // Streaming DOM updates and scrolling must not rewrite overlay layout.
+ await page.waitForTimeout(100);
+ const layoutWrites=await page.evaluate(async()=>{
+   const host=document.getElementById('conversation-archive');
+   let writes=0;
+   const observer=new MutationObserver(records=>{writes+=records.length;});
+   observer.observe(host,{attributes:true});
+   observer.observe(host.shadowRoot.querySelector('.selector'),{attributes:true});
+   const probe=document.createElement('div');document.body.append(probe);
+   for(let i=0;i<12;i++){
+     probe.textContent=String(i);document.dispatchEvent(new Event('scroll'));
+     await new Promise(requestAnimationFrame);
+   }
+   probe.remove();await new Promise(requestAnimationFrame);
+   observer.disconnect();return writes;
+ });
+ assert.equal(layoutWrites,0,'Streaming and scrolling should not rewrite overlay layout');
  const bar=page.locator('#conversation-archive .button-bar');
  const panel=page.locator('#conversation-archive .selector');
  const edge=page.getByRole('button',{name:'打开拾页消息选择器',exact:true});await edge.waitFor();assert.equal((await edge.boundingBox()).width,32);const edgeRect=await edge.boundingBox();await page.mouse.move(Math.min(edgeRect.x+8,page.viewportSize().width-2),edgeRect.y+18);await page.mouse.down();await page.mouse.move(8,220,{steps:16});await page.mouse.up();assert(await panel.isHidden());await page.waitForFunction(()=>stored.edgeLauncher?.side==='left');await page.screenshot({path:'/tmp/archive-chat-edge.png'});
