@@ -1,4 +1,4 @@
-export const pdfDefaults={pageSize:'a4',pageOrient:'portrait',margin:'normal',fontFamily:'default',fontSize:100,lang:'zh-CN',darkMode:false,outline:true,toc:false,pageBreakPerPrompt:false,removePageNumber:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false,contentTitle:''};
+export const pdfDefaults={pageSize:'a4',pageOrient:'portrait',margin:'normal',fontFamily:'default',fontSize:100,lang:'zh-CN',darkMode:false,outline:true,toc:false,pageBreakPerPrompt:false,removePageNumber:false,includeContentTitle:true,includeConvoLink:true,includeModelName:false,includePerMsgTime:false,contentTitle:''};
 export function normalizePdfOptions(value={}){
  const o={...pdfDefaults};
  for(const [key,choices] of Object.entries({pageSize:['a4','a5','letter'],pageOrient:['portrait','landscape'],margin:['narrow','normal','wide'],fontFamily:['default','serif','mono'],lang:['zh-CN','en','ja']}))if(choices.includes(value[key]))o[key]=value[key];

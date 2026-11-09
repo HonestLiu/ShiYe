@@ -60,8 +60,11 @@ def compose(payload):
     if isinstance(messages, list):
         if not messages:
             raise ValueError("No chat content selected")
-        title = text(options.get("contentTitle") or payload.get("title") or info.get("name") or "聊天导出")
-        output = ["# " + title, metadata(payload)]
+        output = []
+        if options.get("includeContentTitle") is not False:
+            title = text(options.get("contentTitle") or payload.get("title") or info.get("name") or "聊天导出")
+            output.append("# " + title)
+        output.append(metadata(payload))
         for index, message in enumerate(messages):
             if not isinstance(message, dict) or not isinstance(message.get("markdown"), str):
                 raise ValueError("Invalid selected message")

@@ -1,6 +1,6 @@
 // Shared by the page overlay and extension pages. No commercial runtime code.
 globalThis.ArchiveCore = (() => {
-  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,pdfTarget:'client',saveToClient:true,engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
+  const defaults={format:'md',selectType:'all',side:'right',width:320,reversed:false,expandAll:false,copyToClipboard:false,autoCloseSelector:false,muteExport:false,displayBtns:true,saveAs:false,pdfTarget:'client',saveToClient:true,engine:'chromium',pageSize:'a4',pageOrient:'portrait',margin:'normal',fontSize:100,fontFamily:'default',outline:true,toc:false,darkMode:false,removePageNumber:false,pageBreakPerPrompt:false,includeContentTitle:false,includeConvoLink:true,includeModelName:false,includePerMsgTime:false};
   const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function connectionError(error){
     if(/context invalidated/i.test(error?.message||'')){
@@ -60,11 +60,12 @@ globalThis.ArchiveCore = (() => {
     return markdown(conversation,messages,opt);
   }
   function payload(conversation,messages,opt){
-    const title=opt.contentTitle||conversation.title;
-    const value={engine:opt.engine,title,options:{...opt,contentTitle:title,removeBrand:true},exportInfo:{name:title,convoLink:conversation.url},messages:messages.map(({html,text,...m})=>({...m,heading:m.role==='user'?'用户':'助手'}))};
+    const includeContentTitle=opt.includeContentTitle===true;
+    const contentTitle=includeContentTitle?(opt.contentTitle||conversation.title):'';
+    const value={engine:opt.engine,title:conversation.title,options:{...opt,includeContentTitle,contentTitle,removeBrand:true},exportInfo:{name:conversation.title,convoLink:conversation.url},messages:messages.map(({html,text,...m})=>({...m,heading:m.role==='user'?'用户':'助手'}))};
     if(opt.engine==='chromium'){
       const missing=messages.filter(m=>!m.html).length;
-      value.webDocument={html:`<main><h1>${escapeHTML(title)}</h1>${messages.map(m=>`<section data-role="${m.role}"><h2>${m.role==='user'?'用户':'助手'}</h2>${m.html||'<div data-local-pdf-markdown="true"><pre>'+escapeHTML(m.markdown)+'</pre></div>'}</section>`).join('')}${opt.includeConvoLink?`<p>${escapeHTML(conversation.url)}</p>`:''}</main>`,css:`body{font:16px/1.7 system-ui;background:${opt.darkMode?'#151a1a':'#fff'};color:${opt.darkMode?'#eee':'#172323'}}main{padding:24px}section{margin:32px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}img,svg{max-width:100%;height:auto}table{border-collapse:collapse}td,th{border:1px solid #888;padding:6px}${opt.pageBreakPerPrompt?'section[data-role="user"]:not(:first-of-type){break-before:page}':''}`,width:900,theme:opt.darkMode?'dark':'light',messageCount:messages.length,domCount:messages.length-missing,fallbackCount:missing,warnings:missing?[`${missing} 条未加载消息由服务端重新排版补全`]:[]};
+      value.webDocument={html:`<main>${includeContentTitle?`<h1>${escapeHTML(contentTitle)}</h1>`:''}${messages.map(m=>`<section data-role="${m.role}"><h2>${m.role==='user'?'用户':'助手'}</h2>${m.html||'<div data-local-pdf-markdown="true"><pre>'+escapeHTML(m.markdown)+'</pre></div>'}</section>`).join('')}${opt.includeConvoLink?`<p>${escapeHTML(conversation.url)}</p>`:''}</main>`,css:`body{font:16px/1.7 system-ui;background:${opt.darkMode?'#151a1a':'#fff'};color:${opt.darkMode?'#eee':'#172323'}}main{padding:24px}section{margin:32px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}img,svg{max-width:100%;height:auto}table{border-collapse:collapse}td,th{border:1px solid #888;padding:6px}${opt.pageBreakPerPrompt?'section[data-role="user"]:not(:first-of-type){break-before:page}':''}`,width:900,theme:opt.darkMode?'dark':'light',messageCount:messages.length,domCount:messages.length-missing,fallbackCount:missing,warnings:missing?[`${missing} 条未加载消息由服务端重新排版补全`]:[]};
     }
     return value;
   }
@@ -86,7 +87,7 @@ globalThis.ArchiveCore = (() => {
       const previous=ArchiveSnapshotAdapter.exportProgress;
       ArchiveSnapshotAdapter.exportProgress=text=>{if(location.href!==originalUrl)throw Error('捕获过程中对话页面已切换，请重新导出');progress?.(text);};
       try{
-        value.webDocument=await ArchiveWebSnapshot.capture({title:opt.contentTitle||conversation.title,options:opt,messages:messages.map(m=>({...m,turnId:m.turnId||m.id,messageIds:[...new Set([m.id,...(m.messageIds||[])])]}))});
+        value.webDocument=await ArchiveWebSnapshot.capture({title:conversation.title,options:opt,messages:messages.map(m=>({...m,turnId:m.turnId||m.id,messageIds:[...new Set([m.id,...(m.messageIds||[])])]}))});
       }finally{ArchiveSnapshotAdapter.exportProgress=previous;}
       if(location.href!==originalUrl)throw Error('捕获过程中对话页面已切换，请重新导出');
       if(value.webDocument.fallbackCount){
@@ -106,7 +107,7 @@ globalThis.ArchiveCore = (() => {
     if(opt.exportRequest?.options&&hello.pdfOptionsVersion!==1)throw Error('请将拾页客户端升级至0.2.0或以上，以支持高级PDF设置');
     if(opt.exportRequest?.saveToLibrary===false&&!hello.pdfOnly)throw Error('仅导出PDF需要拾页0.3.1或以上版本，请升级客户端；本次未提交内容');
     if(location.href!==conversation.url)throw Error('对话页面已切换，请重新选择消息');
-    const title=opt.exportRequest?(opt.contentTitle||selectionTitle(conversation,messages)):selectionTitle(conversation,messages),previous=ArchiveSnapshotAdapter.exportProgress;
+    const title=opt.exportRequest?conversation.title:selectionTitle(conversation,messages),previous=ArchiveSnapshotAdapter.exportProgress;
     ArchiveSnapshotAdapter.exportProgress=progress;
     let snapshot;
     try{snapshot=await ArchiveWebSnapshot.capture({title,options:opt,messages:messages.map(m=>({...m,turnId:m.turnId||m.id,messageIds:[...new Set([m.id,...(m.messageIds||[])])]}))});}
