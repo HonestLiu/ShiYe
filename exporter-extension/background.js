@@ -13,6 +13,30 @@ function trusted(sender) {
   }catch{return false;}
 }
 function safeFilename(value){return String(value||'chat').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/^\.+/,'_').slice(0,160);}
+const pendingPdfFilenames=[];
+chrome.downloads.onDeterminingFilename.addListener((download, suggest)=>{
+  if(!download.url.startsWith('data:application/pdf;base64,'))return;
+  const index=pendingPdfFilenames.findIndex(pending=>pending.url===download.url);
+  if(index===-1)return;
+  const [pending]=pendingPdfFilenames.splice(index,1);
+  clearTimeout(pending.timeout);
+  suggest({filename:pending.filename,conflictAction:'uniquify'});
+});
+async function downloadClientPdf(url, filename, saveAs){
+  const pending={url,filename,timeout:null};
+  pendingPdfFilenames.push(pending);
+  pending.timeout=setTimeout(()=>{
+    const index=pendingPdfFilenames.indexOf(pending);
+    if(index!==-1)pendingPdfFilenames.splice(index,1);
+  },60000);
+  try{return await chrome.downloads.download({url,filename,saveAs});}
+  catch(error){
+    clearTimeout(pending.timeout);
+    const index=pendingPdfFilenames.indexOf(pending);
+    if(index!==-1)pendingPdfFilenames.splice(index,1);
+    throw error;
+  }
+}
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if(message.target==='webpage-processor'||['translateBing','edgeEnsure'].includes(message.action))return;
   if(['readingSyncAll','readingGet','readingMutate','readingSync','readingList','readingDownload','readingClip','readingLink','readingBackup','readingImport','readingImage','readingConfigure','readingOpen'].includes(message.action)){
@@ -51,7 +75,8 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
         if(offset===0&&!bytes.startsWith('%PDF-'))throw Error('客户端返回的不是PDF');
         chunks.push(part.data);offset+=bytes.length;
       }while(offset<total);
-      const downloadId=await chrome.downloads.download({url:'data:application/pdf;base64,'+chunks.join(''),filename:safeFilename(job.filename),saveAs:message.saveAs===true});
+      const filename=safeFilename(job.filename);
+      const downloadId=await downloadClientPdf('data:application/pdf;base64,'+chunks.join(''),filename,message.saveAs===true);
       return {ok:true,downloadId};
     }
     if(message.action==='snapshotResource'){
