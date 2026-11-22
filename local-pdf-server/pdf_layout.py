@@ -61,7 +61,7 @@ def compose(payload):
         if not messages:
             raise ValueError("No chat content selected")
         output = []
-        if options.get("includeContentTitle") is not False:
+        if options.get("includeContentTitle") is True:
             title = text(options.get("contentTitle") or payload.get("title") or info.get("name") or "聊天导出")
             output.append("# " + title)
         output.append(metadata(payload))

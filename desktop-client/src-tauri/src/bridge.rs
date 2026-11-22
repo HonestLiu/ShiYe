@@ -58,7 +58,7 @@ pub fn serve(root: std::path::PathBuf, app: tauri::AppHandle) -> Result<()> {
                 let hello = req["action"] == "hello";
                 let inspect_policy = req["includePolicy"] == true;
                 let inspect_connections = req["includeConnections"] == true;
-                let mut value = library::dispatch(&root, req)?;
+                let mut value = {let _g=crate::icloud::LOCK.lock().map_err(err)?;library::dispatch(&root, req)?};
                 if let Some(url)=reading_changed.filter(|_| before_reading != crate::reading::revision(&root)) {let _=app.emit("reading-changed",json!({"url":url}));let _=app.emit("library-changed",json!({}));}
                 if hello {
                     if inspect_connections {
@@ -145,7 +145,7 @@ pub fn native_host() -> Result<()> {
     if call(&root, &json!({"action":"hello"})).is_err() {
         // Cancelling a transfer is local cleanup and must not relaunch a stopped app.
         if first["action"] == "abort" {
-            let result = library::dispatch(&root, first)?;
+            let result = {let _g=crate::icloud::LOCK.lock().map_err(err)?;library::dispatch(&root, first)?};
             write_frame(&mut output, &json!({"data":result}))?;
             return Ok(());
         }

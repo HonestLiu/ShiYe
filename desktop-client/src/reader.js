@@ -71,8 +71,9 @@ export async function printDocument(archive,settings={}){
    if(neutral(c.color))n.style.setProperty('color',foreground,'important');
   }
   doc.body.style.setProperty('background',background,'important');doc.body.style.setProperty('color',foreground,'important');
+  const title=options.contentTitle||archive.library?.title||archive.title||'收藏';
   const header=doc.createElement('header');header.className='reader-print-header';
-  if(options.includeContentTitle!==false){const title=options.contentTitle||archive.library?.title||archive.title||'收藏';const titleNode=doc.createElement('h1');titleNode.textContent=title;titleNode.style.fontSize=26*options.fontSize/100+'px';header.append(titleNode);}
+  if(options.includeContentTitle===true){const titleNode=doc.createElement('h1');titleNode.textContent=title;titleNode.style.fontSize=26*options.fontSize/100+'px';header.append(titleNode);}
   if(options.includeConvoLink&&/^https?:\/\//.test(archive.url||'')){const a=doc.createElement('a');a.href=archive.url;a.textContent=archive.url;header.append(a);}
   if(header.childNodes.length)doc.body.insertBefore(header,source);
   const sections=[...source.querySelectorAll('.pdf-message')];

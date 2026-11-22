@@ -10,6 +10,7 @@ mod reading;
 mod article_edit;
 mod service;
 mod connections;
+mod icloud;
 use library::{err, Result};
 use serde_json::{json, Value};
 use std::{collections::HashMap, fs, sync::Mutex};
@@ -34,7 +35,7 @@ async fn load_archive_bytes(window: WebviewWindow,id: String) -> Result<tauri::i
 async fn command(window: WebviewWindow, app: tauri::AppHandle, request: Value) -> Result<Value> {
     // Keep archive/file/SQLite work off AppKit's event thread. Permission checks
     // remain in the shared dispatcher, for both execution paths.
-    if ["purge","load","list","search","update","reading_get","reading_list","reading_merge","export_file","import_file","backup","article_get","article_draft","article_save","article_asset_put","article_asset_get","article_render","article_history"].contains(&request["action"].as_str().unwrap_or("")) {
+    if ["sync_status","sync_configure","sync_now","purge","load","list","search","update","reading_get","reading_list","reading_merge","export_file","import_file","backup","article_get","article_draft","article_save","article_asset_put","article_asset_get","article_render","article_history"].contains(&request["action"].as_str().unwrap_or("")) {
         return tauri::async_runtime::spawn_blocking(move || command_dispatch(window,app,request)).await.map_err(err)?;
     }
     // Clipboard, native windows and activation policy must stay on AppKit.
@@ -60,13 +61,17 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
             return Err("后台任务没有此权限".into());
         }
     } else if window.label() == "settings" {
-        if !["copy_text", "read_text", "info", "settings", "save_settings", "register", "backup", "import_file", "show_main", "connections", "connection_check", "unpair"].contains(&action) { return Err("设置窗口没有此权限".into()); }
+        if !["copy_text", "read_text", "info", "settings", "save_settings", "register", "backup", "import_file", "show_main", "connections", "connection_check", "unpair", "sync_status", "sync_configure", "sync_now"].contains(&action) { return Err("设置窗口没有此权限".into()); }
     } else {
         require_main(&window)?;
     }
+    let _sync_guard = icloud::LOCK.lock().map_err(err)?;
     let root = library::root();
     let id = request["id"].as_str().unwrap_or("");
     match request["action"].as_str().unwrap_or("") {
+        "sync_status" => icloud::status(&root),
+        "sync_configure" => {let value=icloud::configure(&root, request["enabled"].as_bool().ok_or("缺少同步开关")?)?;let _=app.emit("sync-state",value.clone());Ok(value)},
+        "sync_now" => { icloud::sync_report(&root,&app)?; let _=app.emit("library-changed",json!({})); icloud::status(&root) },
         "article_get"=>article_edit::get(&root,id),
         "article_draft"=>article_edit::save(&root,&request,true),
         "article_save"=>{let result=article_edit::save(&root,&request,false)?;let _=app.emit("library-changed",json!({}));Ok(result)},
@@ -180,7 +185,7 @@ fn command_dispatch(window: WebviewWindow, app: tauri::AppHandle, request: Value
         "connection_check" => app.state::<connections::Monitor>().check(request["sessionId"].as_str().ok_or("缺少连接ID")?),
         "unpair" => { bridge::unregister(&root,request["extensionId"].as_str().ok_or("缺少扩展ID")?)?; Ok(json!({"ok":true})) },
         "info" => Ok(
-            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.16.9"}),
+            json!({"dataDir":root,"platform":std::env::consts::OS,"nativePdf":cfg!(target_os="macos"),"version":"0.17.1"}),
         ),
         "import_file" => {
             let path = request["path"].as_str().ok_or("缺少文件路径")?;
@@ -492,6 +497,7 @@ fn main() {
  })
  .setup(move|app|{
  service::apply_policy(app.handle()).map_err(std::io::Error::other)?;
+ icloud::start(root.clone(),app.handle().clone());
  context_menu::install(app.handle());
  reading_input::install(app.handle());
  service::tray(app.handle()).map_err(std::io::Error::other)?;

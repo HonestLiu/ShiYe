@@ -23,7 +23,7 @@ print(String(data:try! JSONSerialization.data(withJSONObject:["pages":pages,"out
  assert.equal(short.layout.cuts.length,2,'short landscape answer must not acquire a blank viewport page');
  for(const outline of [false,true])for(const toc of [false,true]){
   const advanced=outline&&toc;
-  const options={outline,toc,removePageNumber:!advanced,includeConvoLink:advanced,includeModelName:advanced,includePerMsgTime:advanced,pageBreakPerPrompt:advanced,...(advanced?{pageSize:'a5',pageOrient:'landscape',margin:'narrow',fontFamily:'serif',fontSize:125,darkMode:true,contentTitle:'CUSTOM_TITLE'}:{})};
+  const options={outline,toc,removePageNumber:!advanced,includeContentTitle:advanced,includeConvoLink:advanced,includeModelName:advanced,includePerMsgTime:advanced,pageBreakPerPrompt:advanced,...(advanced?{pageSize:'a5',pageOrient:'landscape',margin:'narrow',fontFamily:'serif',fontSize:125,darkMode:true,contentTitle:'CUSTOM_TITLE'}:{})};
   const document=await page.evaluate(async({archive,options})=>{const {printDocument}=await import('/src/reader.js');return printDocument(archive,options);},{archive,options});
   const name=`outline-${outline}-toc-${toc}`,input=path.join(dir,name+'.html'),layout=path.join(dir,name+'.json'),parts=path.join(dir,name),pdf=path.join(dir,name+'.pdf');await fs.mkdir(parts);await fs.writeFile(input,document.html);await fs.writeFile(layout,JSON.stringify(document.layout));
   for(let i=0;i<document.layout.cuts.length-1;i++)execFileSync(probe,[input,path.join(parts,i+'.pdf'),layout,String(document.layout.cuts[i]),String(document.layout.cuts[i+1]-document.layout.cuts[i])],{timeout:60000,maxBuffer:10*1024*1024});
@@ -36,7 +36,7 @@ print(String(data:try! JSONSerialization.data(withJSONObject:["pages":pages,"out
   const all=report.pages.join('');for(let i=0;i<24;i++)assert(all.includes('CODE_'+i));
   assert.equal(all.includes('MODELNAME'),advanced);
   if(advanced){assert(Math.abs(report.width-595.28)<.1);assert(Math.abs(report.height-419.53)<.1);assert.equal(report.title,'CUSTOM_TITLE');assert(report.pages.some(p=>p.split('\n').some(line=>/^\d+$/.test(line.trim()))));const userOne=report.pages.findIndex(p=>p.includes('USER_ONE')&&!p.includes('目录')),userTwo=report.pages.findIndex(p=>p.includes('USER_TWO')&&!p.includes('目录'));assert(userTwo>userOne);}
-  else assert(!report.pages.some(p=>p.split('\n').some(line=>/^\d+$/.test(line.trim()))));
+  else {assert(!report.pages.some(p=>p.split('\n').some(line=>/^\d+$/.test(line.trim()))));assert(!report.pages.join('').includes('TITLE_DEFAULT'),'unchecked content title must not be printed');}
   console.log('PASS native advanced PDF',name,report.pages.length,'pages',report.outline.length,'bookmarks',report.links.length,'links');
  }
  console.log('Artifacts:',dir);

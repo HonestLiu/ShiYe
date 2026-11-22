@@ -388,14 +388,15 @@ pub fn bundle(root: &Path, id: &str) -> Result<Value> {
     state["version"] = json!(1);
     Ok(state)
 }
-pub fn restore(root: &Path, id: &str, b: &Value) -> Result<()> {
+pub fn restore(root: &Path, id: &str, b: &Value) -> Result<()> { restore_impl(root,id,b,false) }
+fn restore_impl(root: &Path, id: &str, b: &Value, replace: bool) -> Result<()> {
     if b.is_null() {
         return Ok(());
     }
     if b["version"] != 1 {
         return Err("不支持的正文编辑版本".into());
     }
-    if metadata(root, id)?["hasDocument"] == true || metadata(root, id)?["hasDraft"] == true {
+    if !replace && (metadata(root, id)?["hasDocument"] == true || metadata(root, id)?["hasDraft"] == true) {
         return Ok(());
     }
     for a in b["assets"].as_array().ok_or("编辑资源缺失")? {
@@ -421,15 +422,27 @@ pub fn restore(root: &Path, id: &str, b: &Value) -> Result<()> {
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(err)?;
     let exists: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM article_documents WHERE item_id=?1 AND (document IS NOT NULL OR draft IS NOT NULL))", [id], |r| r.get(0)).map_err(err)?;
-    if exists {
-        return Ok(());
-    }
+    if exists && !replace { return Ok(()); }
+    if replace { tx.execute("DELETE FROM article_history WHERE item_id=?1",[id]).map_err(err)?; }
     tx.execute("INSERT OR REPLACE INTO article_documents(item_id,revision,document,draft,updated_at) VALUES(?1,?2,?3,?4,?5)",params![id,b["revision"].as_u64().unwrap_or(0),b.get("document").filter(|v|!v.is_null()).map(Value::to_string),b.get("draft").filter(|v|!v.is_null()).map(Value::to_string),b["updatedAt"].as_u64().unwrap_or(0)]).map_err(err)?;
     for h in entries.iter().take(20) {
         tx.execute("INSERT OR IGNORE INTO article_history(item_id,revision,data,updated_at) VALUES(?1,?2,?3,?4)",params![id,h["revision"].as_u64().unwrap(),h["document"].to_string(),h["updatedAt"].as_u64().unwrap_or(0)]).map_err(err)?;
     }
     tx.commit().map_err(err)?;
     Ok(())
+}
+// Validate first, then atomically replace the editor and its revision history.
+pub fn sync_restore(root: &Path, id: &str, incoming: &Value) -> Result<()> {
+    let old=bundle(root,id)?;
+    if &old==incoming{return Ok(());}
+    let mut next=incoming.clone();
+    let local_revision=old["revision"].as_u64().unwrap_or(0);
+    let remote_revision=incoming["revision"].as_u64().unwrap_or(0);
+    // A remote edit must invalidate a still-open local editor's base revision,
+    // including two offline devices that independently produced the same counter.
+    let changed=old["document"]!=incoming["document"] || old["draft"]!=incoming["draft"];
+    next["revision"]=json!(if changed && remote_revision<=local_revision {local_revision+1}else{remote_revision.max(local_revision)});
+    restore_impl(root,id,&next,true)
 }
 #[cfg(test)]
 mod tests {

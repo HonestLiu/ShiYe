@@ -249,7 +249,7 @@ pub fn update(root: &Path, id: &str, patch: &Value) -> Result<Value> {
         crate::reading::merge(root,&address,&record)?;}
     }Ok(result)
 }
-fn update_only(root: &Path, id: &str, patch: &Value) -> Result<Value> {
+pub(crate) fn update_only(root: &Path, id: &str, patch: &Value) -> Result<Value> {
     item_dir(root, id)?;
     let c = db(root)?;
     for field in [
@@ -448,7 +448,7 @@ pub fn dispatch(root: &Path, req: Value) -> Result<Value> {
     use base64::Engine;
     match req["action"].as_str().unwrap_or("") {
         "hello" => Ok(
-            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"browserPdfDownload":true,"pdfOnly":true,"appVersion":"0.16.9","offlineWebPagesVersion":1,"readingAnnotationsVersion":1,"readingSyncVersion":1,"webSnapshotLayoutVersion":2,"articleCaptureVersion":1,"dualWebCaptureVersion":1,"connectionMonitorVersion":1,"pdfOptionsVersion":1,"platform":std::env::consts::OS}),
+            json!({"version":1,"name":"拾页","formats":["html","md","txt","json","pdf"],"nativePdfJobs":true,"browserPdfDownload":true,"pdfOnly":true,"appVersion":"0.17.1","offlineWebPagesVersion":1,"readingAnnotationsVersion":1,"readingSyncVersion":1,"webSnapshotLayoutVersion":2,"articleCaptureVersion":1,"dualWebCaptureVersion":1,"connectionMonitorVersion":1,"pdfOptionsVersion":1,"platform":std::env::consts::OS}),
         ),
         "reading_inventory"=>crate::reading::inventory(root,req["after"].as_str().unwrap_or("")),
         "reading_get"=>crate::reading::get(root,req["url"].as_str().ok_or("缺少笔记来源")?),

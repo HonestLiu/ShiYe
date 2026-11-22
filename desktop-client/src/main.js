@@ -1,3 +1,4 @@
+import {mountSyncIndicator} from './sync-indicator.js';
 import {loadArchiveBytes} from './archive-loader.js';
 import {createArchiveCache} from './archive-cache.js';
 import {getCurrentWindow} from '@tauri-apps/api/window';
@@ -23,6 +24,7 @@ import {mountContextMenus} from './context-menu.js';
 const app=document.querySelector('#app');
 app.innerHTML=workspaceLayout(pdfSettingsMarkup());
 const $=s=>document.querySelector(s),cmd=request=>invoke('command',{request}),archiveCache=createArchiveCache();
+mountSyncIndicator({cmd,listen});
 const pdfForm=$('#export-form');
 let storedPdf={};try{storedPdf=JSON.parse(localStorage.getItem('pdf-options')||'{}');}catch{}
 for(const [key,value]of Object.entries(normalizePdfOptions(storedPdf))){const input=pdfForm.elements.namedItem(key);if(input){if(input.type==='checkbox')input.checked=value;else input.value=value;}}
