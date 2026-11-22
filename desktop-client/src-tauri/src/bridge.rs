@@ -307,6 +307,7 @@ const BROWSERS: &[(&str, &str)] = &[
     ("Microsoft Edge Beta", "Edge Beta"),
     ("BraveSoftware/Brave-Browser", "Brave"),
     ("Chromium", "Chromium"),
+    ("net.imput.helium", "Helium"),
     ("Arc/User Data", "Arc"),
     ("com.operasoftware.Opera", "Opera"),
 ];
